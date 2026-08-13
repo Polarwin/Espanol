@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Nunito:ital,wght@0,400..900;1,400..900&display=swap');
+@import 'tailwindcss';
+@source './**/*.{ts,tsx,html}';
+
+@theme {
+  --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+
+  --color-cream: #faf6f0;
+  --color-cream-deep: #f4ede3;
+  --color-paper: #fffdf9;
+  --color-ink: #2e2118;
+  --color-ink-soft: #6f5d4e;
+  --color-terracotta: #c74a32;
+  --color-terracotta-dark: #a83b26;
+  --color-blush: #fbe7e0;
+  --color-sun: #f0b23e;
+  --color-sun-soft: #fdf3dd;
+  --color-leaf: #2e7d5b;
+  --color-leaf-soft: #e3f0e9;
+  --color-river: #3b6ea5;
+  --color-river-soft: #e4ecf5;
+  --color-navy: #152739;
+  --color-navy-deep: #0f1d2c;
+
+  --shadow-soft: 0 1px 2px rgb(46 33 24 / 0.05), 0 8px 24px rgb(46 33 24 / 0.07);
+  --shadow-card: 0 1px 3px rgb(46 33 24 / 0.06), 0 12px 32px rgb(46 33 24 / 0.08);
+}
+
+html {
+  background-color: var(--color-cream);
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes wave-pulse {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.wave-bar-live {
+  animation: wave-pulse 0.9s ease-in-out infinite;
+  transform-origin: center;
+}

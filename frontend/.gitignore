@@ -1,0 +1,31 @@
+# The repository-root .gitignore (a Python venv artifact) contains `*`,
+# which ignores every file in the project. Un-ignore this app first so
+# Tailwind's git-aware source detection (and git itself) can see our sources,
+# then re-ignore generated/dependency folders below.
+
+!*
+!**/*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
