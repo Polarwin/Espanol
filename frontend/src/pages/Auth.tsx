@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { api, getToken, setToken } from '../api/client'
+import { api, getToken, placementComplete, setPlacementComplete, setToken } from '../api/client'
 
 export function Auth() {
   const navigate = useNavigate()
@@ -11,7 +11,7 @@ export function Auth() {
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  if (getToken()) return <Navigate to="/" replace />
+  if (getToken()) return <Navigate to={placementComplete() ? '/' : '/nivel'} replace />
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setBusy(true); setError('')
@@ -19,7 +19,9 @@ export function Auth() {
       const result = registering
         ? await api.register(email, password, name, [])
         : await api.login(email, password)
-      setToken(result.token); navigate('/')
+      setToken(result.token)
+      setPlacementComplete(result.user.placement_completed)
+      navigate(result.user.placement_completed ? '/' : '/nivel')
     } catch { setError('No se pudo iniciar la sesión. Revisa los datos e inténtalo otra vez.') }
     finally { setBusy(false) }
   }

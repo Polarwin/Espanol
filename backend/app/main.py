@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
-from .routers import auth, capabilities, exercises, lessons, path, progress, social
+from .routers import auth, capabilities, exercises, lessons, path, placement, progress, social
 
 app = FastAPI(title="¡Vamos! — Spanish Learning API")
 
@@ -25,6 +25,7 @@ app.include_router(exercises.router)
 app.include_router(progress.router)
 app.include_router(social.router)
 app.include_router(capabilities.router)
+app.include_router(placement.router)
 
 settings.content_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/media", StaticFiles(directory=settings.content_dir), name="media")

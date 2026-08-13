@@ -1,6 +1,6 @@
 """Hand-made seed lessons for ¡Vamos!.
 
-Three lessons with full transcripts, phrases (with pronunciation tips) and
+Nine lessons with full transcripts, phrases (with pronunciation tips) and
 exercises covering all five types. Structured as plain Python data so the
 loader (load.py) can insert it idempotently.
 """
@@ -620,6 +620,306 @@ LESSONS: list[dict[str, Any]] = [
                 "audio": True,
                 "skill_weights": {"pronunciation": 1.0, "fluency": 0.5},
             },
+        ],
+    },
+    {
+        "slug": "primeras-presentaciones",
+        "title": "Primeras presentaciones",
+        "cefr_level": "A1",
+        "topics": ["presentaciones", "datos personales", "vida diaria"],
+        "source": "original",
+        "status": "published",
+        "grammar_tip": {
+            "wrong": "Yo es Ana.",
+            "right": "Yo soy Ana.",
+            "explanation": "Usamos soy para hablar de nuestra identidad.",
+        },
+        "segments": [
+            {
+                "start": 0.0, "end": 35.0,
+                "transcript": [
+                    {"es": "Hola, me llamo Ana. ¿Cómo te llamas?", "en": "Hello, my name is Ana. What is your name?"},
+                    {"es": "Me llamo Daniel. Encantado.", "en": "My name is Daniel. Nice to meet you."},
+                    {"es": "Encantada. ¿De dónde eres?", "en": "Nice to meet you. Where are you from?"},
+                ],
+                "phrases": [
+                    {"text": "me llamo", "translation": "my name is", "tip": "La ll suele sonar como una y"},
+                    {"text": "¿Cómo te llamas?", "translation": "What is your name?", "tip": "Marca la primera sílaba de cómo"},
+                    {"text": "encantado", "translation": "nice to meet you", "tip": "Suaviza la d entre vocales"},
+                ],
+            },
+            {
+                "start": 35.0, "end": 75.0,
+                "transcript": [
+                    {"es": "Soy de México, pero vivo en Valencia.", "en": "I am from Mexico, but I live in Valencia."},
+                    {"es": "Yo soy de Irlanda. Estudio español aquí.", "en": "I am from Ireland. I study Spanish here."},
+                    {"es": "¡Qué bien! Hasta mañana, Daniel.", "en": "Great! See you tomorrow, Daniel."},
+                ],
+                "phrases": [
+                    {"text": "soy de", "translation": "I am from", "tip": "Une soy y de con ritmo natural"},
+                    {"text": "vivo en", "translation": "I live in", "tip": "La v española suele sonar cercana a b"},
+                    {"text": "hasta mañana", "translation": "see you tomorrow", "tip": "La h no se pronuncia"},
+                ],
+            },
+        ],
+        "exercises": [
+            {"type": "vocabulary", "instructions": "Elige el significado.", "prompt": "me llamo", "options": ["my name is", "I live in", "I study"], "expected_answer": "my name is", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "vocabulary", "instructions": "Elige el significado.", "prompt": "hasta mañana", "options": ["see you tomorrow", "good morning", "good night"], "expected_answer": "see you tomorrow", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "grammar", "instructions": "Completa con ser.", "prompt": "Yo ___ de México.", "options": None, "expected_answer": "soy", "skill_weights": {"grammar": 1.0}},
+            {"type": "grammar", "instructions": "Completa con vivir.", "prompt": "Yo ___ en Valencia.", "options": None, "expected_answer": "vivo", "skill_weights": {"grammar": 1.0}},
+            {"type": "writing", "instructions": "Preséntate en tres frases.", "prompt": "Escribe tu nombre, tu país y dónde vives.", "options": None, "expected_answer": "Me llamo Alex. Soy de Canadá. Vivo en Valencia.", "skill_weights": {"writing": 1.0, "grammar": 0.5}},
+            {"type": "listening", "instructions": "Escucha y elige.", "prompt": "¿Dónde vive Ana?", "options": ["En Valencia", "En México", "En Irlanda"], "expected_answer": "En Valencia", "audio": True, "skill_weights": {"listening": 1.0}},
+            {"type": "pronunciation", "instructions": "Escucha y repite.", "prompt": "Repite: Hola, me llamo Ana", "options": None, "expected_answer": "Hola, me llamo Ana", "audio": True, "skill_weights": {"pronunciation": 1.0, "fluency": 0.5}},
+        ],
+    },
+    {
+        "slug": "compras-en-el-mercado",
+        "title": "Compras en el mercado",
+        "cefr_level": "A2",
+        "topics": ["comida", "compras", "cantidades"],
+        "source": "original",
+        "status": "published",
+        "grammar_tip": {
+            "wrong": "Quiero dos kilo de tomates.",
+            "right": "Quiero dos kilos de tomates.",
+            "explanation": "Las cantidades mayores de uno llevan el sustantivo en plural.",
+        },
+        "segments": [
+            {
+                "start": 0.0, "end": 40.0,
+                "transcript": [
+                    {"es": "Buenos días. ¿Cuánto cuestan los tomates?", "en": "Good morning. How much are the tomatoes?"},
+                    {"es": "Cuestan dos euros el kilo.", "en": "They cost two euros per kilo."},
+                    {"es": "Póngame un kilo, por favor.", "en": "Give me one kilo, please."},
+                ],
+                "phrases": [
+                    {"text": "¿Cuánto cuesta?", "translation": "How much does it cost?", "tip": "La c de cuesta suena como k"},
+                    {"text": "un kilo", "translation": "one kilogram", "tip": None},
+                    {"text": "póngame", "translation": "give me", "tip": "Marca la sílaba pón"},
+                ],
+            },
+            {
+                "start": 40.0, "end": 85.0,
+                "transcript": [
+                    {"es": "También necesito medio kilo de naranjas.", "en": "I also need half a kilo of oranges."},
+                    {"es": "Muy bien. Son cuatro euros con cincuenta en total.", "en": "All right. It is four euros fifty in total."},
+                    {"es": "Aquí tiene. Muchas gracias.", "en": "Here you are. Thank you very much."},
+                ],
+                "phrases": [
+                    {"text": "medio kilo", "translation": "half a kilogram", "tip": "Suaviza la d de medio"},
+                    {"text": "en total", "translation": "in total", "tip": None},
+                    {"text": "aquí tiene", "translation": "here you are", "tip": "Aquí lleva el acento al final"},
+                ],
+            },
+        ],
+        "exercises": [
+            {"type": "vocabulary", "instructions": "Elige el significado.", "prompt": "medio kilo", "options": ["half a kilo", "two kilos", "one quarter"], "expected_answer": "half a kilo", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "vocabulary", "instructions": "Elige el significado.", "prompt": "en total", "options": ["in total", "on sale", "in cash"], "expected_answer": "in total", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "grammar", "instructions": "Completa con costar.", "prompt": "Los tomates ___ dos euros el kilo.", "options": None, "expected_answer": "cuestan", "skill_weights": {"grammar": 1.0}},
+            {"type": "grammar", "instructions": "Completa la cantidad.", "prompt": "Quiero dos ___ de tomates.", "options": None, "expected_answer": "kilos", "skill_weights": {"grammar": 1.0}},
+            {"type": "writing", "instructions": "Escribe un pedido breve.", "prompt": "Pide tres productos y pregunta el precio.", "options": None, "expected_answer": "Quiero un kilo de tomates y medio kilo de naranjas. También necesito pan. ¿Cuánto cuesta todo?", "skill_weights": {"writing": 1.0, "grammar": 0.5}},
+            {"type": "listening", "instructions": "Escucha y elige.", "prompt": "¿Cuánto cuestan los tomates?", "options": ["Dos euros el kilo", "Cuatro euros el kilo", "Un euro el kilo"], "expected_answer": "Dos euros el kilo", "audio": True, "skill_weights": {"listening": 1.0}},
+            {"type": "pronunciation", "instructions": "Escucha y repite.", "prompt": "Repite: Póngame un kilo, por favor", "options": None, "expected_answer": "Póngame un kilo, por favor", "audio": True, "skill_weights": {"pronunciation": 1.0, "fluency": 0.5}},
+        ],
+    },
+    {
+        "slug": "mi-familia-y-mi-casa",
+        "title": "Mi familia y mi casa",
+        "cefr_level": "A1",
+        "topics": ["familia", "casa", "descripciones"],
+        "source": "original",
+        "status": "published",
+        "grammar_tip": {
+            "wrong": "Mi hermano tienen veinte años.",
+            "right": "Mi hermano tiene veinte años.",
+            "explanation": "Con él o ella usamos tiene; tienen corresponde a ellos o ellas.",
+        },
+        "segments": [
+            {
+                "start": 0.0, "end": 38.0,
+                "transcript": [
+                    {"es": "Esta es una foto de mi familia.", "en": "This is a photo of my family."},
+                    {"es": "Mi madre se llama Carmen y mi padre se llama Luis.", "en": "My mother's name is Carmen and my father's name is Luis."},
+                    {"es": "También tengo un hermano. Tiene veinte años.", "en": "I also have a brother. He is twenty years old."},
+                ],
+                "phrases": [
+                    {"text": "mi familia", "translation": "my family", "tip": "La primera i es breve y clara"},
+                    {"text": "se llama", "translation": "is called", "tip": "La ll suele sonar como una y"},
+                    {"text": "tiene veinte años", "translation": "is twenty years old", "tip": "Une tiene y veinte con ritmo regular"},
+                ],
+            },
+            {
+                "start": 38.0, "end": 78.0,
+                "transcript": [
+                    {"es": "Vivimos en una casa pequeña con dos dormitorios.", "en": "We live in a small house with two bedrooms."},
+                    {"es": "La cocina está al lado del salón.", "en": "The kitchen is next to the living room."},
+                    {"es": "Mi habitación tiene una ventana grande.", "en": "My bedroom has a large window."},
+                ],
+                "phrases": [
+                    {"text": "una casa pequeña", "translation": "a small house", "tip": "La ñ se pronuncia como ny"},
+                    {"text": "al lado de", "translation": "next to", "tip": "La d entre vocales es suave"},
+                    {"text": "una ventana grande", "translation": "a large window", "tip": "La g de grande suena fuerte"},
+                ],
+            },
+        ],
+        "exercises": [
+            {"type": "vocabulary", "instructions": "Elige el significado.", "prompt": "el hermano", "options": ["brother", "father", "uncle"], "expected_answer": "brother", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "vocabulary", "instructions": "Elige el lugar.", "prompt": "¿Dónde cocinamos?", "options": ["En la cocina", "En el dormitorio", "En el salón"], "expected_answer": "En la cocina", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "grammar", "instructions": "Completa con tener.", "prompt": "Mi hermana ___ dieciocho años.", "options": None, "expected_answer": "tiene", "skill_weights": {"grammar": 1.0}},
+            {"type": "grammar", "instructions": "Completa el adjetivo.", "prompt": "Es una casa ___.", "options": ["pequeña", "pequeño", "pequeños"], "expected_answer": "pequeña", "skill_weights": {"grammar": 1.0}},
+            {"type": "writing", "instructions": "Describe tu casa.", "prompt": "Escribe tres frases sobre las habitaciones de tu casa.", "options": None, "expected_answer": "Vivo en una casa pequeña. Tiene dos dormitorios. La cocina está al lado del salón.", "skill_weights": {"writing": 1.0, "grammar": 0.5}},
+            {"type": "listening", "instructions": "Escucha y elige.", "prompt": "¿Cuántos dormitorios tiene la casa?", "options": ["Dos", "Uno", "Tres"], "expected_answer": "Dos", "audio": True, "skill_weights": {"listening": 1.0}},
+            {"type": "pronunciation", "instructions": "Escucha y repite.", "prompt": "Repite: Mi familia vive en una casa pequeña", "options": None, "expected_answer": "Mi familia vive en una casa pequeña", "audio": True, "skill_weights": {"pronunciation": 1.0, "fluency": 0.5}},
+        ],
+    },
+    {
+        "slug": "un-dia-normal",
+        "title": "Un día normal",
+        "cefr_level": "A1",
+        "topics": ["rutina", "horarios", "vida diaria"],
+        "source": "original",
+        "status": "published",
+        "grammar_tip": {
+            "wrong": "Me levanto a las siete y desayuno después.",
+            "right": "Me levanto a las siete y después desayuno.",
+            "explanation": "Después puede ir antes del verbo para ordenar claramente las acciones.",
+        },
+        "segments": [
+            {
+                "start": 0.0, "end": 40.0,
+                "transcript": [
+                    {"es": "Me levanto a las siete y me ducho.", "en": "I get up at seven and take a shower."},
+                    {"es": "Después desayuno café con leche y tostadas.", "en": "Then I have coffee with milk and toast for breakfast."},
+                    {"es": "Salgo de casa a las ocho menos cuarto.", "en": "I leave home at quarter to eight."},
+                ],
+                "phrases": [
+                    {"text": "me levanto", "translation": "I get up", "tip": "La v suena cercana a una b suave"},
+                    {"text": "después desayuno", "translation": "then I have breakfast", "tip": "Distingue las dos sílabas iniciales des"},
+                    {"text": "a las ocho menos cuarto", "translation": "at quarter to eight", "tip": "La h de ocho no se pronuncia"},
+                ],
+            },
+            {
+                "start": 40.0, "end": 82.0,
+                "transcript": [
+                    {"es": "Trabajo de nueve a cinco en una oficina.", "en": "I work from nine to five in an office."},
+                    {"es": "Por la tarde hago ejercicio en el parque.", "en": "In the afternoon I exercise in the park."},
+                    {"es": "Ceno a las nueve y me acuesto a las once.", "en": "I have dinner at nine and go to bed at eleven."},
+                ],
+                "phrases": [
+                    {"text": "de nueve a cinco", "translation": "from nine to five", "tip": "Une de y nueve suavemente"},
+                    {"text": "por la tarde", "translation": "in the afternoon", "tip": "La r de tarde es breve"},
+                    {"text": "me acuesto", "translation": "I go to bed", "tip": "Cuesto empieza con sonido k"},
+                ],
+            },
+        ],
+        "exercises": [
+            {"type": "vocabulary", "instructions": "Elige el significado.", "prompt": "me levanto", "options": ["I get up", "I go to bed", "I eat"], "expected_answer": "I get up", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "vocabulary", "instructions": "Ordena la rutina.", "prompt": "¿Qué haces normalmente por la mañana?", "options": ["Desayuno", "Ceno", "Me acuesto"], "expected_answer": "Desayuno", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "grammar", "instructions": "Completa el verbo reflexivo.", "prompt": "Yo ___ levanto a las siete.", "options": None, "expected_answer": "me", "skill_weights": {"grammar": 1.0}},
+            {"type": "grammar", "instructions": "Completa la hora.", "prompt": "Salgo de casa ___ las ocho.", "options": ["a", "en", "de"], "expected_answer": "a", "skill_weights": {"grammar": 1.0}},
+            {"type": "writing", "instructions": "Cuenta tu rutina.", "prompt": "Escribe cuatro acciones de un día normal.", "options": None, "expected_answer": "Me levanto a las siete. Desayuno. Trabajo por la mañana. Me acuesto a las once.", "skill_weights": {"writing": 1.0, "grammar": 0.5}},
+            {"type": "listening", "instructions": "Escucha y elige.", "prompt": "¿A qué hora sale de casa?", "options": ["A las ocho menos cuarto", "A las siete", "A las nueve"], "expected_answer": "A las ocho menos cuarto", "audio": True, "skill_weights": {"listening": 1.0}},
+            {"type": "pronunciation", "instructions": "Escucha y repite.", "prompt": "Repite: Después desayuno café con leche", "options": None, "expected_answer": "Después desayuno café con leche", "audio": True, "skill_weights": {"pronunciation": 1.0, "fluency": 0.5}},
+        ],
+    },
+    {
+        "slug": "en-la-consulta",
+        "title": "En la consulta",
+        "cefr_level": "A2",
+        "topics": ["salud", "cuerpo", "consejos"],
+        "source": "original",
+        "status": "published",
+        "grammar_tip": {
+            "wrong": "Debes de descansar dos días.",
+            "right": "Debes descansar dos días.",
+            "explanation": "Para dar un consejo usamos deber más infinitivo, sin la preposición de.",
+        },
+        "segments": [
+            {
+                "start": 0.0, "end": 42.0,
+                "transcript": [
+                    {"es": "Buenos días. ¿Qué le pasa?", "en": "Good morning. What is wrong?"},
+                    {"es": "Me duele la garganta y tengo un poco de fiebre.", "en": "My throat hurts and I have a slight fever."},
+                    {"es": "¿Desde cuándo se encuentra así?", "en": "How long have you felt this way?"},
+                ],
+                "phrases": [
+                    {"text": "¿Qué le pasa?", "translation": "What is wrong?", "tip": "La u de qué no se pronuncia"},
+                    {"text": "me duele la garganta", "translation": "my throat hurts", "tip": "La g de garganta es fuerte"},
+                    {"text": "tengo fiebre", "translation": "I have a fever", "tip": "Fiebre tiene dos sílabas"},
+                ],
+            },
+            {
+                "start": 42.0, "end": 86.0,
+                "transcript": [
+                    {"es": "Desde ayer por la noche. También estoy muy cansada.", "en": "Since last night. I am also very tired."},
+                    {"es": "Parece un resfriado. Debe descansar y beber mucha agua.", "en": "It seems like a cold. You should rest and drink plenty of water."},
+                    {"es": "Tome este medicamento después de comer.", "en": "Take this medicine after eating."},
+                ],
+                "phrases": [
+                    {"text": "desde ayer", "translation": "since yesterday", "tip": "La d final de desde enlaza con ayer"},
+                    {"text": "debe descansar", "translation": "you should rest", "tip": "La b intervocálica es suave"},
+                    {"text": "después de comer", "translation": "after eating", "tip": "Marca el acento de después"},
+                ],
+            },
+        ],
+        "exercises": [
+            {"type": "vocabulary", "instructions": "Elige el significado.", "prompt": "la garganta", "options": ["throat", "head", "back"], "expected_answer": "throat", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "vocabulary", "instructions": "Elige el síntoma.", "prompt": "Tengo 38 grados.", "options": ["Tengo fiebre", "Tengo hambre", "Tengo sueño"], "expected_answer": "Tengo fiebre", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "grammar", "instructions": "Completa con doler.", "prompt": "Me ___ la cabeza.", "options": None, "expected_answer": "duele", "skill_weights": {"grammar": 1.0}},
+            {"type": "grammar", "instructions": "Completa el consejo.", "prompt": "___ descansar y beber agua.", "options": ["Debe", "Tiene", "Hace"], "expected_answer": "Debe", "skill_weights": {"grammar": 1.0}},
+            {"type": "writing", "instructions": "Explica cómo estás.", "prompt": "Describe dos síntomas y pregunta qué debes hacer.", "options": None, "expected_answer": "Me duele la garganta y tengo fiebre. ¿Qué debo hacer?", "skill_weights": {"writing": 1.0, "grammar": 0.5}},
+            {"type": "listening", "instructions": "Escucha y elige.", "prompt": "¿Qué recomienda la médica?", "options": ["Descansar y beber agua", "Hacer ejercicio", "Ir a trabajar"], "expected_answer": "Descansar y beber agua", "audio": True, "skill_weights": {"listening": 1.0}},
+            {"type": "pronunciation", "instructions": "Escucha y repite.", "prompt": "Repite: Me duele la garganta y tengo fiebre", "options": None, "expected_answer": "Me duele la garganta y tengo fiebre", "audio": True, "skill_weights": {"pronunciation": 1.0, "fluency": 0.5}},
+        ],
+    },
+    {
+        "slug": "buscar-piso",
+        "title": "Buscar piso",
+        "cefr_level": "A2",
+        "topics": ["vivienda", "alquiler", "descripciones"],
+        "source": "original",
+        "status": "published",
+        "grammar_tip": {
+            "wrong": "El piso que vi ayer, tiene balcón.",
+            "right": "El piso que vi ayer tiene balcón.",
+            "explanation": "No separamos con coma el sujeto y su verbo.",
+        },
+        "segments": [
+            {
+                "start": 0.0, "end": 43.0,
+                "transcript": [
+                    {"es": "Llamo por el anuncio del piso en alquiler.", "en": "I am calling about the apartment rental listing."},
+                    {"es": "Tiene dos habitaciones, un balcón y mucha luz.", "en": "It has two bedrooms, a balcony, and plenty of light."},
+                    {"es": "¿Está amueblado y cuánto cuesta al mes?", "en": "Is it furnished and how much does it cost per month?"},
+                ],
+                "phrases": [
+                    {"text": "piso en alquiler", "translation": "apartment for rent", "tip": "Alquiler termina con una r suave"},
+                    {"text": "está amueblado", "translation": "it is furnished", "tip": "Une está y amueblado"},
+                    {"text": "cuánto cuesta al mes", "translation": "how much it costs per month", "tip": "Cu suena como k"},
+                ],
+            },
+            {
+                "start": 43.0, "end": 88.0,
+                "transcript": [
+                    {"es": "Cuesta novecientos euros, gastos incluidos.", "en": "It costs nine hundred euros, utilities included."},
+                    {"es": "Está cerca del metro, pero la calle es tranquila.", "en": "It is near the metro, but the street is quiet."},
+                    {"es": "Me interesa. ¿Podría visitarlo mañana por la tarde?", "en": "I am interested. Could I visit it tomorrow afternoon?"},
+                ],
+                "phrases": [
+                    {"text": "gastos incluidos", "translation": "utilities included", "tip": "La s final enlaza con incluidos"},
+                    {"text": "cerca del metro", "translation": "near the metro", "tip": "En España, la c de cerca suele sonar como z"},
+                    {"text": "¿Podría visitarlo?", "translation": "Could I visit it?", "tip": "Podría lleva el acento en la i"},
+                ],
+            },
+        ],
+        "exercises": [
+            {"type": "vocabulary", "instructions": "Elige el significado.", "prompt": "amueblado", "options": ["furnished", "available", "expensive"], "expected_answer": "furnished", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "vocabulary", "instructions": "Elige la opción correcta.", "prompt": "gastos incluidos", "options": ["utilities included", "deposit required", "rent reduced"], "expected_answer": "utilities included", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "grammar", "instructions": "Completa con estar.", "prompt": "El piso ___ cerca del metro.", "options": None, "expected_answer": "está", "skill_weights": {"grammar": 1.0}},
+            {"type": "grammar", "instructions": "Elige la pregunta cortés.", "prompt": "___ visitarlo mañana?", "options": ["¿Podría", "¿Podía", "¿Puedo que"], "expected_answer": "¿Podría", "skill_weights": {"grammar": 1.0}},
+            {"type": "writing", "instructions": "Pregunta por una vivienda.", "prompt": "Escribe un mensaje con tres preguntas sobre un piso.", "options": None, "expected_answer": "Hola, llamo por el piso. ¿Está amueblado? ¿Cuánto cuesta? ¿Podría visitarlo mañana?", "skill_weights": {"writing": 1.0, "grammar": 0.5}},
+            {"type": "listening", "instructions": "Escucha y elige.", "prompt": "¿Cuánto cuesta el piso?", "options": ["Novecientos euros", "Setecientos euros", "Mil euros"], "expected_answer": "Novecientos euros", "audio": True, "skill_weights": {"listening": 1.0}},
+            {"type": "pronunciation", "instructions": "Escucha y repite.", "prompt": "Repite: ¿Podría visitarlo mañana por la tarde?", "options": None, "expected_answer": "¿Podría visitarlo mañana por la tarde?", "audio": True, "skill_weights": {"pronunciation": 1.0, "fluency": 0.5}},
         ],
     },
 ]

@@ -11,6 +11,12 @@ def test_lessons_list_published(client: TestClient) -> None:
         "Charla con vecinos",
         "En el café",
         "De viaje",
+        "Primeras presentaciones",
+        "Compras en el mercado",
+        "Mi familia y mi casa",
+        "Un día normal",
+        "En la consulta",
+        "Buscar piso",
     ]
     first = lessons[0]
     assert first["cefr_level"] == "A2"

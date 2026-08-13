@@ -5,6 +5,21 @@ export interface User {
   email: string
   display_name: string
   interests: string[]
+  placement_completed: boolean
+}
+
+export interface PlacementQuestion {
+  id: string
+  skill: string
+  prompt: string
+  options: string[]
+}
+
+export interface PlacementResult {
+  overall_level: string
+  skill_levels: Record<string, string>
+  correct: number
+  total: number
 }
 
 export interface AuthResponse {

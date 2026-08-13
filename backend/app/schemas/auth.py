@@ -22,6 +22,7 @@ class UserOut(BaseModel):
     email: str
     display_name: str
     interests: list[str]
+    placement_completed: bool
     created_at: datetime
 
     model_config = {"from_attributes": True}

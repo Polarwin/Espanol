@@ -13,11 +13,14 @@ import type {
   TodayPath,
   WeeklyRecap,
   FriendGroup,
+  PlacementQuestion,
+  PlacementResult,
 } from './types'
 
 export const MOCK_FALLBACK_ENABLED = import.meta.env.VITE_ENABLE_MOCKS === 'true'
 
 const TOKEN_KEY = 'vamos.token'
+const PLACEMENT_KEY = 'vamos.placement-completed'
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
@@ -25,7 +28,18 @@ export function getToken(): string | null {
 
 export function setToken(token: string | null) {
   if (token) localStorage.setItem(TOKEN_KEY, token)
-  else localStorage.removeItem(TOKEN_KEY)
+  else {
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(PLACEMENT_KEY)
+  }
+}
+
+export function placementComplete(): boolean {
+  return localStorage.getItem(PLACEMENT_KEY) === 'true'
+}
+
+export function setPlacementComplete(value: boolean) {
+  localStorage.setItem(PLACEMENT_KEY, String(value))
 }
 
 export class ApiError extends Error {
@@ -143,5 +157,17 @@ export const api = {
 
   joinGroup(inviteCode: string): Promise<FriendGroup> {
     return request<FriendGroup>('/api/groups/join', { method: 'POST', body: JSON.stringify({ invite_code: inviteCode }) })
+  },
+
+  getPlacement(): Promise<PlacementQuestion[]> {
+    return request<PlacementQuestion[]>('/api/placement')
+  },
+
+  submitPlacement(answers: Record<string, string>): Promise<PlacementResult> {
+    return request<PlacementResult>('/api/placement', { method: 'POST', body: JSON.stringify({ answers }) })
+  },
+
+  skipPlacement(): Promise<PlacementResult> {
+    return request<PlacementResult>('/api/placement/skip', { method: 'POST' })
   },
 }

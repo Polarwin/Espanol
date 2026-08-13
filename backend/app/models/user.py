@@ -16,6 +16,7 @@ class User(Base):
     password_hash: Mapped[str]
     display_name: Mapped[str]
     interests: Mapped[list[str]] = mapped_column(JSON, default=list)
+    placement_completed: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
 

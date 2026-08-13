@@ -20,6 +20,7 @@ const MOCK_USER = {
   email: 'maya@example.com',
   display_name: 'Maya',
   interests: ['viajes', 'vida diaria', 'cultura'],
+  placement_completed: true,
 }
 
 export async function mockRegister(): Promise<AuthResponse> {
