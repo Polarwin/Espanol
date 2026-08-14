@@ -81,7 +81,6 @@ export function Assessment() {
   const activeGroup = assessment?.groups[groupIndex] ?? null
   const exercise = activeGroup?.exercises[exerciseIndex] ?? null
   const isLastExercise = activeGroup ? exerciseIndex === activeGroup.exercises.length - 1 : false
-  const isLastGroup = assessment ? groupIndex === assessment.groups.length - 1 : false
   const answeredBefore = Object.values(progress).reduce((total, item) => total + item.answered, 0)
 
   const check = async () => {
@@ -112,12 +111,29 @@ export function Assessment() {
     setSelected(null)
     if (!isLastExercise) {
       setExerciseIndex((i) => i + 1)
-    } else if (!isLastGroup) {
-      setGroupIndex((i) => i + 1)
-      setExerciseIndex(0)
     } else {
-      setFinished(true)
+      const nextGroup = assessment?.groups.findIndex((group, candidateIndex) => {
+        if (candidateIndex === groupIndex) return false
+        return (progress[group.type]?.answered ?? 0) < group.exercises.length
+      }) ?? -1
+      if (nextGroup >= 0) {
+        setGroupIndex(nextGroup)
+        setExerciseIndex(progress[assessment!.groups[nextGroup].type]?.answered ?? 0)
+      } else {
+        setFinished(true)
+      }
     }
+  }
+
+  const openGroup = (candidateIndex: number) => {
+    if (!assessment || result) return
+    const group = assessment.groups[candidateIndex]
+    const answered = progress[group.type]?.answered ?? 0
+    if (answered >= group.exercises.length) return
+    setGroupIndex(candidateIndex)
+    setExerciseIndex(answered)
+    setSelected(null)
+    setError('')
   }
 
   if (!assessment || !activeGroup) {
@@ -254,7 +270,7 @@ export function Assessment() {
                     onClick={next}
                     className="mt-5 w-full rounded-2xl bg-terracotta py-3.5 text-[16px] font-bold text-paper shadow-card transition hover:bg-terracotta-dark"
                   >
-                    {isLastExercise && isLastGroup ? 'Terminar la prueba' : 'Siguiente pregunta'}
+                    {answeredBefore >= assessment.total_questions ? 'Terminar la prueba' : 'Siguiente pregunta'}
                   </button>
                 ) : (
                   <button
@@ -324,11 +340,14 @@ export function Assessment() {
           const p = progress[g.type] ?? { answered: 0, correct: 0 }
           const status = statusOf(g, p, activeGroup.type)
           return (
-            <div
+            <button
+              type="button"
               key={g.type}
-              className={`rounded-3xl border-2 bg-paper p-4 shadow-soft ${
+              onClick={() => openGroup(i)}
+              disabled={status === 'done' || Boolean(result)}
+              className={`rounded-3xl border-2 bg-paper p-4 text-left shadow-soft transition ${
                 status === 'active' ? 'border-river' : 'border-transparent'
-              }`}
+              } ${status === 'done' ? 'cursor-default' : 'hover:border-river/50 hover:shadow-card'} disabled:opacity-70`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -351,7 +370,7 @@ export function Assessment() {
               </div>
               <p className="mt-1.5 text-[13px] font-semibold text-ink-soft">{g.instructions}</p>
               <GroupPreview group={g} />
-            </div>
+            </button>
           )
         })}
       </div>
