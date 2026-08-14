@@ -183,6 +183,12 @@ export interface ConversationResult {
   transcript: string
   reply: string
   feedback: string
+  correction: {
+    has_error: boolean
+    original: string
+    corrected: string
+    explanation: string
+  }
   suggestions: string[]
   turn: number
   complete: boolean

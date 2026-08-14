@@ -1,7 +1,9 @@
 """Status endpoints for external content and speech-analysis integration."""
 
 from pathlib import Path
+import re
 import tempfile
+import unicodedata
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
@@ -66,11 +68,44 @@ def _conversation_profile(lesson: Lesson, name: str) -> dict:
     }
 
 
-def _conversation_reply(transcript: str, turn: int, name: str, profile: dict) -> tuple[str, str, list[str]]:
+def _plain(text: str) -> str:
+    return "".join(char for char in unicodedata.normalize("NFD", text.lower()) if unicodedata.category(char) != "Mn")
+
+
+def _conversation_correction(transcript: str, lesson: Lesson) -> dict:
+    """Return one clear, level-appropriate correction without interrupting the role-play."""
+    original = transcript.strip()
+    grammar = lesson.grammar_tip or {}
+    wrong, right = grammar.get("wrong", ""), grammar.get("right", "")
+    if wrong and right:
+        heard, target = set(_plain(original).split()), set(_plain(wrong).split())
+        if target and len(heard & target) / len(target) >= 0.7:
+            return {"has_error": True, "original": original, "corrected": right, "explanation": grammar.get("explanation", "Esta forma es más natural en español.")}
+
+    patterns = [
+        (r"\bsoy (\d{1,3}) a(?:n|ñ)os\b", r"tengo \1 años", "Para decir la edad usamos tener, no ser."),
+        (r"\bme gusta (los|las)\b", r"me gustan \1", "Gustar concuerda con la cosa que gusta: en plural, gustan."),
+        (r"\b(yo|t[uú]|[eé]l|ella) gusto\b", r"me gusta", "Con gustar decimos me gusta, te gusta o le gusta."),
+        (r"\b(yo )?soy de acuerdo\b", r"estoy de acuerdo", "La expresión fija es estar de acuerdo."),
+        (r"\bdepende de que\b", r"depende de", "Después de depende de añadimos directamente el nombre o la situación."),
+        (r"\bvamos (?!a\b)([a-záéíóúñ]+(?:ar|er|ir))\b", r"vamos a \1", "Para hablar de un plan usamos ir a + infinitivo."),
+        (r"\btengo (hambre|sed|fr[ií]o|calor)\b", lambda m: f"tengo {m.group(1).replace('frio', 'frío')}", "Estas expresiones usan tener; recuerda la tilde de frío."),
+    ]
+    normalized = _plain(original)
+    for pattern, replacement, explanation in patterns:
+        if re.search(pattern, normalized, flags=re.IGNORECASE):
+            corrected = re.sub(pattern, replacement, original, count=1, flags=re.IGNORECASE)
+            corrected = corrected[:1].upper() + corrected[1:]
+            return {"has_error": True, "original": original, "corrected": corrected, "explanation": explanation}
+    return {"has_error": False, "original": original, "corrected": "", "explanation": "Tu frase se entiende bien. Sigue ampliando la respuesta."}
+
+
+def _conversation_reply(transcript: str, turn: int, name: str, profile: dict, correction: dict) -> tuple[str, str, list[str]]:
     address = f", {name}" if name else ""
     words = profile["vocabulary"] or [profile["topic"]]
     if turn == 0:
-        return profile["prompts"][0], "Tu respuesta se entiende. Intenta incorporar una palabra de la unidad.", [f"Para mí, {words[0]}...", f"Un ejemplo de {words[0]} es..."]
+        feedback = "Practica la versión corregida y continúa." if correction["has_error"] else "Tu respuesta se entiende. Intenta incorporar una palabra de la unidad."
+        return profile["prompts"][0], feedback, [f"Para mí, {words[0]}...", f"Un ejemplo de {words[0]} es..."]
     if turn == 1:
         word = words[min(1, len(words) - 1)]
         return profile["prompts"][1], "Bien: has ampliado tu respuesta. Intenta añadir dónde, cuándo o por qué.", [f"En mi caso, {word}...", "Esto es importante porque..."]
@@ -187,11 +222,12 @@ async def conversation_respond(
     finally:
         if temp_path is not None:
             temp_path.unlink(missing_ok=True)
+    correction = _conversation_correction(transcript, lesson)
     reply, feedback, suggestions = _conversation_reply(
-        transcript, turn, (user.nickname or user.display_name).strip(), profile
+        transcript, turn, (user.nickname or user.display_name).strip(), profile, correction
     )
     apply_skill_deltas(db, user, {"fluency": 1.5, "listening": 0.5, "pronunciation": 0.5})
     increment_goal(db, user, "sentences_spoken")
     record_activity(db, user)
     db.commit()
-    return {"transcript": transcript, "reply": reply, "feedback": feedback, "suggestions": suggestions, "turn": turn + 1, "complete": turn >= 3}
+    return {"transcript": transcript, "reply": reply, "feedback": feedback, "correction": correction, "suggestions": suggestions, "turn": turn + 1, "complete": turn >= 3}

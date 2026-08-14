@@ -99,3 +99,16 @@ def test_every_unit_has_its_own_conversation(
     )
     assert response.status_code == 200
     assert response.json()["reply"] == first["prompts"][0]
+    assert response.json()["correction"]["has_error"] is False
+
+    monkeypatch.setattr(capabilities, "transcribe_spanish", lambda _path, _prompt: "Vamos escuchar música")
+    response = client.post(
+        "/api/conversation/respond",
+        data={"turn": 0, "lesson_id": first["lesson_id"]},
+        files={"audio": ("voice.webm", b"audio")},
+        headers=auth_headers,
+    )
+    correction = response.json()["correction"]
+    assert correction["has_error"] is True
+    assert correction["corrected"] == "Vamos a escuchar música"
+    assert "infinitivo" in correction["explanation"]
