@@ -30,26 +30,27 @@ const FALLBACK_STYLE = { icon: IconPuzzle, bar: 'bg-sun', chip: 'bg-sun-soft tex
 export function Progreso() {
   const [progress, setProgress] = useState<Progress | null>(null)
   const [recap, setRecap] = useState<WeeklyRecap | null>(null)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    api.getProgress().then(setProgress).catch(() => {})
+    api.getProgress().then(setProgress).catch(() => setError('No se pudo cargar tu progreso.'))
     api.getWeeklyRecap().then(setRecap).catch(() => {})
   }, [])
 
   if (!progress) {
-    return <div className="p-10 text-ink-soft">Cargando tu progreso…</div>
+    return <div className="p-6 text-ink-soft">{error || 'Cargando tu progreso…'}</div>
   }
 
   const goalPct = progress.weekly_goal.target > 0 ? (progress.weekly_goal.current / progress.weekly_goal.target) * 100 : 0
 
   return (
-    <div className="mx-auto max-w-4xl px-8 pb-10 pt-7">
+    <div className="mx-auto max-w-4xl px-4 pb-8 pt-5 sm:px-8 sm:pb-10 sm:pt-7">
       <h1 className="font-display text-[30px] font-bold">Tu progreso</h1>
       <p className="mt-1 text-[15px] font-semibold text-ink-soft">
         Cada habilidad avanza a su propio ritmo.
       </p>
 
-      <div className="mt-6 grid grid-cols-3 gap-4">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Streak */}
         <section className="rounded-3xl bg-paper p-5 shadow-soft">
           <div className="flex items-center gap-3">
@@ -105,7 +106,7 @@ export function Progreso() {
       </div>
 
       {/* Per-skill bars */}
-      <section className="mt-5 rounded-3xl bg-paper p-6 shadow-soft">
+      <section className="mt-5 rounded-3xl bg-paper p-5 shadow-soft sm:p-6">
         <h2 className="font-display text-[21px] font-bold">Tus habilidades</h2>
         <div className="mt-4 flex flex-col gap-4">
           {progress.skills.map((s) => {
@@ -126,7 +127,7 @@ export function Progreso() {
 
       {/* Weekly recap */}
       {recap && (
-        <section className="mt-5 rounded-3xl bg-sun-soft p-6 shadow-soft">
+        <section className="mt-5 rounded-3xl bg-sun-soft p-5 shadow-soft sm:p-6">
           <div className="flex items-center gap-2.5">
             <span className="text-terracotta-dark">
               <IconSparkle size={20} />
@@ -152,7 +153,7 @@ export function Progreso() {
             <p className="text-[14px] font-bold">Logro de la semana</p>
             <p className="mt-0.5 text-[14px] font-semibold text-ink-soft">{recap.achievement}</p>
           </div>
-          <div className="mt-3 flex items-start gap-2">
+          <div className="mt-3 flex flex-col items-start gap-2 sm:flex-row">
             <Chip tone="outline" className="bg-paper">
               Para la próxima semana
             </Chip>

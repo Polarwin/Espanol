@@ -58,7 +58,13 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     headers.set('Content-Type', 'application/json')
   }
   const res = await fetch(path, { ...init, headers })
-  if (!res.ok) throw new ApiError(res.status, `Request failed: ${res.status} ${path}`)
+  if (!res.ok) {
+    if (res.status === 401 && !path.startsWith('/api/auth/')) {
+      setToken(null)
+      if (window.location.pathname !== '/entrar') window.location.assign('/entrar')
+    }
+    throw new ApiError(res.status, `Request failed: ${res.status} ${path}`)
+  }
   return (await res.json()) as T
 }
 
@@ -157,6 +163,13 @@ export const api = {
 
   joinGroup(inviteCode: string): Promise<FriendGroup> {
     return request<FriendGroup>('/api/groups/join', { method: 'POST', body: JSON.stringify({ invite_code: inviteCode }) })
+  },
+
+  encourage(groupId: number, toUserId: number, message: string): Promise<FriendGroup> {
+    return request<FriendGroup>(`/api/groups/${groupId}/encouragements`, {
+      method: 'POST',
+      body: JSON.stringify({ to_user_id: toUserId, message }),
+    })
   },
 
   getPlacement(): Promise<PlacementQuestion[]> {

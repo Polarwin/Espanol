@@ -65,7 +65,7 @@ export interface TodayPath {
   clip_index: number
   total_clips: number
   video_url: string
-  subtitle: string
+  subtitle: TranscriptLine
   feedback: SkillFeedback
   pronunciation_tip: PronunciationTip
   grammar_tip: GrammarTip

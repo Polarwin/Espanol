@@ -26,8 +26,8 @@ export function Auth() {
     finally { setBusy(false) }
   }
 
-  return <main className="flex min-h-screen items-center justify-center bg-cream px-5">
-    <form onSubmit={submit} className="w-full max-w-md rounded-3xl bg-paper p-8 shadow-card">
+  return <main className="flex min-h-screen items-center justify-center bg-cream px-4 py-6">
+    <form onSubmit={submit} className="w-full max-w-md rounded-3xl bg-paper p-6 shadow-card sm:p-8">
       <h1 className="font-display text-4xl font-bold">¡Vamos<span className="text-terracotta">!</span></h1>
       <p className="mt-2 font-semibold text-ink-soft">{registering ? 'Crea tu ruta personal de español.' : 'Continúa con tu ruta de aprendizaje.'}</p>
       {registering && <input required minLength={2} value={name} onChange={e => setName(e.target.value)} placeholder="Tu nombre" className="mt-6 w-full rounded-xl border border-ink/15 px-4 py-3" />}

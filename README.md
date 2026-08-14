@@ -39,6 +39,16 @@ Vite listens on all network interfaces and proxies `/api` and `/media` to the
 backend at `http://localhost:8011`. From another device on the same network,
 open `http://<this-computer-ip>:5173`.
 
+Backend requests and exception traces are written to a rotating log (5 MB per
+file, three backups):
+
+```bash
+tail -f logs/vamos.log
+```
+
+Set `VAMOS_LOG_FILE` to use a different location. Request bodies and
+authorization headers are never written to this log.
+
 Only expose these development servers on a trusted private network. A firewall
 may need to allow inbound TCP connections to port `5173`; clients do not need
 direct access to backend port `8011` because Vite proxies the requests.

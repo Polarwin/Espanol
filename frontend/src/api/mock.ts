@@ -46,7 +46,10 @@ export async function mockTodayPath(): Promise<TodayPath> {
     clip_index: 3,
     total_clips: 8,
     video_url: '/media/lessons/charla-vecinos/clip-3.mp4',
-    subtitle: '¿Qué planes tienes para el fin de semana?',
+    subtitle: {
+      es: '¿Qué planes tienes para el fin de semana?',
+      en: 'What plans do you have for the weekend?',
+    },
     feedback: { pronunciation: 82, fluidez: 74, gramatica: 90 },
     pronunciation_tip: {
       phrase: 'fin de semana',

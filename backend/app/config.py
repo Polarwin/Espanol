@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 60 * 24 * 7  # one week
 
     content_dir: Path = PROJECT_ROOT / "content"
+    log_file: Path = PROJECT_ROOT / "logs" / "vamos.log"
     watch_dir: Path = Path("/srv/files/ytwatcher/Espanol")
     vitamina_dir: Path = PROJECT_ROOT / "Vitamina"
 

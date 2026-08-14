@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client'
-import type { AttemptResult, ExerciseGroup, LessonAssessment, TodayPath } from '../api/types'
+import type { AttemptResult, ExerciseGroup, LessonAssessment } from '../api/types'
 import { AudioPlayer } from '../components/AudioPlayer'
 import { Chip } from '../components/Chip'
 import {
@@ -34,16 +34,8 @@ interface GroupProgress {
   correct: number
 }
 
-/** Seed state matches the mockup: an in-progress assessment session. */
-function seedProgress(assessment: LessonAssessment): Record<string, GroupProgress> {
-  const seeded: Record<string, GroupProgress> = {}
-  for (const g of assessment.groups) {
-    if (g.type === 'vocabulary') seeded[g.type] = { answered: g.exercises.length, correct: 4 }
-    else if (g.type === 'grammar') seeded[g.type] = { answered: g.exercises.length, correct: 3 }
-    else if (g.type === 'listening') seeded[g.type] = { answered: 2, correct: 2 }
-    else seeded[g.type] = { answered: 0, correct: 0 }
-  }
-  return seeded
+function emptyProgress(assessment: LessonAssessment): Record<string, GroupProgress> {
+  return Object.fromEntries(assessment.groups.map((group) => [group.type, { answered: 0, correct: 0 }]))
 }
 
 function statusOf(group: ExerciseGroup, progress: GroupProgress, activeType: string) {
@@ -59,38 +51,43 @@ export function Assessment() {
   const [lessonTitle, setLessonTitle] = useState('Charla con vecinos')
   const [cefr, setCefr] = useState('A2')
   const [progress, setProgress] = useState<Record<string, GroupProgress>>({})
+  const [groupIndex, setGroupIndex] = useState(0)
   const [exerciseIndex, setExerciseIndex] = useState(0)
-  const [answeredBefore, setAnsweredBefore] = useState(2)
   const [selected, setSelected] = useState<string | null>(null)
   const [result, setResult] = useState<AttemptResult | null>(null)
   const [checking, setChecking] = useState(false)
   const [finished, setFinished] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    const id = lessonId ?? 'lesson-charla-vecinos'
-    api.getAssessment(id).then((a) => {
-      setAssessment(a)
-      setProgress(seedProgress(a))
-    }).catch(() => {})
-    api
-      .getTodayPath()
-      .then((t: TodayPath) => {
-        setLessonTitle(t.lesson.title)
-        setCefr(t.lesson.cefr_level)
-      })
-      .catch(() => {})
+    let cancelled = false
+    async function load() {
+      try {
+        const id = lessonId ?? (await api.getTodayPath()).lesson.id
+        const [a, lesson] = await Promise.all([api.getAssessment(id), api.getLesson(id)])
+        if (cancelled) return
+        setAssessment(a)
+        setProgress(emptyProgress(a))
+        setLessonTitle(lesson.title)
+        setCefr(lesson.cefr_level)
+      } catch {
+        if (!cancelled) setError('No se pudo cargar la prueba. Inténtalo de nuevo.')
+      }
+    }
+    void load()
+    return () => { cancelled = true }
   }, [lessonId])
 
-  const activeGroup = useMemo(
-    () => assessment?.groups.find((g) => g.type === 'listening') ?? null,
-    [assessment],
-  )
+  const activeGroup = assessment?.groups[groupIndex] ?? null
   const exercise = activeGroup?.exercises[exerciseIndex] ?? null
   const isLastExercise = activeGroup ? exerciseIndex === activeGroup.exercises.length - 1 : false
+  const isLastGroup = assessment ? groupIndex === assessment.groups.length - 1 : false
+  const answeredBefore = Object.values(progress).reduce((total, item) => total + item.answered, 0)
 
   const check = async () => {
     if (!exercise || selected === null) return
     setChecking(true)
+    setError('')
     try {
       const r = await api.submitAttempt(exercise.id, selected)
       setResult(r)
@@ -98,12 +95,13 @@ export function Assessment() {
         setProgress((p) => ({
           ...p,
           [activeGroup.type]: {
-            answered: p[activeGroup.type].answered + 1,
-            correct: p[activeGroup.type].correct + (r.correct ? 1 : 0),
+            answered: (p[activeGroup.type]?.answered ?? 0) + 1,
+            correct: (p[activeGroup.type]?.correct ?? 0) + (r.correct ? 1 : 0),
           },
         }))
       }
-      setAnsweredBefore((n) => n + 1)
+    } catch {
+      setError('No se pudo guardar la respuesta. Comprueba la conexión e inténtalo otra vez.')
     } finally {
       setChecking(false)
     }
@@ -112,25 +110,31 @@ export function Assessment() {
   const next = () => {
     setResult(null)
     setSelected(null)
-    if (isLastExercise) setFinished(true)
-    else setExerciseIndex((i) => i + 1)
+    if (!isLastExercise) {
+      setExerciseIndex((i) => i + 1)
+    } else if (!isLastGroup) {
+      setGroupIndex((i) => i + 1)
+      setExerciseIndex(0)
+    } else {
+      setFinished(true)
+    }
   }
 
   if (!assessment || !activeGroup) {
-    return <div className="p-10 text-ink-soft">Cargando la prueba…</div>
+    return <div className="p-10 text-ink-soft">{error || 'Cargando la prueba…'}</div>
   }
 
   return (
-    <div className="flex min-h-screen flex-col px-8 pb-5 pt-6">
+    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col px-4 pb-5 pt-4 sm:px-6 md:min-h-screen md:px-8 md:pt-6">
       {/* Header */}
-      <header className="flex items-start justify-between">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="font-display text-[30px] font-bold">Prueba de la lección</h1>
+          <h1 className="font-display text-2xl font-bold sm:text-[30px]">Prueba de la lección</h1>
           <p className="mt-0.5 text-[15px] font-semibold text-ink-soft">
             {lessonTitle} · {cefr}
           </p>
         </div>
-        <div className="flex gap-2.5">
+        <div className="flex flex-wrap gap-2.5">
           <Chip tone="sun" icon={<IconClock size={14} />} className="px-4 py-2 text-sm">
             {assessment.duration_minutes} min
           </Chip>
@@ -141,9 +145,9 @@ export function Assessment() {
       </header>
 
       {/* Main grid */}
-      <div className="mt-5 flex flex-1 gap-6">
+      <div className="mt-5 flex flex-1 flex-col gap-4 lg:flex-row lg:gap-6">
         {/* Question card */}
-        <section className="min-w-0 flex-1 rounded-3xl bg-paper p-6 shadow-soft">
+        <section className="min-w-0 flex-1 rounded-3xl bg-paper p-4 shadow-soft sm:p-6">
           {finished ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 py-10 text-center">
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-leaf text-paper">
@@ -151,8 +155,8 @@ export function Assessment() {
               </span>
               <h2 className="font-display text-[26px] font-bold">¡Prueba completada!</h2>
               <p className="max-w-md text-[15px] font-semibold text-ink-soft">
-                Comprendiste {progress.listening?.correct ?? 0} de {activeGroup.exercises.length} clips de audio.
-                Tu ruta de mañana ya se está ajustando a tus resultados.
+                Has respondido las {assessment.total_questions} preguntas. Tu ruta ya se ha ajustado
+                con tus resultados de vocabulario, gramática, escritura y comprensión.
               </p>
               <Link
                 to="/progreso"
@@ -165,23 +169,21 @@ export function Assessment() {
             exercise && (
               <>
                 <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-terracotta text-paper">
-                    <IconHeadphones size={21} />
+                  <span className={`flex h-11 w-11 items-center justify-center rounded-full text-paper ${GROUP_STYLE[activeGroup.type].num}`}>
+                    {activeGroup.type === 'listening' ? <IconHeadphones size={21} /> : (() => { const Icon = GROUP_STYLE[activeGroup.type].icon; return <Icon size={21} /> })()}
                   </span>
                   <div>
-                    <h2 className="font-display text-[21px] font-bold">Comprensión auditiva</h2>
+                    <h2 className="font-display text-[21px] font-bold">{activeGroup.label}</h2>
                     <p className="text-sm font-semibold text-ink-soft">{activeGroup.instructions}</p>
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <AudioPlayer src={exercise.audio_url} />
-                </div>
+                {exercise.audio_url && <div className="mt-4"><AudioPlayer src={exercise.audio_url} /></div>}
 
                 <p className="mt-5 text-[17px] font-bold">{exercise.prompt}</p>
 
                 <div className="mt-3 flex flex-col gap-2.5">
-                  {(exercise.options ?? []).map((opt) => {
+                  {exercise.options?.map((opt) => {
                     const isSelected = selected === opt
                     const showWrong = result && isSelected && !result.correct
                     return (
@@ -218,6 +220,26 @@ export function Assessment() {
                       </button>
                     )
                   })}
+                  {!exercise.options && (
+                    activeGroup.type === 'writing' ? (
+                      <textarea
+                        value={selected ?? ''}
+                        disabled={Boolean(result)}
+                        onChange={(event) => setSelected(event.target.value)}
+                        rows={5}
+                        placeholder="Escribe tu respuesta…"
+                        className="w-full resize-y rounded-2xl border-2 border-ink/10 bg-cream/40 px-4 py-3 font-semibold outline-none focus:border-river"
+                      />
+                    ) : (
+                      <input
+                        value={selected ?? ''}
+                        disabled={Boolean(result)}
+                        onChange={(event) => setSelected(event.target.value)}
+                        placeholder="Escribe tu respuesta…"
+                        className="w-full rounded-2xl border-2 border-ink/10 bg-cream/40 px-4 py-3 font-semibold outline-none focus:border-river"
+                      />
+                    )
+                  )}
                 </div>
 
                 {result && (
@@ -225,18 +247,19 @@ export function Assessment() {
                     {result.feedback}
                   </p>
                 )}
+                {error && <p className="mt-3 text-sm font-bold text-terracotta">{error}</p>}
 
                 {result ? (
                   <button
                     onClick={next}
                     className="mt-5 w-full rounded-2xl bg-terracotta py-3.5 text-[16px] font-bold text-paper shadow-card transition hover:bg-terracotta-dark"
                   >
-                    {isLastExercise ? 'Terminar la prueba' : 'Siguiente pregunta'}
+                    {isLastExercise && isLastGroup ? 'Terminar la prueba' : 'Siguiente pregunta'}
                   </button>
                 ) : (
                   <button
                     onClick={check}
-                    disabled={selected === null || checking}
+                    disabled={!selected?.trim() || checking}
                     className="mt-5 w-full rounded-2xl bg-terracotta py-3.5 text-[16px] font-bold text-paper shadow-card transition hover:bg-terracotta-dark disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     {checking ? 'Comprobando…' : 'Comprobar respuesta'}
@@ -248,7 +271,7 @@ export function Assessment() {
         </section>
 
         {/* Right panel */}
-        <aside className="flex w-[290px] shrink-0 flex-col gap-4">
+        <aside className="flex w-full shrink-0 flex-col gap-4 lg:w-[290px]">
           <section className="rounded-3xl bg-paper p-5 shadow-soft">
             <h3 className="font-display text-[19px] font-bold">Evaluación de hoy</h3>
             <div className="mt-3 flex flex-col divide-y divide-ink/6">
@@ -295,7 +318,7 @@ export function Assessment() {
       </div>
 
       {/* Exercise strip */}
-      <div className="mt-5 grid grid-cols-4 gap-4">
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 xl:gap-4">
         {assessment.groups.map((g, i) => {
           const style = GROUP_STYLE[g.type]
           const p = progress[g.type] ?? { answered: 0, correct: 0 }
@@ -334,7 +357,7 @@ export function Assessment() {
       </div>
 
       {/* Footer */}
-      <footer className="mt-5 flex items-center gap-3 text-[13px] font-semibold text-ink-soft">
+      <footer className="mt-5 flex flex-wrap items-center gap-2 text-[13px] font-semibold text-ink-soft sm:gap-3">
         <IconBook size={16} />
         <span>Fuente de la lección</span>
         <Chip tone="outline" icon={<IconBuilding size={13} />} className="bg-paper">
@@ -343,7 +366,7 @@ export function Assessment() {
         <Chip tone="outline" icon={<IconGlobe size={13} />} className="bg-paper">
           Contenido online revisado
         </Chip>
-        <span className="ml-auto flex items-center gap-2 text-leaf">
+        <span className="flex w-full items-center gap-2 text-leaf sm:ml-auto sm:w-auto">
           <span className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-leaf">
             <IconCheck size={11} />
           </span>

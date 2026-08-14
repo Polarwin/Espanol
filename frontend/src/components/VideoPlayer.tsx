@@ -21,10 +21,13 @@ function formatTime(s: number): string {
  * and simulates playback time.
  */
 export function VideoPlayer({ src, subtitle, fallbackDuration = 42 }: VideoPlayerProps) {
+  const playerRef = useRef<HTMLDivElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [playing, setPlaying] = useState(false)
   const [time, setTime] = useState(0)
   const [duration, setDuration] = useState(fallbackDuration)
+  const [muted, setMuted] = useState(false)
+  const [captions, setCaptions] = useState(true)
   const hasVideo = Boolean(src)
 
   // Simulated clock for the placeholder (no media available in mock mode).
@@ -62,12 +65,13 @@ export function VideoPlayer({ src, subtitle, fallbackDuration = 42 }: VideoPlaye
   const progress = duration > 0 ? time / duration : 0
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-navy-deep shadow-card">
+    <div ref={playerRef} className="overflow-hidden rounded-2xl bg-navy-deep shadow-card">
       <div className="relative aspect-video">
         {hasVideo ? (
           <video
             ref={videoRef}
             src={src}
+            muted={muted}
             className="absolute inset-0 h-full w-full object-cover"
             onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
             onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || fallbackDuration)}
@@ -89,11 +93,11 @@ export function VideoPlayer({ src, subtitle, fallbackDuration = 42 }: VideoPlaye
         )}
 
         {/* Spanish subtitle overlay */}
-        <div className="absolute inset-x-0 bottom-14 flex justify-center px-6">
+        {captions && <div className="absolute inset-x-0 bottom-14 flex justify-center px-6">
           <span className="rounded-lg bg-black/65 px-4 py-1.5 text-center text-[15px] font-semibold text-paper">
             {subtitle}
           </span>
-        </div>
+        </div>}
       </div>
 
       {/* Control bar */}
@@ -105,7 +109,7 @@ export function VideoPlayer({ src, subtitle, fallbackDuration = 42 }: VideoPlaye
         >
           {playing ? <IconPause size={16} /> : <IconPlay size={16} />}
         </button>
-        <IconVolume size={17} className="text-paper/80" />
+        <button onClick={() => setMuted((value) => !value)} aria-label={muted ? 'Activar sonido' : 'Silenciar'} className={`hidden sm:block ${muted ? 'text-terracotta' : 'text-paper/80'}`}><IconVolume size={17} /></button>
         <button
           className="group relative h-4 flex-1 cursor-pointer"
           aria-label="Barra de progreso"
@@ -124,11 +128,11 @@ export function VideoPlayer({ src, subtitle, fallbackDuration = 42 }: VideoPlaye
             style={{ left: `${progress * 100}%` }}
           />
         </button>
-        <span className="text-[11px] font-semibold tabular-nums text-paper/85">
+        <span className="hidden text-[11px] font-semibold tabular-nums text-paper/85 sm:inline">
           {formatTime(time)} / {formatTime(duration)}
         </span>
-        <span className="rounded border border-paper/50 px-1 text-[10px] font-bold text-paper/80">CC</span>
-        <IconExpand size={15} className="text-paper/80" />
+        <button onClick={() => setCaptions((value) => !value)} aria-pressed={captions} className={`rounded border px-1 text-[10px] font-bold ${captions ? 'border-paper/50 text-paper' : 'border-paper/20 text-paper/40'}`}>CC</button>
+        <button onClick={() => void playerRef.current?.requestFullscreen()} aria-label="Pantalla completa" className="text-paper/80"><IconExpand size={15} /></button>
       </div>
     </div>
   )

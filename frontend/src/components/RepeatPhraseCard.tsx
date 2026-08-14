@@ -14,18 +14,22 @@ export function RepeatPhraseCard({ phraseId }: RepeatPhraseCardProps) {
   const { state, error, blob, seconds, start, stop, reset } = useRecorder()
   const [evaluating, setEvaluating] = useState(false)
   const [result, setResult] = useState<PronunciationResult | null>(null)
+  const [evaluationError, setEvaluationError] = useState('')
 
   // Evaluate with the backend as soon as a recording is available.
   useEffect(() => {
     if (state !== 'recorded' || !blob) return
     let cancelled = false
     setEvaluating(true)
+    setEvaluationError('')
     api
       .evaluatePronunciation(phraseId, blob)
       .then((r) => {
         if (!cancelled) setResult(r)
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setEvaluationError('El análisis de pronunciación aún no está disponible. Puedes escuchar y repetir la frase.')
+      })
       .finally(() => {
         if (!cancelled) setEvaluating(false)
       })
@@ -37,8 +41,8 @@ export function RepeatPhraseCard({ phraseId }: RepeatPhraseCardProps) {
   const recording = state === 'recording'
 
   return (
-    <div className="rounded-3xl bg-paper px-6 py-5 shadow-soft">
-      <div className="flex items-center gap-6">
+    <div className="rounded-3xl bg-paper px-4 py-5 shadow-soft sm:px-6">
+      <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
         <button
           onClick={() => {
             if (recording) stop()
@@ -57,7 +61,7 @@ export function RepeatPhraseCard({ phraseId }: RepeatPhraseCardProps) {
         </button>
 
         <div className="min-w-0 flex-1 text-center">
-          <h2 className="font-display text-[26px] font-bold">Repite la frase</h2>
+          <h2 className="font-display text-2xl font-bold sm:text-[26px]">Repite la frase</h2>
           <div className="mt-2 flex justify-center">
             <Waveform
               bars={44}
@@ -75,7 +79,7 @@ export function RepeatPhraseCard({ phraseId }: RepeatPhraseCardProps) {
                 ? 'Escuchando tu pronunciación…'
                 : result
                   ? `Puntuación: ${result.score}/100 — ${result.feedback}`
-                  : (error ?? 'Habla cuando estés listo')}
+                  : (evaluationError || error || 'Habla cuando estés listo')}
           </p>
           {result && (
             <div className="mt-2 flex flex-wrap justify-center gap-1.5">

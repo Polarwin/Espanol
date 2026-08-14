@@ -7,26 +7,28 @@ import { IconChevronRight, IconSun } from '../components/icons'
 
 export function Inicio() {
   const [today, setToday] = useState<TodayPath | null>(null)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    api.getTodayPath().then(setToday).catch(() => {})
+    api.getTodayPath().then(setToday).catch(() => setError('No se pudo cargar tu sesión de hoy.'))
   }, [])
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-8 text-center">
+    <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-3xl flex-col items-center justify-center px-4 py-8 text-center sm:px-8">
       <span className="text-sun">
         <IconSun size={40} />
       </span>
-      <h1 className="mt-4 font-display text-[42px] font-bold leading-tight">
+      <h1 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-[42px]">
         ¡Hola, Maya! <br /> Qué bueno verte de nuevo.
       </h1>
       <p className="mt-3 max-w-lg text-[16px] font-semibold text-ink-soft">
         Tu sesión de hoy dura unos 12 minutos: mira un clip, repite las frases y deja que tu ruta se
         ajuste sola.
       </p>
+      {error && <p className="mt-5 font-bold text-terracotta">{error}</p>}
 
       {today && (
-        <div className="mt-8 w-full max-w-md rounded-3xl bg-paper p-6 text-left shadow-card">
+        <div className="mt-8 w-full max-w-md rounded-3xl bg-paper p-5 text-left shadow-card sm:p-6">
           <div className="flex items-center justify-between">
             <Chip tone="river">{today.lesson.cefr_level}</Chip>
             <span className="text-[13px] font-semibold text-ink-soft">

@@ -24,7 +24,7 @@ const topicIcons: Record<string, typeof IconSuitcase> = {
 export function FeedbackPanel({ data }: { data: TodayPath }) {
   const { feedback, pronunciation_tip: pron, grammar_tip: gram, next } = data
   return (
-    <aside className="flex w-[300px] shrink-0 flex-col gap-4">
+    <aside className="flex w-full shrink-0 flex-col gap-4 xl:w-[300px]">
       <section className="rounded-3xl bg-paper p-5 shadow-soft">
         <h3 className="font-display text-[19px] font-bold">Tu feedback</h3>
         <div className="mt-4 flex flex-col gap-3.5">
@@ -74,6 +74,12 @@ export function FeedbackPanel({ data }: { data: TodayPath }) {
           </div>
           <button
             aria-label="Escuchar ejemplo"
+            onClick={() => {
+              window.speechSynthesis.cancel()
+              const utterance = new SpeechSynthesisUtterance(pron.phrase)
+              utterance.lang = 'es-ES'
+              window.speechSynthesis.speak(utterance)
+            }}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-river-soft text-river transition hover:bg-river hover:text-paper"
           >
             <IconSpeaker size={17} />

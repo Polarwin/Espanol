@@ -1,6 +1,7 @@
 """Seeded content endpoints and the /api/path/today core-loop shape."""
 
 from fastapi.testclient import TestClient
+from backend.app.seed.load import sync_missing_lessons
 
 
 def test_lessons_list_published(client: TestClient) -> None:
@@ -23,6 +24,10 @@ def test_lessons_list_published(client: TestClient) -> None:
     assert first["topics"] == ["planes", "vida diaria"]
     assert first["source"] == "local"
     assert first["duration_seconds"] == 180
+
+
+def test_sync_missing_lessons_is_non_destructive(db_session) -> None:
+    assert sync_missing_lessons(db_session, media=False) == 0
 
 
 def test_lesson_detail(client: TestClient) -> None:

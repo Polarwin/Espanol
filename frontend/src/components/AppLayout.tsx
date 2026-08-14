@@ -1,11 +1,17 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
+import { setToken } from '../api/client'
 import { Sidebar } from './Sidebar'
 
 export function AppLayout({ dark = false }: { dark?: boolean }) {
+  const navigate = useNavigate()
   return (
     <div className="flex min-h-screen bg-cream">
       <Sidebar dark={dark} />
-      <main className="min-w-0 flex-1">
+      <div className={`fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b px-4 md:hidden ${dark ? 'border-white/10 bg-navy text-paper' : 'border-ink/8 bg-paper text-ink'}`}>
+        <span className="font-display text-xl font-bold">¡Vamos<span className="text-terracotta">!</span></span>
+        <button onClick={() => { setToken(null); navigate('/entrar') }} className="text-sm font-bold text-ink-soft">Salir</button>
+      </div>
+      <main className="min-w-0 flex-1 pb-20 pt-14 md:pb-0 md:pt-0">
         <Outlet />
       </main>
     </div>

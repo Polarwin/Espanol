@@ -21,8 +21,9 @@ function Logo({ dark }: { dark?: boolean }) {
 export function Sidebar({ dark = false }: { dark?: boolean }) {
   const navigate = useNavigate()
   return (
+    <>
     <aside
-      className={`flex w-[190px] shrink-0 flex-col px-5 py-6 ${
+      className={`hidden w-[190px] shrink-0 flex-col px-5 py-6 md:flex ${
         dark ? 'bg-navy text-paper' : 'border-r border-ink/8 bg-paper'
       }`}
     >
@@ -61,5 +62,14 @@ export function Sidebar({ dark = false }: { dark?: boolean }) {
         </div>
       )}
     </aside>
+    <nav className={`fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t px-1 pb-[max(.35rem,env(safe-area-inset-bottom))] pt-1.5 md:hidden ${dark ? 'border-white/10 bg-navy' : 'border-ink/10 bg-paper'}`}>
+      {NAV.map((item) => (
+        <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => `flex min-w-0 flex-col items-center gap-0.5 rounded-lg py-1 text-[10px] font-bold ${isActive ? 'text-terracotta' : dark ? 'text-paper/65' : 'text-ink-soft'}`}>
+          <item.icon size={20} />
+          <span className="truncate">{item.label}</span>
+        </NavLink>
+      ))}
+    </nav>
+    </>
   )
 }

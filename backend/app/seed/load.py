@@ -10,7 +10,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from sqlalchemy import delete, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from ..config import settings
@@ -78,60 +78,41 @@ def seed_db(db: Session, media: bool = True) -> None:
     """
     wipe(db, remove_media=media)
     for lesson_data in LESSONS:
-        audio_indexes = [i for i, ex in enumerate(lesson_data["exercises"]) if ex.get("audio")]
-        if media:
-            generate_media(lesson_data["slug"], audio_indexes)
-        video_path, audio_paths = _media_paths(lesson_data["slug"], audio_indexes)
-        total_seconds = int(lesson_data["segments"][-1]["end"])
-
-        lesson = Lesson(
-            title=lesson_data["title"],
-            cefr_level=lesson_data["cefr_level"],
-            topics=lesson_data["topics"],
-            source=lesson_data["source"],
-            status=lesson_data["status"],
-            duration_seconds=total_seconds,
-            video_path=video_path,
-            grammar_tip=lesson_data["grammar_tip"],
-        )
-        db.add(lesson)
-        db.flush()
-
-        for index, seg in enumerate(lesson_data["segments"]):
-            segment = Segment(
-                lesson_id=lesson.id,
-                index=index,
-                start_seconds=seg["start"],
-                end_seconds=seg["end"],
-                transcript=seg["transcript"],
-            )
-            db.add(segment)
-            db.flush()
-            for phrase in seg["phrases"]:
-                db.add(
-                    Phrase(
-                        segment_id=segment.id,
-                        text=phrase["text"],
-                        translation=phrase["translation"],
-                        tip=phrase["tip"],
-                    )
-                )
-
-        for order_index, ex in enumerate(lesson_data["exercises"]):
-            db.add(
-                Exercise(
-                    lesson_id=lesson.id,
-                    type=ex["type"],
-                    instructions=ex["instructions"],
-                    prompt=ex["prompt"],
-                    audio_path=audio_paths.get(order_index),
-                    options=ex["options"],
-                    expected_answer=ex["expected_answer"],
-                    skill_weights=ex["skill_weights"],
-                    order_index=order_index,
-                )
-            )
+        _insert_lesson(db, lesson_data, media)
     db.commit()
+
+
+def sync_missing_lessons(db: Session, media: bool = True) -> int:
+    """Add catalog lessons that are absent without changing attempts or user state."""
+    existing = set(db.scalars(select(Lesson.title)).all())
+    missing = [lesson for lesson in LESSONS if lesson["title"] not in existing]
+    for lesson_data in missing:
+        _insert_lesson(db, lesson_data, media)
+    db.commit()
+    return len(missing)
+
+
+def _insert_lesson(db: Session, lesson_data: dict, media: bool) -> None:
+    audio_indexes = [i for i, ex in enumerate(lesson_data["exercises"]) if ex.get("audio")]
+    if media:
+        generate_media(lesson_data["slug"], audio_indexes)
+    video_path, audio_paths = _media_paths(lesson_data["slug"], audio_indexes)
+    lesson = Lesson(
+        title=lesson_data["title"], cefr_level=lesson_data["cefr_level"],
+        topics=lesson_data["topics"], source=lesson_data["source"], status=lesson_data["status"],
+        duration_seconds=int(lesson_data["segments"][-1]["end"]), video_path=video_path,
+        grammar_tip=lesson_data["grammar_tip"],
+    )
+    db.add(lesson)
+    db.flush()
+    for index, seg in enumerate(lesson_data["segments"]):
+        segment = Segment(lesson_id=lesson.id, index=index, start_seconds=seg["start"], end_seconds=seg["end"], transcript=seg["transcript"])
+        db.add(segment)
+        db.flush()
+        for phrase in seg["phrases"]:
+            db.add(Phrase(segment_id=segment.id, text=phrase["text"], translation=phrase["translation"], tip=phrase["tip"]))
+    for order_index, ex in enumerate(lesson_data["exercises"]):
+        db.add(Exercise(lesson_id=lesson.id, type=ex["type"], instructions=ex["instructions"], prompt=ex["prompt"], audio_path=audio_paths.get(order_index), options=ex["options"], expected_answer=ex["expected_answer"], skill_weights=ex["skill_weights"], order_index=order_index))
 
 
 def load() -> None:
