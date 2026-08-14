@@ -28,6 +28,20 @@ Start the backend from the project root on port `8011`:
 ./bin/uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8011
 ```
 
+## Android app
+
+The Capacitor Android wrapper lives in `frontend/android` and loads the public
+HTTPS deployment, so lesson and media updates are available without publishing
+a new APK. Build it with an Android SDK and Java 21:
+
+```bash
+cd frontend
+npm run android:apk
+```
+
+The current debug-signed installer is published at
+`https://espanol.justinrecipes.duckdns.org/media/downloads/vamos-espanol.apk`.
+
 Start the frontend in another terminal:
 
 ```bash

@@ -29,6 +29,10 @@ dist/
 dist-ssr/
 *.local
 
+# Local Android toolchain and generated packages
+.android-sdk/
+*.apk
+
 # Logs and editor/OS files
 *.log
 .DS_Store
