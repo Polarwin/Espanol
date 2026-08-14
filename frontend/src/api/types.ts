@@ -4,8 +4,13 @@ export interface User {
   id: number
   email: string
   display_name: string
+  nickname: string | null
   interests: string[]
   placement_completed: boolean
+}
+
+export function preferredName(user: User): string {
+  return user.nickname?.trim() || user.display_name
 }
 
 export interface PlacementQuestion {

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from ..db import get_db
 from ..models import User
-from ..schemas import AuthResponse, LoginRequest, RegisterRequest, UserOut
+from ..schemas import AuthResponse, LoginRequest, ProfileUpdate, RegisterRequest, UserOut
 from ..services.progress import init_skill_progress
 from ..services.security import create_token, get_current_user, hash_password, verify_password
 from ..services.streak import get_or_create_streak
@@ -50,4 +50,17 @@ me_router = APIRouter(tags=["auth"])
 
 @me_router.get("/api/me", response_model=UserOut)
 def me(user: User = Depends(get_current_user)) -> UserOut:
+    return UserOut.model_validate(user)
+
+
+@me_router.patch("/api/me", response_model=UserOut)
+def update_me(
+    payload: ProfileUpdate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> UserOut:
+    user.display_name = payload.display_name
+    user.nickname = payload.nickname
+    db.commit()
+    db.refresh(user)
     return UserOut.model_validate(user)

@@ -16,6 +16,7 @@ import type {
   FriendGroup,
   PlacementQuestion,
   PlacementResult,
+  User,
 } from './types'
 
 export const MOCK_FALLBACK_ENABLED = import.meta.env.VITE_ENABLE_MOCKS === 'true'
@@ -99,6 +100,17 @@ async function withMock<T>(call: () => Promise<T>, fallback: () => Promise<T>): 
 }
 
 export const api = {
+  getMe(): Promise<User> {
+    return request<User>('/api/me')
+  },
+
+  updateProfile(displayName: string, nickname: string | null): Promise<User> {
+    return request<User>('/api/me', {
+      method: 'PATCH',
+      body: JSON.stringify({ display_name: displayName, nickname }),
+    })
+  },
+
   register(email: string, password: string, displayName: string, interests: string[]): Promise<AuthResponse> {
     return withMock(
       () =>

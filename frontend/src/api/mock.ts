@@ -19,6 +19,7 @@ const MOCK_USER = {
   id: 1,
   email: 'maya@example.com',
   display_name: 'Maya',
+  nickname: 'May',
   interests: ['viajes', 'vida diaria', 'cultura'],
   placement_completed: true,
 }

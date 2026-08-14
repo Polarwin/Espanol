@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
-import type { Progress, TodayPath } from '../api/types'
+import type { Progress, TodayPath, User } from '../api/types'
+import { preferredName } from '../api/types'
 import { Chip } from '../components/Chip'
 import { FeedbackPanel } from '../components/FeedbackPanel'
 import { IconChart, IconFlame, IconSun } from '../components/icons'
@@ -19,11 +20,13 @@ function greeting(): string {
 export function MiRuta() {
   const [today, setToday] = useState<TodayPath | null>(null)
   const [progress, setProgress] = useState<Progress | null>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
     api.getTodayPath().then(setToday).catch(() => setError('No se pudo cargar tu ruta.'))
     api.getProgress().then(setProgress).catch(() => {})
+    api.getMe().then(setUser).catch(() => {})
   }, [])
 
   if (!today) {
@@ -39,7 +42,7 @@ export function MiRuta() {
             <IconSun size={26} />
           </span>
           <h1 className="font-display text-[22px] font-bold">
-            {greeting()}, Maya
+            {greeting()}, {user ? preferredName(user) : 'amigo'}
           </h1>
         </div>
         <div className="flex items-center gap-3">
@@ -52,7 +55,7 @@ export function MiRuta() {
           </span>
           <div className="ml-auto hidden items-center gap-1.5 sm:flex" aria-label="Perfil">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[linear-gradient(140deg,#c78d54,#7a4a2b)] font-display text-sm font-bold text-paper">
-              M
+              {(user ? preferredName(user) : 'A').charAt(0).toUpperCase()}
             </span>
           </div>
         </div>

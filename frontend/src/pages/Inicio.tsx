@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
-import type { TodayPath } from '../api/types'
+import type { TodayPath, User } from '../api/types'
+import { preferredName } from '../api/types'
 import { Chip } from '../components/Chip'
 import { IconChevronRight, IconSun } from '../components/icons'
 
 export function Inicio() {
   const [today, setToday] = useState<TodayPath | null>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
     api.getTodayPath().then(setToday).catch(() => setError('No se pudo cargar tu sesión de hoy.'))
+    api.getMe().then(setUser).catch(() => {})
   }, [])
 
   return (
@@ -19,7 +22,7 @@ export function Inicio() {
         <IconSun size={40} />
       </span>
       <h1 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-[42px]">
-        ¡Hola, Maya! <br /> Qué bueno verte de nuevo.
+        ¡Hola, {user ? preferredName(user) : 'amigo'}! <br /> Qué bueno verte de nuevo.
       </h1>
       <p className="mt-3 max-w-lg text-[16px] font-semibold text-ink-soft">
         Tu sesión de hoy dura unos 12 minutos: mira un clip, repite las frases y deja que tu ruta se

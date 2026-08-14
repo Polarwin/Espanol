@@ -15,6 +15,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(unique=True, index=True)
     password_hash: Mapped[str]
     display_name: Mapped[str]
+    nickname: Mapped[str | None] = mapped_column(nullable=True)
     interests: Mapped[list[str]] = mapped_column(JSON, default=list)
     placement_completed: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)

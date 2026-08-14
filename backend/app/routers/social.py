@@ -18,12 +18,16 @@ def _member(db: Session, group_id: int, user_id: int) -> GroupMember | None:
     return db.scalar(select(GroupMember).where(GroupMember.group_id == group_id, GroupMember.user_id == user_id))
 
 
+def _preferred_name(user: User) -> str:
+    return user.nickname or user.display_name
+
+
 def _out(db: Session, group: Group) -> dict:
     members = db.scalars(select(GroupMember).where(GroupMember.group_id == group.id)).all()
     notes = db.scalars(select(Encouragement).where(Encouragement.group_id == group.id).order_by(Encouragement.created_at.desc()).limit(20)).all()
     return {"id": group.id, "name": group.name, "invite_code": group.invite_code,
-            "members": [{"user_id": m.user_id, "display_name": db.get(User, m.user_id).display_name, "role": m.role} for m in members],
-            "encouragements": [{"id": n.id, "from_display_name": db.get(User, n.from_user_id).display_name, "to_user_id": n.to_user_id, "message": n.message, "created_at": n.created_at} for n in notes]}
+            "members": [{"user_id": m.user_id, "display_name": _preferred_name(db.get(User, m.user_id)), "role": m.role} for m in members],
+            "encouragements": [{"id": n.id, "from_display_name": _preferred_name(db.get(User, n.from_user_id)), "to_user_id": n.to_user_id, "message": n.message, "created_at": n.created_at} for n in notes]}
 
 
 @router.get("", response_model=list[GroupOut])

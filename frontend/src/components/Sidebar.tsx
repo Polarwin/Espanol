@@ -52,7 +52,8 @@ export function Sidebar({ dark = false }: { dark?: boolean }) {
           </NavLink>
         ))}
       </nav>
-      <button onClick={() => { setToken(null); navigate('/entrar') }} className={`mt-auto rounded-xl px-3 py-2 text-left text-sm font-bold ${dark ? 'text-paper/70' : 'text-ink-soft'}`}>Cerrar sesión</button>
+      <NavLink to="/perfil" className={`mt-auto rounded-xl px-3 py-2 text-left text-sm font-bold ${dark ? 'text-paper/80 hover:bg-white/8' : 'text-terracotta hover:bg-blush'}`}>Mi nombre y perfil</NavLink>
+      <button onClick={() => { setToken(null); navigate('/entrar') }} className={`rounded-xl px-3 py-2 text-left text-sm font-bold ${dark ? 'text-paper/70' : 'text-ink-soft'}`}>Cerrar sesión</button>
       {dark && (
         <div className="mt-4 overflow-hidden rounded-2xl">
           <div className="h-44 bg-[linear-gradient(160deg,#3d2b1f_0%,#7a4a2b_45%,#c78d54_75%,#2b1d14_100%)]">

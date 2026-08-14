@@ -11,6 +11,7 @@ import { Auth } from './pages/Auth'
 import { Placement } from './pages/Placement'
 import { Lecciones } from './pages/Lecciones'
 import { Leccion } from './pages/Leccion'
+import { Perfil } from './pages/Perfil'
 
 function RequireAuth() {
   return getToken() ? <Outlet /> : <Navigate to="/entrar" replace />
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="/practica" element={<Practica />} />
             <Route path="/progreso" element={<Progreso />} />
             <Route path="/grupos" element={<Grupos />} />
+            <Route path="/perfil" element={<Perfil />} />
           </Route>
           <Route element={<AppLayout dark />}>
             <Route path="/prueba" element={<Assessment />} />

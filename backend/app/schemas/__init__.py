@@ -1,6 +1,6 @@
 """Pydantic schemas mirroring the frontend API contract."""
 
-from .auth import AuthResponse, LoginRequest, RegisterRequest, UserOut
+from .auth import AuthResponse, LoginRequest, ProfileUpdate, RegisterRequest, UserOut
 from .exercises import AttemptRequest, AttemptResponse, SkillUpdate
 from .lessons import (
     Assessment,
@@ -38,6 +38,7 @@ __all__ = [
     "PathToday",
     "PhraseOut",
     "PronunciationTip",
+    "ProfileUpdate",
     "RegisterRequest",
     "SegmentOut",
     "SkillUpdate",
