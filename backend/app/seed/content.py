@@ -8,6 +8,7 @@ loader (load.py) can insert it idempotently.
 from typing import Any
 from .curriculum_content import CURRICULUM_LESSONS
 from .video_content import VIDEO_LESSONS
+from .vocabulary_content import enrich_lessons
 
 LESSONS: list[dict[str, Any]] = [
     {
@@ -1036,3 +1037,4 @@ LESSONS: list[dict[str, Any]] = [
 
 LESSONS.extend(VIDEO_LESSONS)
 LESSONS.extend(CURRICULUM_LESSONS)
+enrich_lessons(LESSONS)

@@ -132,8 +132,50 @@ def sync_missing_lessons(db: Session, media: bool = True) -> int:
     missing = [lesson for lesson in LESSONS if lesson["title"] not in existing]
     for lesson_data in missing:
         _insert_lesson(db, lesson_data, media)
+    sync_lesson_enrichment(db)
     db.commit()
     return len(missing)
+
+
+def sync_lesson_enrichment(db: Session) -> tuple[int, int]:
+    """Add newly authored phrases/exercises without replacing learner history."""
+    phrases_added = 0
+    exercises_added = 0
+    for lesson_data in LESSONS:
+        lesson = db.scalar(select(Lesson).where(Lesson.title == lesson_data["title"]))
+        if lesson is None:
+            continue
+        segments = {segment.index: segment for segment in lesson.segments}
+        for index, authored in enumerate(lesson_data["segments"]):
+            segment = segments.get(index)
+            if segment is None:
+                continue
+            existing = {phrase.text for phrase in segment.phrases}
+            for phrase in authored["phrases"]:
+                if phrase["text"] not in existing:
+                    db.add(Phrase(segment_id=segment.id, **phrase))
+                    existing.add(phrase["text"])
+                    phrases_added += 1
+
+        existing_exercises = {(exercise.type, exercise.prompt) for exercise in lesson.exercises}
+        next_order = max((exercise.order_index for exercise in lesson.exercises), default=-1) + 1
+        for authored in lesson_data["exercises"]:
+            key = (authored["type"], authored["prompt"])
+            if key in existing_exercises:
+                continue
+            db.add(
+                Exercise(
+                    lesson_id=lesson.id,
+                    type=authored["type"], instructions=authored["instructions"],
+                    prompt=authored["prompt"], audio_path=None, options=authored["options"],
+                    expected_answer=authored["expected_answer"],
+                    skill_weights=authored["skill_weights"], order_index=next_order,
+                )
+            )
+            next_order += 1
+            existing_exercises.add(key)
+            exercises_added += 1
+    return phrases_added, exercises_added
 
 
 def _insert_lesson(db: Session, lesson_data: dict, media: bool) -> None:

@@ -84,8 +84,8 @@ def test_lesson_assessment_groups(client: TestClient) -> None:
         "writing",
         "listening",
     ]
-    assert assessment["total_questions"] == 8
-    assert assessment["duration_minutes"] == 12
+    assert assessment["total_questions"] == 11
+    assert assessment["duration_minutes"] == 17
 
     listening = assessment["groups"][3]
     question = next(
