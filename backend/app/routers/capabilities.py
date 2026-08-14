@@ -26,12 +26,13 @@ class SpeechExampleRequest(BaseModel):
     phrase: str = Field(min_length=1, max_length=300)
 
 
-def _conversation_reply(transcript: str, turn: int) -> tuple[str, str, list[str]]:
+def _conversation_reply(transcript: str, turn: int, name: str = "") -> tuple[str, str, list[str]]:
     text = transcript.lower()
+    address = f", {name}" if name else ""
     if turn == 0:
         if any(word in text for word in ("bien", "genial", "fenomenal")):
-            return "¡Me alegro! Yo también estoy muy bien. ¿Qué planes tienes para este fin de semana?", "Muy natural. También puedes decir «Estoy bastante bien». ", ["Voy a descansar.", "Voy a salir con amigos."]
-        return "Espero que estés bien. ¿Qué planes tienes para este fin de semana?", "Para responder al saludo: «Estoy bien, gracias». ", ["Estoy bien, gracias.", "Muy bien, ¿y tú?"]
+            return f"¡Me alegro{address}! Yo también estoy muy bien. ¿Qué planes tienes para este fin de semana?", "Muy natural. También puedes decir «Estoy bastante bien». ", ["Voy a descansar.", "Voy a salir con amigos."]
+        return f"Espero que estés bien{address}. ¿Qué planes tienes para este fin de semana?", "Para responder al saludo: «Estoy bien, gracias». ", ["Estoy bien, gracias.", "Muy bien, ¿y tú?"]
     if turn == 1:
         if any(word in text for word in ("amigo", "vecino", "familia", "quedar")):
             return "¡Qué buen plan! ¿Dónde vais a quedar?", "Bien dicho. Usa «voy a quedar con…» para hablar de personas.", ["Vamos a quedar en un café.", "Quedamos en el centro."]
@@ -40,7 +41,7 @@ def _conversation_reply(transcript: str, turn: int) -> tuple[str, str, list[str]
         return "Interesante. Cuéntame un poco más: ¿con quién vas a hacerlo?", "Prueba la estructura «Voy a + infinitivo». ", ["Voy a visitar Madrid.", "Voy a cocinar con mi familia."]
     if turn == 2:
         return "Perfecto. Si quieres, podemos tomar algo juntos el domingo. ¿Te apetece?", "Muy bien: has mantenido la conversación. ", ["Sí, me apetece mucho.", "Lo siento, el domingo no puedo."]
-    return "¡Estupendo! Entonces hablamos luego. Que tengas un buen fin de semana.", "Conversación completada. Has saludado, explicado planes y respondido a una invitación.", ["¡Igualmente!", "Hasta luego."]
+    return f"¡Estupendo{address}! Entonces hablamos luego. Que tengas un buen fin de semana.", "Conversación completada. Has saludado, explicado planes y respondido a una invitación.", ["¡Igualmente!", "Hasta luego."]
 
 
 def _source(name: str, path: Path) -> dict:
@@ -137,7 +138,9 @@ async def conversation_respond(
     finally:
         if temp_path is not None:
             temp_path.unlink(missing_ok=True)
-    reply, feedback, suggestions = _conversation_reply(transcript, turn)
+    reply, feedback, suggestions = _conversation_reply(
+        transcript, turn, (user.nickname or user.display_name).strip()
+    )
     apply_skill_deltas(db, user, {"fluency": 1.5, "listening": 0.5, "pronunciation": 0.5})
     increment_goal(db, user, "sentences_spoken")
     record_activity(db, user)

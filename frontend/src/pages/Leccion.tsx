@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client'
-import type { LessonDetail } from '../api/types'
+import type { LessonDetail, User } from '../api/types'
+import { preferredName } from '../api/types'
 import { Chip } from '../components/Chip'
 import { VideoPlayer } from '../components/VideoPlayer'
 
@@ -9,10 +10,12 @@ export function Leccion() {
   const { lessonId } = useParams()
   const [lesson, setLesson] = useState<LessonDetail | null>(null)
   const [error, setError] = useState('')
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
     if (!lessonId) return
     api.getLesson(lessonId).then(setLesson).catch(() => setError('No se pudo cargar la lección.'))
+    api.getMe().then(setUser).catch(() => {})
   }, [lessonId])
 
   if (!lesson) return <div className="p-6 font-semibold text-ink-soft">{error || 'Cargando la lección…'}</div>
@@ -22,7 +25,7 @@ export function Leccion() {
     <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8 sm:py-8">
       <div className="flex flex-wrap items-center gap-2"><Chip tone={lesson.cefr_level === 'A1' ? 'leaf' : 'river'}>{lesson.cefr_level}</Chip>{lesson.topics.map((topic) => <Chip key={topic} tone="cream">{topic}</Chip>)}</div>
       <h1 className="mt-3 font-display text-3xl font-bold sm:text-4xl">{lesson.title}</h1>
-      <p className="mt-1 font-semibold text-ink-soft">Escucha el diálogo y sigue los subtítulos.</p>
+      <p className="mt-1 font-semibold text-ink-soft">{user ? `${preferredName(user)}, escucha el diálogo y sigue los subtítulos. Después podrás practicarlo con tu propia voz.` : 'Escucha el diálogo y sigue los subtítulos. Después podrás practicarlo con tu propia voz.'}</p>
       <div className="mt-5"><VideoPlayer src={lesson.video_url} subtitle={firstLine} /></div>
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         {lesson.segments.map((segment, index) => (
@@ -33,7 +36,7 @@ export function Leccion() {
           </section>
         ))}
       </div>
-      <Link to={`/leccion/${lesson.id}/prueba`} className="mt-6 block w-full rounded-2xl bg-terracotta px-6 py-3.5 text-center font-bold text-paper shadow-card sm:ml-auto sm:w-fit">Hacer la prueba</Link>
+      <Link to={`/leccion/${lesson.id}/prueba`} className="mt-6 block w-full rounded-2xl bg-terracotta px-6 py-3.5 text-center font-bold text-paper shadow-card sm:ml-auto sm:w-fit">{user ? `${preferredName(user)}, empezar la práctica` : 'Empezar la práctica'}</Link>
     </div>
   )
 }
