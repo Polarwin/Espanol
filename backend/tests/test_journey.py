@@ -10,12 +10,12 @@ def test_complete_learner_journey(client: TestClient, auth_headers: dict) -> Non
 
     today = client.get("/api/path/today", headers=auth_headers)
     assert today.status_code == 200
-    assert today.json()["lesson"]["title"] == "Primeras presentaciones"
+    assert today.json()["lesson"]["cefr_level"] == "A1"
     lesson_id = today.json()["lesson"]["id"]
 
     detail = client.get(f"/api/lessons/{lesson_id}", headers=auth_headers)
     assert detail.status_code == 200
-    assert len(detail.json()["segments"]) == 2
+    assert len(detail.json()["segments"]) >= 2
 
     assessment = client.get(
         f"/api/lessons/{lesson_id}/assessment", headers=auth_headers

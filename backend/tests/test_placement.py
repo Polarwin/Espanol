@@ -14,12 +14,12 @@ def test_questions_do_not_expose_answers(client: TestClient, auth_headers: dict)
     assert all("answer" not in question for question in response.json())
 
 
-def test_skip_starts_at_a1_introductions(client: TestClient, auth_headers: dict, db_session: Session) -> None:
+def test_skip_starts_at_random_a1_lesson(client: TestClient, auth_headers: dict, db_session: Session) -> None:
     response = client.post("/api/placement/skip", headers=auth_headers)
     assert response.status_code == 200
     assert response.json()["overall_level"] == "A1"
     path = client.get("/api/path/today", headers=auth_headers).json()
-    assert path["lesson"]["title"] == "Primeras presentaciones"
+    assert path["lesson"]["cefr_level"] == "A1"
     state = db_session.scalar(select(UserState))
     assert state is not None
 
@@ -35,3 +35,16 @@ def test_strong_answers_place_at_b1(client: TestClient, auth_headers: dict, db_s
     assert response.json()["overall_level"] == "B1"
     levels = db_session.scalars(select(SkillProgress.level)).all()
     assert "B1" in levels
+    path = client.get("/api/path/today", headers=auth_headers).json()
+    assert path["lesson"]["cefr_level"] == "A2"  # closest available level below B1
+
+
+def test_questions_are_returned_in_randomized_order(
+    client: TestClient, auth_headers: dict, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        "backend.app.routers.placement.random.sample",
+        lambda questions, k: list(reversed(questions)),
+    )
+    response = client.get("/api/placement", headers=auth_headers)
+    assert response.json()[0]["id"] == "g3"

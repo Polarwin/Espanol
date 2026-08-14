@@ -1,5 +1,7 @@
 """Short A1-B1 placement test used before the adaptive path begins."""
 
+import random
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -26,20 +28,33 @@ QUESTIONS = [
 
 @router.get("", response_model=list[PlacementQuestion])
 def questions(_: User = Depends(get_current_user)) -> list[dict]:
-    return [{key: value for key, value in question.items() if key not in {"answer", "level"}} for question in QUESTIONS]
+    shuffled = random.sample(QUESTIONS, k=len(QUESTIONS))
+    return [{key: value for key, value in question.items() if key not in {"answer", "level"}} for question in shuffled]
 
 
-def _finish(db: Session, user: User, levels: dict[str, str], scores: dict[str, float]) -> None:
+def _random_lesson_for_level(db: Session, level: str) -> Lesson | None:
+    """Choose a random published lesson at the level, falling back downward."""
+    order = ["A1", "A2", "B1", "B2", "C1", "C2"]
+    target_index = order.index(level) if level in order else 0
+    for candidate_level in reversed(order[: target_index + 1]):
+        lessons = db.scalars(
+            select(Lesson).where(
+                Lesson.cefr_level == candidate_level, Lesson.status == "published"
+            )
+        ).all()
+        if lessons:
+            return random.choice(lessons)
+    return None
+
+
+def _finish(db: Session, user: User, overall: str, levels: dict[str, str], scores: dict[str, float]) -> None:
     rows = db.scalars(select(SkillProgress).where(SkillProgress.user_id == user.id)).all()
     for row in rows:
         row.level = levels.get(row.skill, levels.get("grammar", "A1"))
         row.score = scores.get(row.skill, scores.get("grammar", 50.0))
     user.placement_completed = True
     state = db.get(UserState, user.id)
-    if levels.get("grammar") == "A1":
-        lesson = db.scalar(select(Lesson).where(Lesson.title == "Primeras presentaciones", Lesson.status == "published"))
-    else:
-        lesson = adaptive.choose_next_lesson(db, user)
+    lesson = _random_lesson_for_level(db, overall) or adaptive.choose_next_lesson(db, user)
     if state is None:
         state = UserState(user_id=user.id)
         db.add(state)
@@ -67,7 +82,7 @@ def submit(payload: PlacementSubmission, user: User = Depends(get_current_user),
     for skill in ("pronunciation", "fluency", "writing"):
         levels[skill] = overall
         scores[skill] = 70.0 if overall == "B1" else 55.0 if overall == "A2" else 40.0
-    _finish(db, user, levels, scores)
+    _finish(db, user, overall, levels, scores)
     return PlacementResult(overall_level=overall, skill_levels=levels, correct=correct, total=len(QUESTIONS))
 
 
@@ -75,5 +90,5 @@ def submit(payload: PlacementSubmission, user: User = Depends(get_current_user),
 def skip(user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> PlacementResult:
     levels = {skill: "A1" for skill in ("vocabulary", "grammar", "listening", "pronunciation", "fluency", "writing")}
     scores = {skill: 35.0 for skill in levels}
-    _finish(db, user, levels, scores)
+    _finish(db, user, "A1", levels, scores)
     return PlacementResult(overall_level="A1", skill_levels=levels, correct=0, total=len(QUESTIONS))
