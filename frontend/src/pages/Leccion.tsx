@@ -4,6 +4,7 @@ import { api } from '../api/client'
 import type { LessonDetail, User } from '../api/types'
 import { preferredName } from '../api/types'
 import { Chip } from '../components/Chip'
+import { IconMic } from '../components/icons'
 import { VideoPlayer } from '../components/VideoPlayer'
 
 export function Leccion() {
@@ -62,6 +63,7 @@ export function Leccion() {
       </div>
       <div className="mt-5 rounded-2xl bg-sun-soft p-4"><p className="text-xs font-extrabold uppercase tracking-wide text-terracotta-dark">Reto personal</p><p className="mt-1 font-bold">{lesson.closing_challenge}</p></div>
       <div className="mt-6 grid gap-3 sm:ml-auto sm:flex sm:w-fit"><Link to={`/leccion/${lesson.id}/conversacion`} className="rounded-2xl border-2 border-terracotta px-6 py-3 text-center font-bold text-terracotta">Conversar sobre esta unidad</Link><Link to={`/leccion/${lesson.id}/prueba`} className="rounded-2xl bg-terracotta px-6 py-3.5 text-center font-bold text-paper shadow-card">{user ? `${preferredName(user)}, empezar la práctica` : 'Empezar la práctica'}</Link></div>
+      <Link to={`/leccion/${lesson.id}/conversacion`} className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-40 flex items-center gap-2 rounded-full bg-terracotta px-4 py-3 font-extrabold text-paper shadow-card md:hidden" aria-label="Conversar sobre esta unidad"><IconMic size={20} />Conversar</Link>
     </div>
   )
 }
