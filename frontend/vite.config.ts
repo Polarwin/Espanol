@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     host: '0.0.0.0',
+    allowedHosts: ['espanol.justinrecipes.duckdns.org'],
     proxy: {
       '/api': 'http://localhost:8011',
       '/media': 'http://localhost:8011',
