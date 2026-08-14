@@ -61,6 +61,18 @@ def test_lesson_detail(client: TestClient, auth_headers: dict) -> None:
     assert detail["closing_challenge"]
 
 
+def test_select_lesson_remembers_catalog_choice(client: TestClient, auth_headers: dict) -> None:
+    lessons = client.get("/api/lessons").json()
+    selected = lessons[-1]
+    response = client.post(f"/api/lessons/{selected['id']}/select", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.json() == {"selected": True, "lesson_id": selected["id"]}
+    today = client.get("/api/path/today", headers=auth_headers).json()
+    assert today["lesson"]["id"] == selected["id"]
+    assert today["step"] == "mira"
+    assert today["clip_index"] == 0
+
+
 def test_lesson_assessment_groups(client: TestClient) -> None:
     lesson_id = client.get("/api/lessons").json()[0]["id"]
     response = client.get(f"/api/lessons/{lesson_id}/assessment")

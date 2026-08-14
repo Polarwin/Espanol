@@ -153,6 +153,10 @@ export const api = {
     return withMock(() => request<LessonDetail>(`/api/lessons/${id}?variation=${variation}`), () => mock.mockLesson(id))
   },
 
+  selectLesson(id: string): Promise<{ selected: boolean; lesson_id: number }> {
+    return request(`/api/lessons/${id}/select`, { method: 'POST' })
+  },
+
   getAssessment(lessonId: string): Promise<LessonAssessment> {
     return withMock(
       () => request<LessonAssessment>(`/api/lessons/${lessonId}/assessment`),

@@ -14,6 +14,7 @@ export function Leccion() {
 
   useEffect(() => {
     if (!lessonId) return
+    api.selectLesson(lessonId).catch(() => {})
     api.getLesson(lessonId, Date.now() % 1_000_000).then(setLesson).catch(() => setError('No se pudo cargar la lección.'))
     api.getMe().then(setUser).catch(() => {})
   }, [lessonId])

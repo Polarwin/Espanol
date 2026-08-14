@@ -20,6 +20,7 @@ from ..schemas import (
 )
 from ..routers.path import media_url
 from ..services.goals import increment_goal
+from ..services.loop import get_or_create_state
 from ..services.security import get_current_user
 from ..services.streak import record_activity
 
@@ -53,6 +54,25 @@ def list_lessons(db: Session = Depends(get_db)) -> list[LessonListItem]:
         )
         for lesson in lessons
     ]
+
+
+@router.post("/{lesson_id}/select")
+def select_lesson(
+    lesson_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Remember a catalog choice as this learner's current unit."""
+    lesson = db.get(Lesson, lesson_id)
+    if lesson is None or lesson.status != "published":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
+    state = get_or_create_state(db, user, lesson)
+    if state.current_lesson_id != lesson.id:
+        state.current_lesson_id = lesson.id
+        state.current_step = "mira"
+        state.current_clip_index = 0
+    db.commit()
+    return {"selected": True, "lesson_id": lesson.id}
 
 
 @router.get("/{lesson_id}", response_model=LessonDetail)
