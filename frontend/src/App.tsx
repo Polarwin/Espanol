@@ -9,6 +9,8 @@ import { Practica } from './pages/Practica'
 import { Progreso } from './pages/Progreso'
 import { Auth } from './pages/Auth'
 import { Placement } from './pages/Placement'
+import { Lecciones } from './pages/Lecciones'
+import { Leccion } from './pages/Leccion'
 
 function RequireAuth() {
   return getToken() ? <Outlet /> : <Navigate to="/entrar" replace />
@@ -29,6 +31,8 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route path="/" element={<Inicio />} />
             <Route path="/ruta" element={<MiRuta />} />
+            <Route path="/lecciones" element={<Lecciones />} />
+            <Route path="/leccion/:lessonId" element={<Leccion />} />
             <Route path="/practica" element={<Practica />} />
             <Route path="/progreso" element={<Progreso />} />
             <Route path="/grupos" element={<Grupos />} />

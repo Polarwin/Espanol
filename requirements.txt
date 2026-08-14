@@ -6,6 +6,7 @@ pydantic-settings==2.15.0
 PyJWT==2.13.0
 passlib==1.7.4
 python-multipart==0.0.32
+gTTS==2.5.4
 
 # Development and tests
 pytest==9.1.1

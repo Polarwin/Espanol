@@ -107,6 +107,9 @@ export interface LessonDetail {
   title: string
   cefr_level: string
   topics: string[]
+  source: string
+  duration_seconds: number
+  video_url: string
   segments: LessonSegment[]
 }
 

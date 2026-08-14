@@ -1,4 +1,4 @@
-"""Seed command: populate the DB with the hand-made lessons and placeholder media.
+"""Seed command: populate the DB with lessons and matching spoken Spanish media.
 
 Idempotent: wipes existing lesson content (and attempts referencing it) and
 re-seeds. Run from the project root:
@@ -9,6 +9,9 @@ re-seeds. Run from the project root:
 import shutil
 import subprocess
 from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from gtts import gTTS
 
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
@@ -17,10 +20,6 @@ from ..config import settings
 from ..db import SessionLocal
 from ..models import Attempt, Exercise, Lesson, Phrase, Segment, UserState
 from .content import LESSONS
-
-VIDEO_SECONDS = 12
-AUDIO_SECONDS = 5
-
 
 def _run_ffmpeg(args: list[str], out: Path) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -36,23 +35,56 @@ def _media_paths(slug: str, audio_indexes: list[int]) -> tuple[str, dict[int, st
     return video_path, audio_paths
 
 
-def generate_media(slug: str, audio_indexes: list[int]) -> None:
-    """Create a placeholder video and per-exercise tone audio under content/seed/."""
-    base = Path(settings.content_dir) / "seed" / slug
-    _run_ffmpeg(
-        [
-            "-f", "lavfi", "-i", f"color=c=0xf5e6d3:s=640x360:d={VIDEO_SECONDS}",
-            "-f", "lavfi", "-i", f"sine=frequency=440:duration={VIDEO_SECONDS}",
-            "-shortest", "-pix_fmt", "yuv420p",
-        ],
-        base / "video.mp4",
-    )
-    for order_index in audio_indexes:
-        freq = 440 + 40 * (order_index % 5)
+def generate_media(lesson_data: dict) -> None:
+    """Create spoken Spanish lesson media matching the authored seed content."""
+    base = Path(settings.content_dir) / "seed" / lesson_data["slug"]
+    base.mkdir(parents=True, exist_ok=True)
+    lines = [line["es"] for segment in lesson_data["segments"] for line in segment["transcript"]]
+    with TemporaryDirectory() as temp_dir:
+        narration = Path(temp_dir) / "narration.mp3"
+        subtitles = Path(temp_dir) / "subtitles.srt"
+        gTTS(" ".join(lines), lang="es", tld="es", slow=False).save(str(narration))
+        duration = _media_duration(narration)
+        subtitles.write_text(_srt(lines, duration), encoding="utf-8")
         _run_ffmpeg(
-            ["-f", "lavfi", "-i", f"sine=frequency={freq}:duration={AUDIO_SECONDS}"],
-            base / f"exercise-{order_index}.mp3",
+            [
+                "-f", "lavfi", "-i", f"color=c=0x16324f:s=960x540:d={duration:.2f}",
+                "-i", str(narration),
+                "-vf", f"subtitles={subtitles}:force_style='FontName=DejaVu Sans,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H80000000,BorderStyle=3,Outline=1,MarginV=42'",
+                "-shortest", "-c:v", "libx264", "-c:a", "aac", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+            ],
+            base / "video.mp4",
         )
+    for order_index, exercise in enumerate(lesson_data["exercises"]):
+        if exercise.get("audio"):
+            spoken = exercise["expected_answer"]
+            gTTS(spoken, lang="es", tld="es", slow=exercise["type"] == "pronunciation").save(
+                str(base / f"exercise-{order_index}.mp3")
+            )
+
+
+def _media_duration(path: Path) -> float:
+    result = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", str(path)],
+        check=True, capture_output=True, text=True,
+    )
+    return max(float(result.stdout.strip()), 1.0)
+
+
+def _srt(lines: list[str], duration: float) -> str:
+    per_line = duration / max(len(lines), 1)
+    blocks = []
+    for index, line in enumerate(lines, start=1):
+        blocks.append(f"{index}\n{_srt_time((index - 1) * per_line)} --> {_srt_time(index * per_line)}\n{line}\n")
+    return "\n".join(blocks)
+
+
+def _srt_time(seconds: float) -> str:
+    milliseconds = round(seconds * 1000)
+    hours, remainder = divmod(milliseconds, 3_600_000)
+    minutes, remainder = divmod(remainder, 60_000)
+    secs, millis = divmod(remainder, 1000)
+    return f"{hours:02}:{minutes:02}:{secs:02},{millis:03}"
 
 
 def wipe(db: Session, remove_media: bool = True) -> None:
@@ -95,7 +127,7 @@ def sync_missing_lessons(db: Session, media: bool = True) -> int:
 def _insert_lesson(db: Session, lesson_data: dict, media: bool) -> None:
     audio_indexes = [i for i, ex in enumerate(lesson_data["exercises"]) if ex.get("audio")]
     if media:
-        generate_media(lesson_data["slug"], audio_indexes)
+        generate_media(lesson_data)
     video_path, audio_paths = _media_paths(lesson_data["slug"], audio_indexes)
     lesson = Lesson(
         title=lesson_data["title"], cefr_level=lesson_data["cefr_level"],

@@ -120,6 +120,9 @@ export async function mockLesson(id: string): Promise<LessonDetail> {
     title: 'Charla con vecinos',
     cefr_level: 'A2',
     topics: ['vida diaria', 'planes', 'conversación'],
+    source: 'Biblioteca local',
+    duration_seconds: 336,
+    video_url: '/media/lessons/charla-vecinos/video.mp4',
     segments,
   }
 }

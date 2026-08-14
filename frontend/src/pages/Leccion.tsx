@@ -1,0 +1,39 @@
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { api } from '../api/client'
+import type { LessonDetail } from '../api/types'
+import { Chip } from '../components/Chip'
+import { VideoPlayer } from '../components/VideoPlayer'
+
+export function Leccion() {
+  const { lessonId } = useParams()
+  const [lesson, setLesson] = useState<LessonDetail | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!lessonId) return
+    api.getLesson(lessonId).then(setLesson).catch(() => setError('No se pudo cargar la lección.'))
+  }, [lessonId])
+
+  if (!lesson) return <div className="p-6 font-semibold text-ink-soft">{error || 'Cargando la lección…'}</div>
+  const firstLine = lesson.segments[0]?.transcript[0]?.es ?? lesson.title
+
+  return (
+    <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8 sm:py-8">
+      <div className="flex flex-wrap items-center gap-2"><Chip tone={lesson.cefr_level === 'A1' ? 'leaf' : 'river'}>{lesson.cefr_level}</Chip>{lesson.topics.map((topic) => <Chip key={topic} tone="cream">{topic}</Chip>)}</div>
+      <h1 className="mt-3 font-display text-3xl font-bold sm:text-4xl">{lesson.title}</h1>
+      <p className="mt-1 font-semibold text-ink-soft">Escucha el diálogo y sigue los subtítulos.</p>
+      <div className="mt-5"><VideoPlayer src={lesson.video_url} subtitle={firstLine} /></div>
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        {lesson.segments.map((segment, index) => (
+          <section key={segment.id} className="rounded-3xl bg-paper p-5 shadow-soft">
+            <h2 className="font-display text-xl font-bold">Parte {index + 1}</h2>
+            <div className="mt-3 space-y-3">{segment.transcript.map((line, lineIndex) => <div key={`${segment.id}-${lineIndex}`}><p className="font-bold">{line.es}</p><p className="text-sm font-semibold text-ink-soft">{line.en}</p></div>)}</div>
+            <div className="mt-4 border-t border-ink/8 pt-3"><p className="text-xs font-bold uppercase tracking-wide text-ink-soft">Frases clave</p><div className="mt-2 flex flex-wrap gap-2">{segment.phrases.map((phrase) => <span key={phrase.id} title={phrase.translation} className="rounded-full bg-sun-soft px-3 py-1 text-sm font-bold text-terracotta-dark">{phrase.text}</span>)}</div></div>
+          </section>
+        ))}
+      </div>
+      <Link to={`/leccion/${lesson.id}/prueba`} className="mt-6 block w-full rounded-2xl bg-terracotta px-6 py-3.5 text-center font-bold text-paper shadow-card sm:ml-auto sm:w-fit">Hacer la prueba</Link>
+    </div>
+  )
+}

@@ -1,10 +1,11 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { setToken } from '../api/client'
-import { IconChart, IconChat, IconHome, IconRoute, IconSparkle } from './icons'
+import { IconBook, IconChart, IconChat, IconHome, IconRoute, IconSparkle } from './icons'
 
 const NAV = [
   { to: '/', label: 'Inicio', icon: IconHome, end: true },
   { to: '/ruta', label: 'Mi ruta', icon: IconRoute, end: false },
+  { to: '/lecciones', label: 'Lecciones', icon: IconBook, end: false },
   { to: '/practica', label: 'Práctica', icon: IconChat, end: false },
   { to: '/progreso', label: 'Progreso', icon: IconChart, end: false },
   { to: '/grupos', label: 'Grupos', icon: IconSparkle, end: false },
@@ -62,7 +63,7 @@ export function Sidebar({ dark = false }: { dark?: boolean }) {
         </div>
       )}
     </aside>
-    <nav className={`fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t px-1 pb-[max(.35rem,env(safe-area-inset-bottom))] pt-1.5 md:hidden ${dark ? 'border-white/10 bg-navy' : 'border-ink/10 bg-paper'}`}>
+    <nav className={`fixed inset-x-0 bottom-0 z-50 grid grid-cols-6 border-t px-1 pb-[max(.35rem,env(safe-area-inset-bottom))] pt-1.5 md:hidden ${dark ? 'border-white/10 bg-navy' : 'border-ink/10 bg-paper'}`}>
       {NAV.map((item) => (
         <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => `flex min-w-0 flex-col items-center gap-0.5 rounded-lg py-1 text-[10px] font-bold ${isActive ? 'text-terracotta' : dark ? 'text-paper/65' : 'text-ink-soft'}`}>
           <item.icon size={20} />
