@@ -187,6 +187,8 @@ export interface Progress {
   skills: SkillScore[]
   streak: Streak
   weekly_goal: WeeklyGoal
+  lessons_completed_total: number
+  completed_lesson_ids: number[]
 }
 
 export interface WeeklyRecap {

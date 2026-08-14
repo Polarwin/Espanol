@@ -47,7 +47,7 @@ export function Progreso() {
     <div className="mx-auto max-w-4xl px-4 pb-8 pt-5 sm:px-8 sm:pb-10 sm:pt-7">
       <h1 className="font-display text-[30px] font-bold">Tu progreso</h1>
       <p className="mt-1 text-[15px] font-semibold text-ink-soft">
-        Cada habilidad avanza a su propio ritmo.
+        Cada habilidad avanza a su propio ritmo. Tienes {progress.lessons_completed_total} {progress.lessons_completed_total === 1 ? 'lección guardada' : 'lecciones guardadas'}.
       </p>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

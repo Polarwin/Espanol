@@ -1,7 +1,7 @@
 """SQLAlchemy models for ¡Vamos!."""
 
 from .content import Exercise, Lesson, Phrase, Segment
-from .progress import SKILLS, Attempt, ReviewItem, SkillProgress, Streak, WeeklyGoal, WeeklyRecap
+from .progress import SKILLS, Attempt, LessonCompletion, ReviewItem, SkillProgress, Streak, WeeklyGoal, WeeklyRecap
 from .social import Encouragement, Group, GroupGoal, GroupMember
 from .user import User, UserState
 
@@ -14,6 +14,7 @@ __all__ = [
     "GroupGoal",
     "GroupMember",
     "Lesson",
+    "LessonCompletion",
     "Phrase",
     "ReviewItem",
     "Segment",

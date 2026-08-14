@@ -3,11 +3,11 @@
 import math
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..models import Exercise, Lesson
+from ..models import Exercise, Lesson, LessonCompletion, User
 from ..schemas import (
     Assessment,
     AssessmentExercise,
@@ -19,6 +19,9 @@ from ..schemas import (
     TranscriptLine,
 )
 from ..routers.path import media_url
+from ..services.goals import increment_goal
+from ..services.security import get_current_user
+from ..services.streak import record_activity
 
 router = APIRouter(prefix="/api/lessons", tags=["lessons"])
 
@@ -81,6 +84,35 @@ def lesson_detail(lesson_id: int, db: Session = Depends(get_db)) -> LessonDetail
             for segment in lesson.segments
         ],
     )
+
+
+@router.post("/{lesson_id}/complete")
+def complete_lesson(
+    lesson_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict[str, int | bool]:
+    lesson = db.get(Lesson, lesson_id)
+    if lesson is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
+    completion = db.scalar(
+        select(LessonCompletion).where(
+            LessonCompletion.user_id == user.id,
+            LessonCompletion.lesson_id == lesson_id,
+        )
+    )
+    created = completion is None
+    if created:
+        db.add(LessonCompletion(user_id=user.id, lesson_id=lesson_id))
+        increment_goal(db, user, "lessons")
+        record_activity(db, user)
+    db.commit()
+    total = db.scalar(
+        select(func.count()).select_from(LessonCompletion).where(
+            LessonCompletion.user_id == user.id
+        )
+    ) or 0
+    return {"saved": True, "new_completion": created, "lessons_completed_total": total}
 
 
 @router.get("/{lesson_id}/assessment", response_model=Assessment)

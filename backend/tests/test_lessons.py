@@ -102,3 +102,20 @@ def test_path_today_shape_for_new_user(client: TestClient, auth_headers: dict) -
     assert body["next"]["label"].startswith("Siguiente: ")
     assert isinstance(body["next"]["description"], str)
     assert isinstance(body["next"]["topics"], list)
+
+
+def test_lesson_completion_is_saved_once(client: TestClient, auth_headers: dict) -> None:
+    lesson_id = client.get("/api/lessons").json()[0]["id"]
+
+    first = client.post(f"/api/lessons/{lesson_id}/complete", headers=auth_headers)
+    second = client.post(f"/api/lessons/{lesson_id}/complete", headers=auth_headers)
+
+    assert first.status_code == second.status_code == 200
+    assert first.json()["new_completion"] is True
+    assert second.json()["new_completion"] is False
+    assert second.json()["lessons_completed_total"] == 1
+
+    progress = client.get("/api/progress", headers=auth_headers).json()
+    assert progress["lessons_completed_total"] == 1
+    assert progress["completed_lesson_ids"] == [lesson_id]
+    assert progress["weekly_goal"]["current"] == 1

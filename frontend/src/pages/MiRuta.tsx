@@ -70,7 +70,7 @@ export function MiRuta() {
               <VideoPlayer src={today.video_url} subtitle={today.subtitle.es} />
             </div>
             <p className="mt-2.5 text-[13px] font-semibold text-ink-soft">
-              Clip {today.clip_index} de {today.total_clips} · 00:42
+              Clip {today.clip_index + 1} de {today.total_clips} · 00:42
             </p>
           </section>
 

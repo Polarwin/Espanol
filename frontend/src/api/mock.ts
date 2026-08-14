@@ -260,6 +260,8 @@ export async function mockProgress(): Promise<Progress> {
     ],
     streak: { days: 12, recovery_days_left: 2 },
     weekly_goal: { label: 'Completa 3 lecciones', current: 2, target: 3 },
+    lessons_completed_total: 5,
+    completed_lesson_ids: [1, 2, 3, 4, 5],
   }
 }
 

@@ -24,6 +24,8 @@ class ProgressOut(BaseModel):
     skills: list[SkillScoreOut]
     streak: StreakOut
     weekly_goal: GoalOut
+    lessons_completed_total: int
+    completed_lesson_ids: list[int]
 
 
 class ImprovementOut(BaseModel):

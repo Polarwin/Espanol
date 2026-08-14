@@ -50,6 +50,7 @@ export function Assessment() {
   const [assessment, setAssessment] = useState<LessonAssessment | null>(null)
   const [lessonTitle, setLessonTitle] = useState('Charla con vecinos')
   const [cefr, setCefr] = useState('A2')
+  const [currentLessonId, setCurrentLessonId] = useState('')
   const [progress, setProgress] = useState<Record<string, GroupProgress>>({})
   const [groupIndex, setGroupIndex] = useState(0)
   const [exerciseIndex, setExerciseIndex] = useState(0)
@@ -67,6 +68,7 @@ export function Assessment() {
         const [a, lesson] = await Promise.all([api.getAssessment(id), api.getLesson(id)])
         if (cancelled) return
         setAssessment(a)
+        setCurrentLessonId(String(id))
         setProgress(emptyProgress(a))
         setLessonTitle(lesson.title)
         setCefr(lesson.cefr_level)
@@ -106,7 +108,7 @@ export function Assessment() {
     }
   }
 
-  const next = () => {
+  const next = async () => {
     setResult(null)
     setSelected(null)
     if (!isLastExercise) {
@@ -120,7 +122,15 @@ export function Assessment() {
         setGroupIndex(nextGroup)
         setExerciseIndex(progress[assessment!.groups[nextGroup].type]?.answered ?? 0)
       } else {
-        setFinished(true)
+        setChecking(true)
+        try {
+          await api.completeLesson(currentLessonId)
+          setFinished(true)
+        } catch {
+          setError('Tus respuestas están guardadas, pero no pudimos marcar la lección como completada. Inténtalo otra vez.')
+        } finally {
+          setChecking(false)
+        }
       }
     }
   }
@@ -273,10 +283,11 @@ export function Assessment() {
 
                 {result ? (
                   <button
-                    onClick={next}
+                    onClick={() => void next()}
+                    disabled={checking}
                     className="mt-5 w-full rounded-2xl bg-terracotta py-3.5 text-[16px] font-bold text-paper shadow-card transition hover:bg-terracotta-dark"
                   >
-                    {answeredBefore >= assessment.total_questions ? 'Terminar la prueba' : 'Siguiente pregunta'}
+                    {checking ? 'Guardando tu progreso…' : answeredBefore >= assessment.total_questions ? 'Terminar y guardar' : 'Siguiente pregunta'}
                   </button>
                 ) : (
                   <button

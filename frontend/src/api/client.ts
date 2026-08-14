@@ -152,6 +152,10 @@ export const api = {
     )
   },
 
+  completeLesson(lessonId: string): Promise<{ saved: boolean; new_completion: boolean; lessons_completed_total: number }> {
+    return request(`/api/lessons/${lessonId}/complete`, { method: 'POST' })
+  },
+
   submitAttempt(exerciseId: string, answer: string): Promise<AttemptResult> {
     return withMock(
       () =>

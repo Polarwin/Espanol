@@ -35,6 +35,16 @@ class Attempt(Base):
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
 
+class LessonCompletion(Base):
+    __tablename__ = "lesson_completions"
+    __table_args__ = (UniqueConstraint("user_id", "lesson_id", name="uq_lesson_completion"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id"), index=True)
+    completed_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+
 class ReviewItem(Base):
     """SM-2 spaced-repetition item. Scheduling logic arrives in a later phase."""
 

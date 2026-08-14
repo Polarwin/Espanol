@@ -35,7 +35,7 @@ export function Inicio() {
           <div className="flex items-center justify-between">
             <Chip tone="river">{today.lesson.cefr_level}</Chip>
             <span className="text-[13px] font-semibold text-ink-soft">
-              Clip {today.clip_index} de {today.total_clips}
+              Clip {today.clip_index + 1} de {today.total_clips}
             </span>
           </div>
           <h2 className="mt-3 font-display text-[24px] font-bold">{today.lesson.title}</h2>
