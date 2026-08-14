@@ -13,6 +13,7 @@ from starlette.concurrency import run_in_threadpool
 from ..config import settings
 from ..db import get_db
 from ..models import Lesson, User, UserState
+from ..seed.conversation_content import CONVERSATION_SCENARIOS
 from ..seed.vocabulary_content import VOCABULARY_BANKS
 from ..services.goals import increment_goal
 from ..services.progress import apply_skill_deltas
@@ -44,21 +45,24 @@ def _conversation_profile(lesson: Lesson, name: str) -> dict:
     vocabulary = [text for text, _ in VOCABULARY_BANKS.get(lesson.title, [])]
     topics = [topic for topic in lesson.topics if "vitamina" not in topic.lower()]
     topic = topics[0] if topics else lesson.title.lower()
-    questions = [
-        line["es"]
-        for segment in lesson.segments
-        for line in segment.transcript
-        if "?" in line.get("es", "")
-    ]
-    opening = questions[0] if questions else f"¿Qué experiencia tienes con {topic}?"
+    scenario = CONVERSATION_SCENARIOS.get(lesson.title) or {
+        "role": "compañera",
+        "scene": f"Hablar de {topic}",
+        "opening": f"¿Qué experiencia tienes con {topic}?",
+        "prompts": [f"Cuéntame un ejemplo sobre {topic}.", "¿Por qué es importante para ti?", "¿Qué recomendarías?"],
+        "closing": "Gracias por compartir tus ideas.",
+    }
     return {
         "lesson_id": lesson.id,
         "title": lesson.title,
         "cefr_level": lesson.cefr_level,
         "topic": topic,
-        "goal": f"Mantén cuatro turnos sobre {topic} y usa vocabulario de la unidad.",
-        "greeting": f"¡Hola, {name}! Soy Ana. Hoy vamos a hablar de {topic}. {opening}",
+        "scene": scenario["scene"],
+        "goal": f"Representa la situación «{scenario['scene']}» durante cuatro turnos.",
+        "greeting": f"¡Hola, {name}! Soy Ana, tu {scenario['role']}. {scenario['opening']}",
         "vocabulary": vocabulary[:4],
+        "prompts": scenario["prompts"],
+        "closing": scenario["closing"],
     }
 
 
@@ -66,14 +70,13 @@ def _conversation_reply(transcript: str, turn: int, name: str, profile: dict) ->
     address = f", {name}" if name else ""
     words = profile["vocabulary"] or [profile["topic"]]
     if turn == 0:
-        return f"Gracias por contármelo{address}. ¿Puedes darme un ejemplo usando «{words[0]}»?", "Tu respuesta se entiende. Ahora conecta tu idea con una palabra de la unidad.", [f"Para mí, {words[0]}...", f"Un ejemplo de {words[0]} es..."]
+        return profile["prompts"][0], "Tu respuesta se entiende. Intenta incorporar una palabra de la unidad.", [f"Para mí, {words[0]}...", f"Un ejemplo de {words[0]} es..."]
     if turn == 1:
         word = words[min(1, len(words) - 1)]
-        return f"Interesante. Imagina ahora una situación real con «{word}». ¿Qué dirías?", "Bien: has ampliado tu respuesta. Intenta añadir dónde, cuándo o por qué.", [f"En mi caso, {word}...", "Esto es importante porque..."]
+        return profile["prompts"][1], "Bien: has ampliado tu respuesta. Intenta añadir dónde, cuándo o por qué.", [f"En mi caso, {word}...", "Esto es importante porque..."]
     if turn == 2:
-        question = "¿Qué recomendarías a otra persona y por qué?" if profile["cefr_level"] != "A1" else f"¿Qué te gusta más de {profile['topic']} y por qué?"
-        return question, "Muy bien: ya mantienes la conversación y justificas tus ideas.", ["Lo recomiendo porque...", "Me gusta más... porque..."]
-    return f"¡Muy buena conversación{address}! Has usado el tema de «{profile['title']}» en una situación personal.", "Conversación completada. Has respondido, dado ejemplos y explicado una opinión.", ["Quiero practicar otra vez.", "Voy a usar estas palabras esta semana."]
+        return profile["prompts"][2], "Muy bien: ya mantienes la conversación y justificas tus ideas.", ["Lo recomiendo porque...", "En esta situación, yo..."]
+    return f"{profile['closing']} ¡Muy bien{address}!", "Conversación completada. Has representado una situación real de la unidad.", ["Quiero practicar otra vez.", "Voy a usar estas palabras esta semana."]
 
 
 def _source(name: str, path: Path) -> dict:

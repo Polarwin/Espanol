@@ -193,6 +193,7 @@ export interface ConversationSetup {
   title: string
   cefr_level: string
   topic: string
+  scene: string
   goal: string
   greeting: string
   vocabulary: string[]

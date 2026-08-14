@@ -84,6 +84,10 @@ def test_every_unit_has_its_own_conversation(
     assert {setup["lesson_id"] for setup in setups} == {lesson["id"] for lesson in lessons}
     assert all(setup["title"] and setup["goal"] and setup["greeting"] for setup in setups)
     assert all(len(setup["vocabulary"]) == 4 for setup in setups)
+    assert len({setup["scene"] for setup in setups}) == 30
+    vitamina_a2 = [setup for setup in setups if setup["title"].startswith("Vitamina A2 · U")]
+    assert vitamina_a2[0]["greeting"] != vitamina_a2[1]["greeting"]
+    assert vitamina_a2[0]["prompts"] != vitamina_a2[1]["prompts"]
 
     monkeypatch.setattr(capabilities, "transcribe_spanish", lambda _path, _prompt: "Me gusta la mesa junto a la ventana")
     first = setups[0]
@@ -94,4 +98,4 @@ def test_every_unit_has_its_own_conversation(
         headers=auth_headers,
     )
     assert response.status_code == 200
-    assert first["vocabulary"][0] in response.json()["reply"]
+    assert response.json()["reply"] == first["prompts"][0]
