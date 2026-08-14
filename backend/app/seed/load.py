@@ -40,21 +40,33 @@ def generate_media(lesson_data: dict) -> None:
     base = Path(settings.content_dir) / "seed" / lesson_data["slug"]
     base.mkdir(parents=True, exist_ok=True)
     lines = [line["es"] for segment in lesson_data["segments"] for line in segment["transcript"]]
-    with TemporaryDirectory() as temp_dir:
-        narration = Path(temp_dir) / "narration.mp3"
-        subtitles = Path(temp_dir) / "subtitles.srt"
-        gTTS(" ".join(lines), lang="es", tld="es", slow=False).save(str(narration))
-        duration = _media_duration(narration)
-        subtitles.write_text(_srt(lines, duration), encoding="utf-8")
+    source_video = lesson_data.get("source_video")
+    if source_video:
         _run_ffmpeg(
             [
-                "-f", "lavfi", "-i", f"color=c=0x16324f:s=960x540:d={duration:.2f}",
-                "-i", str(narration),
-                "-vf", f"subtitles={subtitles}:force_style='FontName=DejaVu Sans,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H80000000,BorderStyle=3,Outline=1,MarginV=42'",
-                "-shortest", "-c:v", "libx264", "-c:a", "aac", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+                "-ss", str(source_video["start"]), "-t", str(source_video["end"] - source_video["start"]),
+                "-i", source_video["path"], "-map", "0:v:0", "-map", "0:a:0",
+                "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
+                "-c:a", "aac", "-b:a", "128k", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
             ],
             base / "video.mp4",
         )
+    else:
+        with TemporaryDirectory() as temp_dir:
+            narration = Path(temp_dir) / "narration.mp3"
+            subtitles = Path(temp_dir) / "subtitles.srt"
+            gTTS(" ".join(lines), lang="es", tld="es", slow=False).save(str(narration))
+            duration = _media_duration(narration)
+            subtitles.write_text(_srt(lines, duration), encoding="utf-8")
+            _run_ffmpeg(
+                [
+                    "-f", "lavfi", "-i", f"color=c=0x16324f:s=960x540:d={duration:.2f}",
+                    "-i", str(narration),
+                    "-vf", f"subtitles={subtitles}:force_style='FontName=DejaVu Sans,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H80000000,BorderStyle=3,Outline=1,MarginV=42'",
+                    "-shortest", "-c:v", "libx264", "-c:a", "aac", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+                ],
+                base / "video.mp4",
+            )
     for order_index, exercise in enumerate(lesson_data["exercises"]):
         if exercise.get("audio"):
             spoken = exercise["expected_answer"]

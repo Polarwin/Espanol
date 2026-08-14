@@ -21,7 +21,8 @@ def test_complete_learner_journey(client: TestClient, auth_headers: dict) -> Non
         f"/api/lessons/{lesson_id}/assessment", headers=auth_headers
     ).json()
     exercises = [exercise for group in assessment["groups"] for exercise in group["exercises"]]
-    assert len(exercises) == assessment["total_questions"] == 6
+    assert len(exercises) == assessment["total_questions"]
+    assert len(exercises) >= 4
 
     # A randomized lesson can contain two, three, or four clips. Each clip
     # advances through mira -> escucha -> habla before the review step.

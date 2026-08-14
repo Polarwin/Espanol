@@ -36,7 +36,7 @@ def test_strong_answers_place_at_b1(client: TestClient, auth_headers: dict, db_s
     levels = db_session.scalars(select(SkillProgress.level)).all()
     assert "B1" in levels
     path = client.get("/api/path/today", headers=auth_headers).json()
-    assert path["lesson"]["cefr_level"] == "A2"  # closest available level below B1
+    assert path["lesson"]["cefr_level"] == "B1"
 
 
 def test_questions_are_returned_in_randomized_order(

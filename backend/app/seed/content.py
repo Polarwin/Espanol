@@ -6,6 +6,7 @@ loader (load.py) can insert it idempotently.
 """
 
 from typing import Any
+from .video_content import VIDEO_LESSONS
 
 LESSONS: list[dict[str, Any]] = [
     {
@@ -1031,3 +1032,5 @@ LESSONS: list[dict[str, Any]] = [
         ],
     },
 ]
+
+LESSONS.extend(VIDEO_LESSONS)
