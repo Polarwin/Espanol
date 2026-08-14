@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
 
 export type RecorderState = 'idle' | 'recording' | 'recorded' | 'error'
 
@@ -61,8 +62,13 @@ export function useRecorder(): UseRecorderResult {
       setSeconds(0)
       timerRef.current = window.setInterval(() => setSeconds((s) => s + 1), 1000)
       setState('recording')
-    } catch {
-      setError('No pudimos acceder al micrófono. Revisa los permisos.')
+    } catch (reason) {
+      const denied = reason instanceof DOMException && reason.name === 'NotAllowedError'
+      setError(denied
+        ? Capacitor.isNativePlatform()
+          ? 'Permiso de micrófono denegado. Actívalo en Ajustes → Apps → ¡Vamos! Español → Permisos.'
+          : 'Permiso de micrófono bloqueado. Pulsa el candado junto a la dirección web y permite el micrófono.'
+        : 'No pudimos acceder al micrófono. Revisa que esté disponible.')
       setState('error')
       cleanup()
     }
