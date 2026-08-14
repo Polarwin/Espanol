@@ -12,6 +12,7 @@ import type {
   Progress,
   PronunciationResult,
   ConversationResult,
+  ConversationSetup,
   TodayPath,
   WeeklyRecap,
   FriendGroup,
@@ -208,9 +209,15 @@ export const api = {
     return response.blob()
   },
 
-  respondToConversation(turn: number, audio: Blob): Promise<ConversationResult> {
+  getConversationSetup(lessonId?: string): Promise<ConversationSetup> {
+    const query = lessonId ? `?lesson_id=${encodeURIComponent(lessonId)}` : ''
+    return request<ConversationSetup>(`/api/conversation/setup${query}`)
+  },
+
+  respondToConversation(turn: number, audio: Blob, lessonId?: number): Promise<ConversationResult> {
     const form = new FormData()
     form.append('turn', String(turn))
+    if (lessonId) form.append('lesson_id', String(lessonId))
     form.append('audio', audio, 'conversation.webm')
     return request<ConversationResult>('/api/conversation/respond', { method: 'POST', body: form })
   },

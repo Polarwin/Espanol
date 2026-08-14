@@ -188,6 +188,16 @@ export interface ConversationResult {
   complete: boolean
 }
 
+export interface ConversationSetup {
+  lesson_id: number
+  title: string
+  cefr_level: string
+  topic: string
+  goal: string
+  greeting: string
+  vocabulary: string[]
+}
+
 export interface SkillScore {
   skill: string
   label: string

@@ -64,3 +64,34 @@ def test_spanish_example_audio(
     assert response.status_code == 200
     assert response.headers["content-type"] == "audio/mpeg"
     assert response.content == b"ID3 example audio"
+
+
+def test_every_unit_has_its_own_conversation(
+    client: TestClient, auth_headers: dict, monkeypatch
+) -> None:
+    from backend.app.routers import capabilities
+
+    lessons = client.get("/api/lessons").json()
+    setups = [
+        client.get(
+            "/api/conversation/setup",
+            params={"lesson_id": lesson["id"]},
+            headers=auth_headers,
+        ).json()
+        for lesson in lessons
+    ]
+    assert len(setups) == 30
+    assert {setup["lesson_id"] for setup in setups} == {lesson["id"] for lesson in lessons}
+    assert all(setup["title"] and setup["goal"] and setup["greeting"] for setup in setups)
+    assert all(len(setup["vocabulary"]) == 4 for setup in setups)
+
+    monkeypatch.setattr(capabilities, "transcribe_spanish", lambda _path, _prompt: "Me gusta la mesa junto a la ventana")
+    first = setups[0]
+    response = client.post(
+        "/api/conversation/respond",
+        data={"turn": 0, "lesson_id": first["lesson_id"]},
+        files={"audio": ("voice.webm", b"audio")},
+        headers=auth_headers,
+    )
+    assert response.status_code == 200
+    assert first["vocabulary"][0] in response.json()["reply"]

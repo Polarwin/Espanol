@@ -37,6 +37,7 @@ export default function App() {
             <Route path="/leccion/:lessonId" element={<Leccion />} />
             <Route path="/practica" element={<Practica />} />
             <Route path="/conversacion" element={<Conversacion />} />
+            <Route path="/leccion/:lessonId/conversacion" element={<Conversacion />} />
             <Route path="/progreso" element={<Progreso />} />
             <Route path="/grupos" element={<Grupos />} />
             <Route path="/perfil" element={<Perfil />} />

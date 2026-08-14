@@ -6,12 +6,14 @@ import tempfile
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
 from ..config import settings
 from ..db import get_db
-from ..models import User
+from ..models import Lesson, User, UserState
+from ..seed.vocabulary_content import VOCABULARY_BANKS
 from ..services.goals import increment_goal
 from ..services.progress import apply_skill_deltas
 from ..services.pronunciation import score_pronunciation, transcribe_spanish
@@ -26,22 +28,52 @@ class SpeechExampleRequest(BaseModel):
     phrase: str = Field(min_length=1, max_length=300)
 
 
-def _conversation_reply(transcript: str, turn: int, name: str = "") -> tuple[str, str, list[str]]:
-    text = transcript.lower()
+def _conversation_lesson(db: Session, user: User, lesson_id: int | None) -> Lesson:
+    lesson = db.get(Lesson, lesson_id) if lesson_id else None
+    if lesson is None:
+        state = db.scalar(select(UserState).where(UserState.user_id == user.id))
+        lesson = db.get(Lesson, state.current_lesson_id) if state and state.current_lesson_id else None
+    if lesson is None or lesson.status != "published":
+        lesson = db.scalar(select(Lesson).where(Lesson.status == "published").order_by(Lesson.id))
+    if lesson is None:
+        raise HTTPException(status_code=404, detail="No lesson available")
+    return lesson
+
+
+def _conversation_profile(lesson: Lesson, name: str) -> dict:
+    vocabulary = [text for text, _ in VOCABULARY_BANKS.get(lesson.title, [])]
+    topics = [topic for topic in lesson.topics if "vitamina" not in topic.lower()]
+    topic = topics[0] if topics else lesson.title.lower()
+    questions = [
+        line["es"]
+        for segment in lesson.segments
+        for line in segment.transcript
+        if "?" in line.get("es", "")
+    ]
+    opening = questions[0] if questions else f"¿Qué experiencia tienes con {topic}?"
+    return {
+        "lesson_id": lesson.id,
+        "title": lesson.title,
+        "cefr_level": lesson.cefr_level,
+        "topic": topic,
+        "goal": f"Mantén cuatro turnos sobre {topic} y usa vocabulario de la unidad.",
+        "greeting": f"¡Hola, {name}! Soy Ana. Hoy vamos a hablar de {topic}. {opening}",
+        "vocabulary": vocabulary[:4],
+    }
+
+
+def _conversation_reply(transcript: str, turn: int, name: str, profile: dict) -> tuple[str, str, list[str]]:
     address = f", {name}" if name else ""
+    words = profile["vocabulary"] or [profile["topic"]]
     if turn == 0:
-        if any(word in text for word in ("bien", "genial", "fenomenal")):
-            return f"¡Me alegro{address}! Yo también estoy muy bien. ¿Qué planes tienes para este fin de semana?", "Muy natural. También puedes decir «Estoy bastante bien». ", ["Voy a descansar.", "Voy a salir con amigos."]
-        return f"Espero que estés bien{address}. ¿Qué planes tienes para este fin de semana?", "Para responder al saludo: «Estoy bien, gracias». ", ["Estoy bien, gracias.", "Muy bien, ¿y tú?"]
+        return f"Gracias por contármelo{address}. ¿Puedes darme un ejemplo usando «{words[0]}»?", "Tu respuesta se entiende. Ahora conecta tu idea con una palabra de la unidad.", [f"Para mí, {words[0]}...", f"Un ejemplo de {words[0]} es..."]
     if turn == 1:
-        if any(word in text for word in ("amigo", "vecino", "familia", "quedar")):
-            return "¡Qué buen plan! ¿Dónde vais a quedar?", "Bien dicho. Usa «voy a quedar con…» para hablar de personas.", ["Vamos a quedar en un café.", "Quedamos en el centro."]
-        if any(word in text for word in ("casa", "descans", "leer", "película")):
-            return "Suena tranquilo. ¿Prefieres descansar en casa o salir un poco?", "Tu idea se entiende bien. Intenta añadir «porque». ", ["Prefiero quedarme en casa.", "Quiero salir un poco."]
-        return "Interesante. Cuéntame un poco más: ¿con quién vas a hacerlo?", "Prueba la estructura «Voy a + infinitivo». ", ["Voy a visitar Madrid.", "Voy a cocinar con mi familia."]
+        word = words[min(1, len(words) - 1)]
+        return f"Interesante. Imagina ahora una situación real con «{word}». ¿Qué dirías?", "Bien: has ampliado tu respuesta. Intenta añadir dónde, cuándo o por qué.", [f"En mi caso, {word}...", "Esto es importante porque..."]
     if turn == 2:
-        return "Perfecto. Si quieres, podemos tomar algo juntos el domingo. ¿Te apetece?", "Muy bien: has mantenido la conversación. ", ["Sí, me apetece mucho.", "Lo siento, el domingo no puedo."]
-    return f"¡Estupendo{address}! Entonces hablamos luego. Que tengas un buen fin de semana.", "Conversación completada. Has saludado, explicado planes y respondido a una invitación.", ["¡Igualmente!", "Hasta luego."]
+        question = "¿Qué recomendarías a otra persona y por qué?" if profile["cefr_level"] != "A1" else f"¿Qué te gusta más de {profile['topic']} y por qué?"
+        return question, "Muy bien: ya mantienes la conversación y justificas tus ideas.", ["Lo recomiendo porque...", "Me gusta más... porque..."]
+    return f"¡Muy buena conversación{address}! Has usado el tema de «{profile['title']}» en una situación personal.", "Conversación completada. Has respondido, dado ejemplos y explicado una opinión.", ["Quiero practicar otra vez.", "Voy a usar estas palabras esta semana."]
 
 
 def _source(name: str, path: Path) -> dict:
@@ -116,16 +148,29 @@ async def speech_example(
     return FileResponse(audio_path, media_type="audio/mpeg", filename="ejemplo-espanol.mp3")
 
 
+@router.get("/api/conversation/setup")
+def conversation_setup(
+    lesson_id: int | None = None,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    lesson = _conversation_lesson(db, user, lesson_id)
+    return _conversation_profile(lesson, (user.nickname or user.display_name).strip())
+
+
 @router.post("/api/conversation/respond")
 async def conversation_respond(
     audio: UploadFile = File(...),
     turn: int = Form(0),
+    lesson_id: int | None = Form(None),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> dict:
     data = await audio.read(10 * 1024 * 1024 + 1)
     if not data or len(data) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Invalid audio")
+    lesson = _conversation_lesson(db, user, lesson_id)
+    profile = _conversation_profile(lesson, (user.nickname or user.display_name).strip())
     suffix = Path(audio.filename or "recording.webm").suffix or ".webm"
     temp_path: Path | None = None
     try:
@@ -133,13 +178,14 @@ async def conversation_respond(
             temp.write(data)
             temp_path = Path(temp.name)
         transcript = await run_in_threadpool(
-            transcribe_spanish, temp_path, "Una conversación natural entre vecinos en español"
+            transcribe_spanish, temp_path,
+            f"Una conversación en español sobre {profile['topic']}: {', '.join(profile['vocabulary'])}",
         )
     finally:
         if temp_path is not None:
             temp_path.unlink(missing_ok=True)
     reply, feedback, suggestions = _conversation_reply(
-        transcript, turn, (user.nickname or user.display_name).strip()
+        transcript, turn, (user.nickname or user.display_name).strip(), profile
     )
     apply_skill_deltas(db, user, {"fluency": 1.5, "listening": 0.5, "pronunciation": 0.5})
     increment_goal(db, user, "sentences_spoken")
