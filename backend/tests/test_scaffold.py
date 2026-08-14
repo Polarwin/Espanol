@@ -21,8 +21,25 @@ def test_create_and_list_private_group(client: TestClient, auth_headers: dict) -
     assert [group["name"] for group in groups.json()] == ["Amigos"]
 
 
-def test_content_sources_and_pronunciation_boundary(client: TestClient, auth_headers: dict) -> None:
+def test_content_sources_and_pronunciation_evaluation(
+    client: TestClient, auth_headers: dict, monkeypatch
+) -> None:
+    from backend.app.routers import capabilities
+
     sources = client.get("/api/content/sources", headers=auth_headers)
     assert [source["name"] for source in sources.json()] == ["Español", "Vitamina"]
-    response = client.post("/api/pronunciation/evaluate", files={"audio": ("voice.webm", b"audio")}, headers=auth_headers)
-    assert response.status_code == 501
+    monkeypatch.setattr(
+        capabilities,
+        "transcribe_spanish",
+        lambda _path, _phrase: "Este sábado voy a visitar Madrid",
+    )
+    response = client.post(
+        "/api/pronunciation/evaluate",
+        data={"phrase_id": "test-phrase", "phrase": "Este sábado voy a visitar Madrid"},
+        files={"audio": ("voice.webm", b"audio")},
+        headers=auth_headers,
+    )
+    assert response.status_code == 200
+    assert response.json()["score"] == 100
+    assert response.json()["transcription"] == "Este sábado voy a visitar Madrid"
+    assert all(word["score"] == 100 for word in response.json()["word_scores"])

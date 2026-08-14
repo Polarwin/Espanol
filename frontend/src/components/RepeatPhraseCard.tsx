@@ -25,7 +25,7 @@ export function RepeatPhraseCard({ phraseId, phrase, tip }: RepeatPhraseCardProp
     setEvaluating(true)
     setEvaluationError('')
     api
-      .evaluatePronunciation(phraseId, blob)
+      .evaluatePronunciation(phraseId, phrase, blob)
       .then((r) => {
         if (!cancelled) setResult(r)
       })
@@ -38,7 +38,7 @@ export function RepeatPhraseCard({ phraseId, phrase, tip }: RepeatPhraseCardProp
     return () => {
       cancelled = true
     }
-  }, [state, blob, phraseId])
+  }, [state, blob, phraseId, phrase])
 
   const recording = state === 'recording'
 

@@ -167,11 +167,12 @@ export const api = {
     )
   },
 
-  evaluatePronunciation(phraseId: string, audio: Blob): Promise<PronunciationResult> {
+  evaluatePronunciation(phraseId: string, phrase: string, audio: Blob): Promise<PronunciationResult> {
     return withMock(
       () => {
         const form = new FormData()
         form.append('phrase_id', phraseId)
+        form.append('phrase', phrase)
         form.append('audio', audio, 'recording.webm')
         return request<PronunciationResult>('/api/pronunciation/evaluate', {
           method: 'POST',
