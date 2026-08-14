@@ -167,6 +167,15 @@ export interface PronunciationResult {
   word_scores: WordScore[]
 }
 
+export interface ConversationResult {
+  transcript: string
+  reply: string
+  feedback: string
+  suggestions: string[]
+  turn: number
+  complete: boolean
+}
+
 export interface SkillScore {
   skill: string
   label: string

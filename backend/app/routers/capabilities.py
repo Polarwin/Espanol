@@ -26,6 +26,23 @@ class SpeechExampleRequest(BaseModel):
     phrase: str = Field(min_length=1, max_length=300)
 
 
+def _conversation_reply(transcript: str, turn: int) -> tuple[str, str, list[str]]:
+    text = transcript.lower()
+    if turn == 0:
+        if any(word in text for word in ("bien", "genial", "fenomenal")):
+            return "¡Me alegro! Yo también estoy muy bien. ¿Qué planes tienes para este fin de semana?", "Muy natural. También puedes decir «Estoy bastante bien». ", ["Voy a descansar.", "Voy a salir con amigos."]
+        return "Espero que estés bien. ¿Qué planes tienes para este fin de semana?", "Para responder al saludo: «Estoy bien, gracias». ", ["Estoy bien, gracias.", "Muy bien, ¿y tú?"]
+    if turn == 1:
+        if any(word in text for word in ("amigo", "vecino", "familia", "quedar")):
+            return "¡Qué buen plan! ¿Dónde vais a quedar?", "Bien dicho. Usa «voy a quedar con…» para hablar de personas.", ["Vamos a quedar en un café.", "Quedamos en el centro."]
+        if any(word in text for word in ("casa", "descans", "leer", "película")):
+            return "Suena tranquilo. ¿Prefieres descansar en casa o salir un poco?", "Tu idea se entiende bien. Intenta añadir «porque». ", ["Prefiero quedarme en casa.", "Quiero salir un poco."]
+        return "Interesante. Cuéntame un poco más: ¿con quién vas a hacerlo?", "Prueba la estructura «Voy a + infinitivo». ", ["Voy a visitar Madrid.", "Voy a cocinar con mi familia."]
+    if turn == 2:
+        return "Perfecto. Si quieres, podemos tomar algo juntos el domingo. ¿Te apetece?", "Muy bien: has mantenido la conversación. ", ["Sí, me apetece mucho.", "Lo siento, el domingo no puedo."]
+    return "¡Estupendo! Entonces hablamos luego. Que tengas un buen fin de semana.", "Conversación completada. Has saludado, explicado planes y respondido a una invitación.", ["¡Igualmente!", "Hasta luego."]
+
+
 def _source(name: str, path: Path) -> dict:
     # Do not walk network-mounted libraries during a web request. A background
     # ingestion worker will own availability checks and file inventory.
@@ -96,3 +113,33 @@ async def speech_example(
             detail="Example audio is temporarily unavailable",
         ) from exc
     return FileResponse(audio_path, media_type="audio/mpeg", filename="ejemplo-espanol.mp3")
+
+
+@router.post("/api/conversation/respond")
+async def conversation_respond(
+    audio: UploadFile = File(...),
+    turn: int = Form(0),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    data = await audio.read(10 * 1024 * 1024 + 1)
+    if not data or len(data) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Invalid audio")
+    suffix = Path(audio.filename or "recording.webm").suffix or ".webm"
+    temp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as temp:
+            temp.write(data)
+            temp_path = Path(temp.name)
+        transcript = await run_in_threadpool(
+            transcribe_spanish, temp_path, "Una conversación natural entre vecinos en español"
+        )
+    finally:
+        if temp_path is not None:
+            temp_path.unlink(missing_ok=True)
+    reply, feedback, suggestions = _conversation_reply(transcript, turn)
+    apply_skill_deltas(db, user, {"fluency": 1.5, "listening": 0.5, "pronunciation": 0.5})
+    increment_goal(db, user, "sentences_spoken")
+    record_activity(db, user)
+    db.commit()
+    return {"transcript": transcript, "reply": reply, "feedback": feedback, "suggestions": suggestions, "turn": turn + 1, "complete": turn >= 3}

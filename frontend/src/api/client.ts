@@ -11,6 +11,7 @@ import type {
   LessonSummary,
   Progress,
   PronunciationResult,
+  ConversationResult,
   TodayPath,
   WeeklyRecap,
   FriendGroup,
@@ -201,6 +202,13 @@ export const api = {
     })
     if (!response.ok) throw new ApiError(response.status, 'No se pudo cargar el ejemplo de audio')
     return response.blob()
+  },
+
+  respondToConversation(turn: number, audio: Blob): Promise<ConversationResult> {
+    const form = new FormData()
+    form.append('turn', String(turn))
+    form.append('audio', audio, 'conversation.webm')
+    return request<ConversationResult>('/api/conversation/respond', { method: 'POST', body: form })
   },
 
   getProgress(): Promise<Progress> {

@@ -9,7 +9,7 @@ const NAV = [
   { to: '/lecciones', label: 'Lecciones', icon: IconBook, end: false },
   { to: '/practica', label: 'Práctica', icon: IconChat, end: false },
   { to: '/progreso', label: 'Progreso', icon: IconChart, end: false },
-  { to: '/grupos', label: 'Grupos', icon: IconSparkle, end: false },
+  { to: '/conversacion', label: 'Conversar', icon: IconSparkle, end: false },
 ]
 
 function Logo({ dark }: { dark?: boolean }) {
