@@ -74,7 +74,11 @@ export function MiRuta() {
             </p>
           </section>
 
-          <RepeatPhraseCard phraseId={`${today.lesson.id}-clip-${today.clip_index}`} />
+          <RepeatPhraseCard
+            phraseId={`${today.lesson.id}-clip-${today.clip_index}`}
+            phrase={today.pronunciation_tip.phrase || today.subtitle.es}
+            tip={today.pronunciation_tip.tip}
+          />
 
           <div className="mt-1 flex">
             <Link

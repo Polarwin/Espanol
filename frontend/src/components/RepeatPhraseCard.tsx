@@ -7,10 +7,12 @@ import { Waveform } from './Waveform'
 
 interface RepeatPhraseCardProps {
   phraseId: string
+  phrase: string
+  tip?: string
 }
 
 /** "Repite la frase" card: mic button (MediaRecorder) + waveform + feedback. */
-export function RepeatPhraseCard({ phraseId }: RepeatPhraseCardProps) {
+export function RepeatPhraseCard({ phraseId, phrase, tip }: RepeatPhraseCardProps) {
   const { state, error, blob, seconds, start, stop, reset } = useRecorder()
   const [evaluating, setEvaluating] = useState(false)
   const [result, setResult] = useState<PronunciationResult | null>(null)
@@ -61,7 +63,9 @@ export function RepeatPhraseCard({ phraseId }: RepeatPhraseCardProps) {
         </button>
 
         <div className="min-w-0 flex-1 text-center">
-          <h2 className="font-display text-2xl font-bold sm:text-[26px]">Repite la frase</h2>
+          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-terracotta">Di en voz alta</p>
+          <h2 className="mt-1 font-display text-2xl font-bold sm:text-[26px]">«{phrase}»</h2>
+          {tip && <p className="mt-1 text-sm font-semibold text-river">Consejo: {tip}</p>}
           <div className="mt-2 flex justify-center">
             <Waveform
               bars={44}
@@ -98,6 +102,18 @@ export function RepeatPhraseCard({ phraseId }: RepeatPhraseCardProps) {
           )}
         </div>
       </div>
+      {recording && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-navy-deep/90 p-5" role="dialog" aria-modal="true" aria-label="Grabando pronunciación">
+          <div className="w-full max-w-lg rounded-3xl bg-paper p-6 text-center shadow-card sm:p-8">
+            <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-terracotta">Ahora dilo en español</p>
+            <p className="mt-4 font-display text-3xl font-bold leading-snug sm:text-4xl">«{phrase}»</p>
+            {tip && <p className="mt-3 font-semibold text-river">{tip}</p>}
+            <div className="mt-6 flex justify-center"><Waveform bars={44} live height={48} activeClass="bg-terracotta" /></div>
+            <p className="mt-3 font-bold text-ink-soft">Grabando… {seconds}s</p>
+            <button onClick={stop} className="mt-6 w-full rounded-2xl bg-terracotta px-6 py-3.5 font-bold text-paper shadow-card sm:w-auto">Terminar grabación</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
