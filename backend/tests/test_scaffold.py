@@ -1,5 +1,7 @@
 """Integration coverage for completed scaffold endpoints."""
 
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 
@@ -43,3 +45,22 @@ def test_content_sources_and_pronunciation_evaluation(
     assert response.json()["score"] == 100
     assert response.json()["transcription"] == "Este sábado voy a visitar Madrid"
     assert all(word["score"] == 100 for word in response.json()["word_scores"])
+
+
+def test_spanish_example_audio(
+    client: TestClient, auth_headers: dict, monkeypatch, tmp_path: Path
+) -> None:
+    from backend.app.routers import capabilities
+
+    audio = tmp_path / "example.mp3"
+    audio.write_bytes(b"ID3 example audio")
+    monkeypatch.setattr(capabilities, "spanish_example_audio", lambda _phrase: audio)
+
+    response = client.post(
+        "/api/speech/example",
+        json={"phrase": "Hola, vecinos"},
+        headers=auth_headers,
+    )
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "audio/mpeg"
+    assert response.content == b"ID3 example audio"

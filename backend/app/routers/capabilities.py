@@ -4,6 +4,8 @@ from pathlib import Path
 import tempfile
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
@@ -14,9 +16,14 @@ from ..services.goals import increment_goal
 from ..services.progress import apply_skill_deltas
 from ..services.pronunciation import score_pronunciation, transcribe_spanish
 from ..services.security import get_current_user
+from ..services.speech import spanish_example_audio
 from ..services.streak import record_activity
 
 router = APIRouter(tags=["capabilities"])
+
+
+class SpeechExampleRequest(BaseModel):
+    phrase: str = Field(min_length=1, max_length=300)
 
 
 def _source(name: str, path: Path) -> dict:
@@ -74,3 +81,18 @@ async def pronunciation_evaluate(
     record_activity(db, user)
     db.commit()
     return result
+
+
+@router.post("/api/speech/example", response_class=FileResponse)
+async def speech_example(
+    payload: SpeechExampleRequest,
+    _: User = Depends(get_current_user),
+) -> FileResponse:
+    try:
+        audio_path = await run_in_threadpool(spanish_example_audio, payload.phrase)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Example audio is temporarily unavailable",
+        ) from exc
+    return FileResponse(audio_path, media_type="audio/mpeg", filename="ejemplo-espanol.mp3")

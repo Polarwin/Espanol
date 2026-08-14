@@ -190,6 +190,19 @@ export const api = {
     )
   },
 
+  async getSpeechExample(phrase: string): Promise<Blob> {
+    const headers = new Headers({ 'Content-Type': 'application/json' })
+    const token = getToken()
+    if (token) headers.set('Authorization', `Bearer ${token}`)
+    const response = await fetch(`${API_ORIGIN}/api/speech/example`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ phrase }),
+    })
+    if (!response.ok) throw new ApiError(response.status, 'No se pudo cargar el ejemplo de audio')
+    return response.blob()
+  },
+
   getProgress(): Promise<Progress> {
     return withMock(() => request<Progress>('/api/progress'), () => mock.mockProgress())
   },

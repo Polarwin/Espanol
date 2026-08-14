@@ -34,6 +34,7 @@ dist-ssr/
 *.apk
 
 # Logs and editor/OS files
+/content/generated/
 *.log
 .DS_Store
 .idea/

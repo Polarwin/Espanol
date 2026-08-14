@@ -14,6 +14,7 @@ import {
   IconCheck,
 } from './icons'
 import { SkillBar } from './SkillBar'
+import { useSpeechExample } from '../hooks/useSpeechExample'
 
 const topicIcons: Record<string, typeof IconSuitcase> = {
   Viajes: IconSuitcase,
@@ -23,6 +24,7 @@ const topicIcons: Record<string, typeof IconSuitcase> = {
 /** Right-hand "Tu feedback" panel of the core-loop screen. */
 export function FeedbackPanel({ data }: { data: TodayPath }) {
   const { feedback, pronunciation_tip: pron, grammar_tip: gram, next } = data
+  const speech = useSpeechExample(pron.phrase)
   return (
     <aside className="flex w-full shrink-0 flex-col gap-4 xl:w-[300px]">
       <section className="rounded-3xl bg-paper p-5 shadow-soft">
@@ -74,17 +76,14 @@ export function FeedbackPanel({ data }: { data: TodayPath }) {
           </div>
           <button
             aria-label="Escuchar ejemplo"
-            onClick={() => {
-              window.speechSynthesis.cancel()
-              const utterance = new SpeechSynthesisUtterance(pron.phrase)
-              utterance.lang = 'es-ES'
-              window.speechSynthesis.speak(utterance)
-            }}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-river-soft text-river transition hover:bg-river hover:text-paper"
+            onClick={() => void speech.play()}
+            disabled={speech.loading}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-river transition hover:bg-river hover:text-paper disabled:cursor-wait disabled:opacity-60 ${speech.playing ? 'animate-pulse bg-river text-paper' : 'bg-river-soft'}`}
           >
             <IconSpeaker size={17} />
           </button>
         </div>
+        {speech.error && <p className="mt-2 text-xs font-bold text-terracotta">{speech.error}</p>}
 
         <h4 className="mt-5 text-xs font-bold uppercase tracking-wide text-ink-soft">Gramática</h4>
         <div className="mt-3 flex flex-col gap-2">

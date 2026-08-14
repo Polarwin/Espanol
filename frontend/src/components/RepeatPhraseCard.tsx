@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import type { PronunciationResult } from '../api/types'
 import { useRecorder } from '../hooks/useRecorder'
-import { IconCheck, IconMic } from './icons'
+import { IconCheck, IconMic, IconSpeaker } from './icons'
+import { useSpeechExample } from '../hooks/useSpeechExample'
 import { Waveform } from './Waveform'
 
 interface RepeatPhraseCardProps {
@@ -17,6 +18,7 @@ export function RepeatPhraseCard({ phraseId, phrase, tip }: RepeatPhraseCardProp
   const [evaluating, setEvaluating] = useState(false)
   const [result, setResult] = useState<PronunciationResult | null>(null)
   const [evaluationError, setEvaluationError] = useState('')
+  const speech = useSpeechExample(phrase)
 
   // Evaluate with the backend as soon as a recording is available.
   useEffect(() => {
@@ -66,6 +68,16 @@ export function RepeatPhraseCard({ phraseId, phrase, tip }: RepeatPhraseCardProp
           <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-terracotta">Di en voz alta</p>
           <h2 className="mt-1 font-display text-2xl font-bold sm:text-[26px]">«{phrase}»</h2>
           {tip && <p className="mt-1 text-sm font-semibold text-river">Consejo: {tip}</p>}
+          <button
+            type="button"
+            onClick={() => void speech.play()}
+            disabled={speech.loading}
+            className={`mx-auto mt-3 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition disabled:cursor-wait disabled:opacity-60 ${speech.playing ? 'bg-river text-paper' : 'bg-river-soft text-river hover:bg-river hover:text-paper'}`}
+          >
+            <IconSpeaker size={16} />
+            {speech.loading ? 'Cargando…' : speech.playing ? 'Reproduciendo…' : 'Escuchar ejemplo'}
+          </button>
+          {speech.error && <p className="mt-2 text-xs font-bold text-terracotta">{speech.error}</p>}
           <div className="mt-2 flex justify-center">
             <Waveform
               bars={44}
