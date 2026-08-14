@@ -1,0 +1,20 @@
+[Unit]
+Description=Vamos Spanish learning web application (HTTP)
+After=network-online.target vamos-api.service
+Wants=network-online.target
+Requires=vamos-api.service
+
+[Service]
+Type=simple
+User=justin
+Group=justin
+WorkingDirectory=/home/justin/Projects/Espanol/frontend
+Environment=NODE_ENV=development
+ExecStart=/usr/bin/npm run dev -- --host 0.0.0.0 --port 5173 --strictPort
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

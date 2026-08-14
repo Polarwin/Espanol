@@ -1,0 +1,19 @@
+[Unit]
+Description=nextERP mobile web application
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=justin
+Group=justin
+WorkingDirectory=/home/justin/Projects/nextERP
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/justin/Projects/nextERP/bin/python /home/justin/Projects/nextERP/server.py
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=20
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target
