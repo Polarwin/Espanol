@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type { AttemptResult, ExerciseGroup, LessonAssessment } from '../api/types'
@@ -17,7 +17,6 @@ import {
   IconTrend,
 } from '../components/icons'
 import { RingProgress } from '../components/RingProgress'
-import { Waveform } from '../components/Waveform'
 
 const GROUP_STYLE: Record<
   ExerciseGroup['type'],
@@ -46,6 +45,7 @@ function statusOf(group: ExerciseGroup, progress: GroupProgress, activeType: str
 }
 
 export function Assessment() {
+  const questionPanelRef = useRef<HTMLElement | null>(null)
   const { lessonId } = useParams()
   const [assessment, setAssessment] = useState<LessonAssessment | null>(null)
   const [lessonTitle, setLessonTitle] = useState('Charla con vecinos')
@@ -134,6 +134,10 @@ export function Assessment() {
     setExerciseIndex(answered)
     setSelected(null)
     setError('')
+    window.setTimeout(() => {
+      questionPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      document.getElementById('assessment-answer')?.focus()
+    }, 0)
   }
 
   if (!assessment || !activeGroup) {
@@ -163,7 +167,7 @@ export function Assessment() {
       {/* Main grid */}
       <div className="mt-5 flex flex-1 flex-col gap-4 lg:flex-row lg:gap-6">
         {/* Question card */}
-        <section className="min-w-0 flex-1 rounded-3xl bg-paper p-4 shadow-soft sm:p-6">
+        <section ref={questionPanelRef} className="min-w-0 scroll-mt-16 flex-1 rounded-3xl bg-paper p-4 shadow-soft sm:p-6">
           {finished ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 py-10 text-center">
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-leaf text-paper">
@@ -239,6 +243,7 @@ export function Assessment() {
                   {!exercise.options && (
                     activeGroup.type === 'writing' ? (
                       <textarea
+                        id="assessment-answer"
                         value={selected ?? ''}
                         disabled={Boolean(result)}
                         onChange={(event) => setSelected(event.target.value)}
@@ -248,6 +253,7 @@ export function Assessment() {
                       />
                     ) : (
                       <input
+                        id="assessment-answer"
                         value={selected ?? ''}
                         disabled={Boolean(result)}
                         onChange={(event) => setSelected(event.target.value)}
@@ -369,7 +375,7 @@ export function Assessment() {
                 )}
               </div>
               <p className="mt-1.5 text-[13px] font-semibold text-ink-soft">{g.instructions}</p>
-              <GroupPreview group={g} />
+              {status !== 'done' && <p className="mt-3 text-sm font-bold text-river">{status === 'active' ? 'Respondiendo ahora' : 'Responder ahora'}</p>}
             </button>
           )
         })}
@@ -392,46 +398,6 @@ export function Assessment() {
           Nuevas lecciones se añaden automáticamente
         </span>
       </footer>
-    </div>
-  )
-}
-
-function GroupPreview({ group }: { group: ExerciseGroup }) {
-  if (group.type === 'vocabulary') {
-    return (
-      <div className="mt-3 flex items-center gap-2">
-        <Chip tone="leaf">quedar</Chip>
-        <span className="h-[2px] w-6 rounded bg-ink/20" />
-        <Chip tone="leaf">reunirse</Chip>
-      </div>
-    )
-  }
-  if (group.type === 'grammar') {
-    return (
-      <p className="mt-3 text-[13px] font-semibold">
-        Este sábado{' '}
-        <span className="mx-1 inline-block w-12 rounded-lg border border-ink/15 bg-cream px-2 py-0.5 text-center text-ink-soft">
-          &nbsp;
-        </span>{' '}
-        a visitar Madrid.
-      </p>
-    )
-  }
-  if (group.type === 'writing') {
-    return (
-      <div className="mt-3 rounded-2xl border border-dashed border-ink/15 p-3">
-        <p className="font-display text-[13px] italic text-ink-soft">Este fin de semana voy a…</p>
-        <p className="mt-2 text-right text-[11px] font-bold text-ink-soft">0/4 frases</p>
-      </div>
-    )
-  }
-  return (
-    <div className="mt-3 flex items-center gap-2">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-river text-paper">
-        <IconEar size={13} />
-      </span>
-      <Waveform bars={26} height={20} progress={0.3} activeClass="bg-river" className="flex-1" />
-      <span className="shrink-0 text-[10px] font-bold tabular-nums text-ink-soft">0:00 / 0:18</span>
     </div>
   )
 }
