@@ -59,6 +59,8 @@ def test_lesson_detail(client: TestClient, auth_headers: dict) -> None:
     assert "Maya" in detail["personal_welcome"]
     assert detail["session_mission"]
     assert detail["closing_challenge"]
+    assert len(detail["vocabulary"]) == 12
+    assert {item["text"] for item in detail["vocabulary"]} >= {"los vecinos", "el fin de semana"}
 
 
 def test_select_lesson_remembers_catalog_choice(client: TestClient, auth_headers: dict) -> None:

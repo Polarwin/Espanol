@@ -23,6 +23,11 @@ class PhraseOut(BaseModel):
     translation: str
 
 
+class VocabularyItem(BaseModel):
+    text: str
+    translation: str
+
+
 class SegmentOut(BaseModel):
     id: int
     index: int
@@ -45,6 +50,7 @@ class LessonDetail(BaseModel):
     session_mission: str
     closing_challenge: str
     focus_phrase: str
+    vocabulary: list[VocabularyItem]
     segments: list[SegmentOut]
 
 

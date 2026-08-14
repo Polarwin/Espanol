@@ -17,12 +17,14 @@ from ..schemas import (
     PhraseOut,
     SegmentOut,
     TranscriptLine,
+    VocabularyItem,
 )
 from ..routers.path import media_url
 from ..services.goals import increment_goal
 from ..services.loop import get_or_create_state
 from ..services.security import get_current_user
 from ..services.streak import record_activity
+from ..seed.vocabulary_content import VOCABULARY_BANKS
 
 router = APIRouter(prefix="/api/lessons", tags=["lessons"])
 
@@ -114,6 +116,10 @@ def lesson_detail(
         session_mission=missions[variant],
         closing_challenge=challenges[variant],
         focus_phrase=focus_phrase,
+        vocabulary=[
+            VocabularyItem(text=text, translation=translation)
+            for text, translation in VOCABULARY_BANKS.get(lesson.title, [])
+        ],
         segments=[
             SegmentOut(
                 id=segment.id,

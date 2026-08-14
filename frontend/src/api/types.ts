@@ -98,6 +98,11 @@ export interface Phrase {
   translation: string
 }
 
+export interface VocabularyItem {
+  text: string
+  translation: string
+}
+
 export interface LessonSegment {
   id: string
   index: number
@@ -120,6 +125,7 @@ export interface LessonDetail {
   session_mission: string
   closing_challenge: string
   focus_phrase: string
+  vocabulary: VocabularyItem[]
   segments: LessonSegment[]
 }
 

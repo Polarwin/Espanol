@@ -129,6 +129,10 @@ export async function mockLesson(id: string): Promise<LessonDetail> {
     session_mission: 'Escucha primero la idea principal.',
     closing_challenge: 'Cambia un detalle para que se parezca a tu vida.',
     focus_phrase: '¿Qué planes tienes?',
+    vocabulary: [
+      { text: 'el fin de semana', translation: 'weekend' },
+      { text: 'quedar para comer', translation: 'to meet for lunch' },
+    ],
     segments,
   }
 }

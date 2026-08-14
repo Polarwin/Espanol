@@ -11,6 +11,7 @@ from .lessons import (
     PhraseOut,
     SegmentOut,
     TranscriptLine,
+    VocabularyItem,
 )
 from .path import (
     GrammarTip,
@@ -44,4 +45,5 @@ __all__ = [
     "SkillUpdate",
     "TranscriptLine",
     "UserOut",
+    "VocabularyItem",
 ]
