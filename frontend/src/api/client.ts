@@ -137,6 +137,13 @@ export const api = {
     return withMock(() => request<TodayPath>('/api/path/today'), () => mock.mockTodayPath())
   },
 
+  advancePath(step: TodayPath['step']): Promise<TodayPath> {
+    return request<TodayPath>('/api/path/advance', {
+      method: 'POST',
+      body: JSON.stringify({ step }),
+    })
+  },
+
   getLessons(): Promise<LessonSummary[]> {
     return withMock(() => request<LessonSummary[]>('/api/lessons'), () => mock.mockLessons())
   },

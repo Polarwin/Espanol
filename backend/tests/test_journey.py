@@ -45,6 +45,37 @@ def test_complete_learner_journey(client: TestClient, auth_headers: dict) -> Non
     assert progress.json()["streak"]["days"] == 1
 
 
+def test_mi_ruta_stages_advance_and_stale_taps_do_not_skip(
+    client: TestClient, auth_headers: dict
+) -> None:
+    today = client.get("/api/path/today", headers=auth_headers).json()
+    assert today["step"] == "mira"
+
+    listening = client.post(
+        "/api/path/advance", json={"step": "mira"}, headers=auth_headers
+    )
+    assert listening.status_code == 200
+    assert listening.json()["step"] == "escucha"
+
+    # A delayed duplicate request must not accidentally skip escucha.
+    duplicate = client.post(
+        "/api/path/advance", json={"step": "mira"}, headers=auth_headers
+    )
+    assert duplicate.status_code == 200
+    assert duplicate.json()["step"] == "escucha"
+
+    speaking = client.post(
+        "/api/path/advance", json={"step": "escucha"}, headers=auth_headers
+    )
+    assert speaking.json()["step"] == "habla"
+
+    next_clip = client.post(
+        "/api/path/advance", json={"step": "habla"}, headers=auth_headers
+    ).json()
+    assert next_clip["step"] == "mira"
+    assert next_clip["clip_index"] == 1
+
+
 def test_group_join_and_encouragement_journey(
     client: TestClient, auth_headers: dict
 ) -> None:

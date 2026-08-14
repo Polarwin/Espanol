@@ -1,6 +1,9 @@
 """Core loop route: GET /api/path/today."""
 
+from typing import Literal
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -16,11 +19,16 @@ from ..schemas import (
     TranscriptLine,
 )
 from ..services import adaptive
-from ..services.loop import get_or_create_state
+from ..services.loop import advance_state, get_or_create_state
 from ..services.progress import DEFAULT_SKILL_SCORES, get_skill_scores
 from ..services.security import get_current_user
+from ..services.streak import record_activity
 
 router = APIRouter(prefix="/api/path", tags=["path"])
+
+
+class AdvancePathRequest(BaseModel):
+    step: Literal["mira", "escucha", "habla", "adapta"]
 
 _DEFAULT_PRONUNCIATION_TIP = PronunciationTip(phrase="fin de semana", tip="Suaviza la d entre vocales")
 _DEFAULT_GRAMMAR_TIP = GrammarTip(
@@ -81,6 +89,30 @@ def path_today(user: User = Depends(get_current_user), db: Session = Depends(get
             adaptive.next_suggestion(db, user, exclude_lesson_id=lesson.id)
         ),
     )
+
+
+@router.post("/advance", response_model=PathToday)
+def path_advance(
+    payload: AdvancePathRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> PathToday:
+    """Complete the visible loop stage and return the newly active stage.
+
+    The expected stage makes retries and double taps idempotent: a stale tap
+    returns the current path without skipping another stage.
+    """
+    state = get_or_create_state(db, user, adaptive.choose_next_lesson(db, user))
+    if state.current_step == payload.step:
+        next_lesson = None
+        if state.current_step == "adapta":
+            next_lesson = adaptive.choose_next_lesson(
+                db, user, exclude_lesson_id=state.current_lesson_id
+            )
+        advance_state(db, user, next_lesson)
+        record_activity(db, user)
+        db.commit()
+    return path_today(user, db)
 
 
 def _pronunciation_tip(lesson: Lesson, segment: Segment | None) -> PronunciationTip:

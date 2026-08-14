@@ -22,6 +22,7 @@ export function MiRuta() {
   const [progress, setProgress] = useState<Progress | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState('')
+  const [advancing, setAdvancing] = useState(false)
 
   useEffect(() => {
     api.getTodayPath().then(setToday).catch(() => setError('No se pudo cargar tu ruta.'))
@@ -31,6 +32,26 @@ export function MiRuta() {
 
   if (!today) {
     return <div className="p-6 text-ink-soft">{error || 'Cargando tu ruta…'}{error && <button onClick={() => window.location.reload()} className="mt-4 block rounded-xl bg-terracotta px-4 py-2 font-bold text-paper">Reintentar</button>}</div>
+  }
+
+  const stageCopy = {
+    mira: ['Mira el clip', 'Observa la situación y lee los subtítulos.', 'Ya lo he visto'],
+    escucha: ['Escucha con atención', 'Reproduce el clip otra vez y céntrate en cómo suena.', 'Ya lo he escuchado'],
+    habla: ['Habla en voz alta', 'Graba la frase y compara tu pronunciación.', 'He practicado la frase'],
+    adapta: ['Adapta y continúa', 'Revisa tu feedback; la siguiente lección se ajustará a ti.', 'Ir a la siguiente lección'],
+  }[today.step]
+
+  const advance = async () => {
+    setAdvancing(true)
+    setError('')
+    try {
+      setToday(await api.advancePath(today.step))
+      setProgress(await api.getProgress())
+    } catch {
+      setError('No se pudo guardar este paso. Inténtalo de nuevo.')
+    } finally {
+      setAdvancing(false)
+    }
   }
 
   return (
@@ -72,13 +93,30 @@ export function MiRuta() {
             <p className="mt-2.5 text-[13px] font-semibold text-ink-soft">
               Clip {today.clip_index + 1} de {today.total_clips} · 00:42
             </p>
+            <div className="mt-4 flex flex-col gap-3 rounded-2xl bg-cream p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-display text-lg font-bold">{stageCopy[0]}</p>
+                <p className="text-sm font-semibold text-ink-soft">{stageCopy[1]}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => void advance()}
+                disabled={advancing}
+                className="shrink-0 rounded-full bg-terracotta px-5 py-3 text-sm font-bold text-paper shadow-soft transition hover:bg-terracotta-dark disabled:cursor-wait disabled:opacity-60"
+              >
+                {advancing ? 'Guardando…' : stageCopy[2]}
+              </button>
+            </div>
+            {error && <p className="mt-2 text-sm font-bold text-terracotta">{error}</p>}
           </section>
 
-          <RepeatPhraseCard
-            phraseId={`${today.lesson.id}-clip-${today.clip_index}`}
-            phrase={today.pronunciation_tip.phrase || today.subtitle.es}
-            tip={today.pronunciation_tip.tip}
-          />
+          {today.step === 'habla' && (
+            <RepeatPhraseCard
+              phraseId={`${today.lesson.id}-clip-${today.clip_index}`}
+              phrase={today.pronunciation_tip.phrase || today.subtitle.es}
+              tip={today.pronunciation_tip.tip}
+            />
+          )}
 
           <div className="mt-1 flex">
             <Link
