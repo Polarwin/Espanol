@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, setPlacementComplete } from '../api/client'
 import type { PlacementQuestion, PlacementResult } from '../api/types'
+import { ThemeToggle } from '../theme'
 
 const LABELS: Record<string, string> = {
   vocabulary: 'Vocabulario',
@@ -61,7 +62,8 @@ export function Placement() {
 
   if (result) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-cream px-4 py-6">
+      <main className="relative flex min-h-screen items-center justify-center bg-cream px-4 py-6">
+        <div className="absolute right-4 top-4"><ThemeToggle compact /></div>
         <section className="w-full max-w-lg rounded-3xl bg-paper p-6 text-center shadow-card sm:p-8">
           <p className="text-sm font-bold uppercase tracking-wider text-river">Tu punto de partida</p>
           <h1 className="mt-2 font-display text-5xl font-bold text-terracotta">{result.overall_level}</h1>
@@ -72,10 +74,11 @@ export function Placement() {
     )
   }
 
-  if (!question) return <div className="p-6 font-semibold text-ink-soft">{error || 'Preparando la prueba…'}</div>
+  if (!question) return <div className="min-h-screen bg-cream p-6 font-semibold text-ink-soft"><div className="absolute right-4 top-4"><ThemeToggle compact /></div>{error || 'Preparando la prueba…'}</div>
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-cream px-4 py-6">
+    <main className="relative flex min-h-screen items-center justify-center bg-cream px-4 py-6">
+      <div className="absolute right-4 top-4"><ThemeToggle compact /></div>
       <section className="w-full max-w-2xl rounded-3xl bg-paper p-5 shadow-card sm:p-8">
         <div className="flex items-center justify-between text-sm font-bold text-ink-soft"><span>{LABELS[question.skill] ?? question.skill}</span><span>{index + 1} de {questions.length}</span></div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-ink/10"><div className="h-full bg-terracotta" style={{ width: `${((index + 1) / questions.length) * 100}%` }} /></div>

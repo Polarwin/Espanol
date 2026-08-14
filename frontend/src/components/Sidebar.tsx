@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { setToken } from '../api/client'
 import { IconBook, IconChart, IconChat, IconHome, IconRoute, IconSparkle } from './icons'
+import { ThemeToggle } from '../theme'
 
 const NAV = [
   { to: '/', label: 'Inicio', icon: IconHome, end: true },
@@ -52,7 +53,8 @@ export function Sidebar({ dark = false }: { dark?: boolean }) {
           </NavLink>
         ))}
       </nav>
-      <NavLink to="/perfil" className={`mt-auto rounded-xl px-3 py-2 text-left text-sm font-bold ${dark ? 'text-paper/80 hover:bg-white/8' : 'text-terracotta hover:bg-blush'}`}>Mi nombre y perfil</NavLink>
+      <div className="mt-auto"><ThemeToggle /></div>
+      <NavLink to="/perfil" className={`rounded-xl px-3 py-2 text-left text-sm font-bold ${dark ? 'text-paper/80 hover:bg-white/8' : 'text-terracotta hover:bg-blush'}`}>Mi nombre y perfil</NavLink>
       <button onClick={() => { setToken(null); navigate('/entrar') }} className={`rounded-xl px-3 py-2 text-left text-sm font-bold ${dark ? 'text-paper/70' : 'text-ink-soft'}`}>Cerrar sesión</button>
       {dark && (
         <div className="mt-4 overflow-hidden rounded-2xl">

@@ -31,6 +31,35 @@ html {
   background-color: var(--color-cream);
 }
 
+html.dark {
+  --color-cream: #0b1520;
+  --color-cream-deep: #101f2d;
+  --color-paper: #142536;
+  --color-ink: #f6efe6;
+  --color-ink-soft: #b5c0c9;
+  --color-blush: #43251f;
+  --color-sun-soft: #3b301d;
+  --color-leaf-soft: #183a31;
+  --color-river-soft: #1b354d;
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.2), 0 8px 24px rgb(0 0 0 / 0.24);
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.22), 0 12px 32px rgb(0 0 0 / 0.3);
+}
+
+html.dark .bg-white {
+  background-color: #1b3042;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  color: var(--color-ink);
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: var(--color-ink-soft);
+}
+
 body {
   font-family: var(--font-sans);
   color: var(--color-ink);

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { api, getToken, placementComplete, setPlacementComplete, setToken } from '../api/client'
+import { ThemeToggle } from '../theme'
 
 export function Auth() {
   const navigate = useNavigate()
@@ -26,7 +27,8 @@ export function Auth() {
     finally { setBusy(false) }
   }
 
-  return <main className="flex min-h-screen items-center justify-center bg-cream px-4 py-6">
+  return <main className="relative flex min-h-screen items-center justify-center bg-cream px-4 py-6">
+    <div className="absolute right-4 top-4"><ThemeToggle compact /></div>
     <form onSubmit={submit} className="w-full max-w-md rounded-3xl bg-paper p-6 shadow-card sm:p-8">
       <h1 className="font-display text-4xl font-bold">¡Vamos<span className="text-terracotta">!</span></h1>
       <p className="mt-2 font-semibold text-ink-soft">{registering ? 'Crea tu ruta personal de español.' : 'Continúa con tu ruta de aprendizaje.'}</p>
