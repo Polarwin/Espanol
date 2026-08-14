@@ -8,7 +8,8 @@ def test_lessons_list_published(client: TestClient) -> None:
     response = client.get("/api/lessons")
     assert response.status_code == 200
     lessons = response.json()
-    assert [lesson["title"] for lesson in lessons] == [
+    titles = [lesson["title"] for lesson in lessons]
+    assert titles[:15] == [
         "Charla con vecinos",
         "En el café",
         "De viaje",
@@ -25,6 +26,11 @@ def test_lessons_list_published(client: TestClient) -> None:
         "Una ruta de senderismo",
         "Mensajes con intención",
     ]
+    assert len(lessons) == 30
+    assert {
+        level: sum(lesson["cefr_level"] == level for lesson in lessons)
+        for level in ("A1", "A2", "B1")
+    } == {"A1": 10, "A2": 10, "B1": 10}
     first = lessons[0]
     assert first["cefr_level"] == "A2"
     assert first["topics"] == ["planes", "vida diaria"]
