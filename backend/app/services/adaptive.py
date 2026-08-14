@@ -124,8 +124,14 @@ def next_suggestion(db: Session, user: User, exclude_lesson_id: int | None = Non
     """The 'next' payload for /api/path/today: {label, description, topics}."""
     lesson = choose_next_lesson(db, user, exclude_lesson_id=exclude_lesson_id)
     if lesson is None:
-        return {"label": "Siguiente: repaso", "description": adaptive_note(db, user), "topics": []}
+        return {
+            "lesson_id": None,
+            "label": "Siguiente: repaso",
+            "description": adaptive_note(db, user),
+            "topics": [],
+        }
     return {
+        "lesson_id": lesson.id,
         "label": f"Siguiente: {lesson.title}",
         "description": adaptive_note(db, user),
         "topics": lesson.topics or [],

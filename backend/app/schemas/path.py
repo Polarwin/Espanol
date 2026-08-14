@@ -34,6 +34,7 @@ class GrammarTip(BaseModel):
 
 
 class NextSuggestion(BaseModel):
+    lesson_id: int | None = None
     label: str
     description: str
     topics: list[str]

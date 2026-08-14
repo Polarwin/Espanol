@@ -59,6 +59,7 @@ export interface GrammarTip {
 }
 
 export interface NextSuggestion {
+  lesson_id: string | number | null
   label: string
   description: string
   topics: string[]

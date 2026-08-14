@@ -1,4 +1,5 @@
 import type { TodayPath } from '../api/types'
+import { Link } from 'react-router-dom'
 import { Chip } from './Chip'
 import {
   IconChevronRight,
@@ -103,8 +104,13 @@ export function FeedbackPanel({ data }: { data: TodayPath }) {
         </div>
       </section>
 
-      <section className="rounded-3xl bg-sun-soft p-5 shadow-soft">
-        <div className="flex items-center gap-3">
+      <section className="overflow-hidden rounded-3xl bg-sun-soft shadow-soft">
+        <Link
+          to={next.lesson_id != null ? `/leccion/${next.lesson_id}` : '/lecciones'}
+          aria-label={`${next.label}. Abrir lección`}
+          className="group block p-5 transition hover:bg-sun/15 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-terracotta"
+        >
+          <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sun/25 text-terracotta-dark">
             <IconRocket size={22} />
           </span>
@@ -112,18 +118,19 @@ export function FeedbackPanel({ data }: { data: TodayPath }) {
             <p className="font-display text-[17px] font-bold">{next.label}</p>
             <p className="text-[13px] font-semibold text-ink-soft">{next.description}</p>
           </div>
-          <IconChevronRight size={18} className="shrink-0 text-ink-soft" />
-        </div>
-        <div className="mt-3 flex gap-2">
-          {next.topics.map((t) => {
-            const TopicIcon = topicIcons[t] ?? IconCup
-            return (
-              <Chip key={t} icon={<TopicIcon size={13} />} tone="outline" className="bg-paper">
-                {t}
-              </Chip>
-            )
-          })}
-        </div>
+            <IconChevronRight size={18} className="shrink-0 text-ink-soft transition-transform group-hover:translate-x-1" />
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {next.topics.map((t) => {
+              const TopicIcon = topicIcons[t] ?? IconCup
+              return (
+                <Chip key={t} icon={<TopicIcon size={13} />} tone="outline" className="bg-paper">
+                  {t}
+                </Chip>
+              )
+            })}
+          </div>
+        </Link>
       </section>
     </aside>
   )

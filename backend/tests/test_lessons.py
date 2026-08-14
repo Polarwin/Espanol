@@ -100,6 +100,7 @@ def test_path_today_shape_for_new_user(client: TestClient, auth_headers: dict) -
         "explanation": "El pronombre no es necesario aquí.",
     }
     assert body["next"]["label"].startswith("Siguiente: ")
+    assert isinstance(body["next"]["lesson_id"], int)
     assert isinstance(body["next"]["description"], str)
     assert isinstance(body["next"]["topics"], list)
 

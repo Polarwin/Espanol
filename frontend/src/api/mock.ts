@@ -62,6 +62,7 @@ export async function mockTodayPath(): Promise<TodayPath> {
       explanation: 'El pronombre no es necesario aquí.',
     },
     next: {
+      lesson_id: 'lesson-charla-vecinos',
       label: 'Siguiente: práctica A2+',
       description: 'Subimos el ritmo; repetimos la d suave.',
       topics: ['Viajes', 'Vida diaria'],
