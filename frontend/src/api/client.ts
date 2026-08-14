@@ -2,6 +2,7 @@
 // mock layer automatically (toggle with MOCK_FALLBACK_ENABLED).
 
 import * as mock from './mock'
+import { Capacitor } from '@capacitor/core'
 import type {
   AttemptResult,
   AuthResponse,
@@ -18,6 +19,8 @@ import type {
 } from './types'
 
 export const MOCK_FALLBACK_ENABLED = import.meta.env.VITE_ENABLE_MOCKS === 'true'
+const PUBLIC_APP_ORIGIN = 'https://espanol.justinrecipes.duckdns.org'
+const API_ORIGIN = Capacitor.isNativePlatform() ? PUBLIC_APP_ORIGIN : ''
 
 const TOKEN_KEY = 'vamos.token'
 const PLACEMENT_KEY = 'vamos.placement-completed'
@@ -57,7 +60,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (init.body && !(init.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json')
   }
-  const res = await fetch(path, { ...init, headers })
+  const res = await fetch(`${API_ORIGIN}${path}`, { ...init, headers })
   if (!res.ok) {
     if (res.status === 401 && !path.startsWith('/api/auth/')) {
       setToken(null)
@@ -65,7 +68,25 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     }
     throw new ApiError(res.status, `Request failed: ${res.status} ${path}`)
   }
-  return (await res.json()) as T
+  return absoluteMediaUrls(await res.json()) as T
+}
+
+function absoluteMediaUrls(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(absoluteMediaUrls)
+  if (value === null || typeof value !== 'object') return value
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => {
+      if (
+        (key === 'video_url' || key === 'audio_url') &&
+        typeof item === 'string' &&
+        item.startsWith('/')
+      ) {
+        return [key, `${API_ORIGIN}${item}`]
+      }
+      return [key, absoluteMediaUrls(item)]
+    }),
+  )
 }
 
 async function withMock<T>(call: () => Promise<T>, fallback: () => Promise<T>): Promise<T> {

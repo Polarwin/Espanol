@@ -24,7 +24,11 @@ class Settings(BaseSettings):
     whisper_device: str = "cpu"
     whisper_compute_type: str = "int8"
 
-    cors_origins: list[str] = ["http://localhost:5173"]
+    cors_origins: list[str] = [
+        "http://localhost:5173",
+        "https://localhost",
+        "capacitor://localhost",
+    ]
 
 
 settings = Settings()

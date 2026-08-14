@@ -30,9 +30,10 @@ Start the backend from the project root on port `8011`:
 
 ## Android app
 
-The Capacitor Android wrapper lives in `frontend/android` and loads the public
-HTTPS deployment, so lesson and media updates are available without publishing
-a new APK. Build it with an Android SDK and Java 21:
+The Capacitor Android wrapper lives in `frontend/android`. Its interface is
+bundled into the APK while lessons and media come from the public HTTPS API, so
+content updates are available without publishing a new APK. Build it with an
+Android SDK and Java 21:
 
 ```bash
 cd frontend
