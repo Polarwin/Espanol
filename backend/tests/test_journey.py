@@ -23,7 +23,11 @@ def test_complete_learner_journey(client: TestClient, auth_headers: dict) -> Non
     exercises = [exercise for group in assessment["groups"] for exercise in group["exercises"]]
     assert len(exercises) == assessment["total_questions"] == 6
 
-    for exercise in exercises:
+    # A randomized lesson can contain two, three, or four clips. Each clip
+    # advances through mira -> escucha -> habla before the review step.
+    attempts_needed = today.json()["total_clips"] * 3
+    for index in range(attempts_needed):
+        exercise = exercises[index % len(exercises)]
         answer = exercise["options"][0] if exercise.get("options") else "Esta es una respuesta completa"
         response = client.post(
             f"/api/exercises/{exercise['id']}/attempt",

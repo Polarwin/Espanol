@@ -1,6 +1,6 @@
 """Hand-made seed lessons for ¡Vamos!.
 
-Nine lessons with full transcripts, phrases (with pronunciation tips) and
+Twelve lessons with full transcripts, phrases (with pronunciation tips) and
 exercises covering all five types. Structured as plain Python data so the
 loader (load.py) can insert it idempotently.
 """
@@ -920,6 +920,114 @@ LESSONS: list[dict[str, Any]] = [
             {"type": "writing", "instructions": "Pregunta por una vivienda.", "prompt": "Escribe un mensaje con tres preguntas sobre un piso.", "options": None, "expected_answer": "Hola, llamo por el piso. ¿Está amueblado? ¿Cuánto cuesta? ¿Podría visitarlo mañana?", "skill_weights": {"writing": 1.0, "grammar": 0.5}},
             {"type": "listening", "instructions": "Escucha y elige.", "prompt": "¿Cuánto cuesta el piso?", "options": ["Novecientos euros", "Setecientos euros", "Mil euros"], "expected_answer": "Novecientos euros", "audio": True, "skill_weights": {"listening": 1.0}},
             {"type": "pronunciation", "instructions": "Escucha y repite.", "prompt": "Repite: ¿Podría visitarlo mañana por la tarde?", "options": None, "expected_answer": "¿Podría visitarlo mañana por la tarde?", "audio": True, "skill_weights": {"pronunciation": 1.0, "fluency": 0.5}},
+        ],
+    },
+    {
+        "slug": "vitamina-a2-u1-conocernos",
+        "title": "Vitamina A2 · U1: Vamos a conocernos",
+        "cefr_level": "A2",
+        "topics": ["Vitamina A2", "unidad 1", "gustos", "tiempo libre"],
+        "source": "original companion",
+        "status": "published",
+        "grammar_tip": {"wrong": "A mí me gusta los idiomas.", "right": "A mí me gustan los idiomas.", "explanation": "Gustar concuerda con la cosa que gusta: singular gusta, plural gustan."},
+        "segments": [
+            {"start": 0.0, "end": 42.0, "transcript": [
+                {"es": "Hola, soy Leo. En mi tiempo libre suelo quedar con mis vecinos.", "en": "Hi, I'm Leo. In my free time I usually meet my neighbours."},
+                {"es": "A mí me encanta cocinar, pero no me gusta nada correr.", "en": "I love cooking, but I don't like running at all."},
+                {"es": "Yo prefiero hacer excursiones y ver series en español.", "en": "I prefer going on hikes and watching series in Spanish."}],
+             "phrases": [
+                {"text": "en mi tiempo libre", "translation": "in my free time", "tip": "Une tiempo y libre con ritmo regular"},
+                {"text": "me encanta cocinar", "translation": "I love cooking", "tip": "La c de cocinar suena como z en España"},
+                {"text": "prefiero hacer excursiones", "translation": "I prefer going on hikes", "tip": "Marca el diptongo ie de prefiero"}]},
+            {"start": 42.0, "end": 84.0, "transcript": [
+                {"es": "¿Qué te resulta difícil cuando aprendes español?", "en": "What do you find difficult when learning Spanish?"},
+                {"es": "Me cuesta entender conversaciones rápidas.", "en": "I find it hard to understand fast conversations."},
+                {"es": "Puedes escuchar un poco cada día y practicar con nosotros.", "en": "You can listen a little every day and practise with us."}],
+             "phrases": [
+                {"text": "me cuesta entender", "translation": "I find it hard to understand", "tip": "Cuesta empieza con sonido k"},
+                {"text": "conversaciones rápidas", "translation": "fast conversations", "tip": "Marca el acento de rápidas"},
+                {"text": "practicar cada día", "translation": "practise every day", "tip": "La d de cada es suave"}]},
+        ],
+        "exercises": [
+            {"type": "vocabulary", "instructions": "Elige la combinación correcta.", "prompt": "___ con amigos", "options": ["quedar", "jugar", "tomar"], "expected_answer": "quedar", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "vocabulary", "instructions": "Elige el significado.", "prompt": "me cuesta entender", "options": ["I find it hard to understand", "I want to understand", "I understand well"], "expected_answer": "I find it hard to understand", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "grammar", "instructions": "Completa con gustar.", "prompt": "A mí me ___ las excursiones.", "options": None, "expected_answer": "gustan", "skill_weights": {"grammar": 1.0}},
+            {"type": "grammar", "instructions": "Da una recomendación.", "prompt": "Para mejorar, ___ escuchar español cada día.", "options": ["puedes", "gustas", "prefieres de"], "expected_answer": "puedes", "skill_weights": {"grammar": 1.0}},
+            {"type": "writing", "instructions": "Preséntate al grupo.", "prompt": "Escribe qué te gusta, qué prefieres y qué te cuesta en español.", "options": None, "expected_answer": "Me gusta cocinar, prefiero hacer excursiones y me cuesta entender conversaciones rápidas.", "skill_weights": {"writing": 1.0, "grammar": 0.5}},
+            {"type": "listening", "instructions": "Escucha y elige.", "prompt": "¿Qué le cuesta a Leo?", "options": ["Entender conversaciones rápidas", "Escribir correos", "Leer novelas"], "expected_answer": "Entender conversaciones rápidas", "audio": True, "skill_weights": {"listening": 1.0}},
+            {"type": "pronunciation", "instructions": "Escucha y repite.", "prompt": "Repite: En mi tiempo libre suelo quedar con mis vecinos", "options": None, "expected_answer": "En mi tiempo libre suelo quedar con mis vecinos", "audio": True, "skill_weights": {"pronunciation": 1.0, "fluency": 0.5}},
+        ],
+    },
+    {
+        "slug": "vitamina-a2-u2-mi-lugar",
+        "title": "Vitamina A2 · U2: Mi lugar en el mundo",
+        "cefr_level": "A2",
+        "topics": ["Vitamina A2", "unidad 2", "rutinas", "ciudad y campo"],
+        "source": "original companion",
+        "status": "published",
+        "grammar_tip": {"wrong": "Me levanto y después desayuno siempre.", "right": "Me levanto y después siempre desayuno.", "explanation": "Los adverbios de frecuencia suelen colocarse delante del verbo principal."},
+        "segments": [
+            {"start": 0.0, "end": 44.0, "transcript": [
+                {"es": "Vivo fuera de mi país desde hace dos años.", "en": "I have lived outside my country for two years."},
+                {"es": "Normalmente me levanto temprano, cojo el autobús y empiezo a trabajar a las nueve.", "en": "I normally get up early, take the bus and start work at nine."},
+                {"es": "Lo más difícil es resolver trámites y entender algunas costumbres.", "en": "The hardest thing is handling paperwork and understanding some customs."}],
+             "phrases": [
+                {"text": "vivir fuera de mi país", "translation": "to live outside my country", "tip": "La v suena cercana a una b suave"},
+                {"text": "cojo el autobús", "translation": "I take the bus", "tip": "La j de cojo es fuerte"},
+                {"text": "resolver trámites", "translation": "handle paperwork", "tip": "Trámites lleva el acento al principio"}]},
+            {"start": 44.0, "end": 88.0, "transcript": [
+                {"es": "¿Prefieres vivir en el campo o en la ciudad?", "en": "Do you prefer living in the country or in the city?"},
+                {"es": "La ciudad tiene más servicios, aunque también hay más ruido.", "en": "The city has more services, although there is also more noise."},
+                {"es": "Yo elegiría un pueblo tranquilo cerca de una estación.", "en": "I would choose a quiet village near a station."}],
+             "phrases": [
+                {"text": "más servicios", "translation": "more services", "tip": "La s final se enlaza con la palabra siguiente"},
+                {"text": "aunque hay más ruido", "translation": "although there is more noise", "tip": "Aunque empieza con sonido aun-ke"},
+                {"text": "un pueblo tranquilo", "translation": "a quiet village", "tip": "Pronuncia juntas tr de tranquilo"}]},
+        ],
+        "exercises": [
+            {"type": "vocabulary", "instructions": "Elige la acción de rutina.", "prompt": "Por la mañana ___ el autobús.", "options": ["cojo", "hago", "veo"], "expected_answer": "cojo", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "vocabulary", "instructions": "Elige el significado.", "prompt": "resolver trámites", "options": ["handle paperwork", "find a flat", "change jobs"], "expected_answer": "handle paperwork", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "grammar", "instructions": "Completa el presente reflexivo.", "prompt": "Normalmente yo ___ levanto temprano.", "options": None, "expected_answer": "me", "skill_weights": {"grammar": 1.0}},
+            {"type": "grammar", "instructions": "Completa el contraste.", "prompt": "La ciudad tiene más servicios, ___ hay más ruido.", "options": ["aunque", "porque de", "por eso que"], "expected_answer": "aunque", "skill_weights": {"grammar": 1.0}},
+            {"type": "writing", "instructions": "Compara dos lugares.", "prompt": "Escribe ventajas e inconvenientes de vivir en la ciudad o en el campo.", "options": None, "expected_answer": "La ciudad tiene más servicios, aunque hay más ruido. El campo es tranquilo, pero hay menos transporte.", "skill_weights": {"writing": 1.0, "grammar": 0.5}},
+            {"type": "listening", "instructions": "Escucha y elige.", "prompt": "¿Dónde elegiría vivir?", "options": ["En un pueblo tranquilo", "En el centro de una gran ciudad", "En otro país"], "expected_answer": "En un pueblo tranquilo", "audio": True, "skill_weights": {"listening": 1.0}},
+            {"type": "pronunciation", "instructions": "Escucha y repite.", "prompt": "Repite: Normalmente me levanto temprano y cojo el autobús", "options": None, "expected_answer": "Normalmente me levanto temprano y cojo el autobús", "audio": True, "skill_weights": {"pronunciation": 1.0, "fluency": 0.5}},
+        ],
+    },
+    {
+        "slug": "vitamina-a2-repaso-u1-u2",
+        "title": "Vitamina A2 · Repaso U1–U2",
+        "cefr_level": "A2",
+        "topics": ["Vitamina A2", "repaso", "unidades 1 y 2"],
+        "source": "original companion",
+        "status": "published",
+        "grammar_tip": {"wrong": "Me gusta hacer excursiones y me levanto a las siete normalmente.", "right": "Me gusta hacer excursiones y normalmente me levanto a las siete.", "explanation": "Repasa la concordancia de gustar y la posición de los adverbios de frecuencia."},
+        "segments": [
+            {"start": 0.0, "end": 45.0, "transcript": [
+                {"es": "Me llamo Clara y vivo con mi familia en un barrio tranquilo.", "en": "My name is Clara and I live with my family in a quiet neighbourhood."},
+                {"es": "Me encantan los idiomas y suelo estudiar con mis vecinos dos veces por semana.", "en": "I love languages and usually study with my neighbours twice a week."},
+                {"es": "A veces me cuesta hablar, pero mis compañeros me ayudan.", "en": "Sometimes I find speaking difficult, but my classmates help me."}],
+             "phrases": [
+                {"text": "dos veces por semana", "translation": "twice a week", "tip": "Une veces y por suavemente"},
+                {"text": "me cuesta hablar", "translation": "I find speaking difficult", "tip": "No marques demasiado la h de hablar: es muda"},
+                {"text": "mis compañeros me ayudan", "translation": "my classmates help me", "tip": "Compañeros contiene el sonido ñ"}]},
+            {"start": 45.0, "end": 90.0, "transcript": [
+                {"es": "Normalmente estudio por la tarde después de volver a casa.", "en": "I normally study in the afternoon after returning home."},
+                {"es": "Para mejorar la comprensión, escucho diálogos cortos todos los días.", "en": "To improve comprehension, I listen to short dialogues every day."},
+                {"es": "Creo que vivir cerca de mis amigos hace el aprendizaje más fácil.", "en": "I think living near my friends makes learning easier."}],
+             "phrases": [
+                {"text": "después de volver", "translation": "after returning", "tip": "Después lleva el acento al final"},
+                {"text": "para mejorar la comprensión", "translation": "to improve comprehension", "tip": "Comprensión termina con sílaba tónica"},
+                {"text": "hace el aprendizaje más fácil", "translation": "makes learning easier", "tip": "La h de hace no se pronuncia"}]},
+        ],
+        "exercises": [
+            {"type": "vocabulary", "instructions": "Repasa las combinaciones.", "prompt": "___ excursiones", "options": ["hacer", "tomar", "jugar"], "expected_answer": "hacer", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "vocabulary", "instructions": "Repasa la frecuencia.", "prompt": "twice a week", "options": ["dos veces por semana", "cada dos semanas", "toda la semana"], "expected_answer": "dos veces por semana", "skill_weights": {"vocabulary": 1.0}},
+            {"type": "grammar", "instructions": "Completa con gustar.", "prompt": "A Clara le ___ los idiomas.", "options": None, "expected_answer": "encantan", "skill_weights": {"grammar": 1.0}},
+            {"type": "grammar", "instructions": "Completa la rutina.", "prompt": "Normalmente ___ diálogos cortos todos los días.", "options": ["escucho", "escuchas", "escuchan"], "expected_answer": "escucho", "skill_weights": {"grammar": 1.0}},
+            {"type": "writing", "instructions": "Haz el repaso final.", "prompt": "Preséntate, describe tu rutina y da un consejo para aprender español.", "options": None, "expected_answer": "Me llamo Clara, normalmente estudio por la tarde y recomiendo escuchar español todos los días.", "skill_weights": {"writing": 1.0, "grammar": 0.5}},
+            {"type": "listening", "instructions": "Escucha y elige.", "prompt": "¿Qué hace Clara para mejorar la comprensión?", "options": ["Escucha diálogos cortos", "Lee novelas largas", "Viaja cada semana"], "expected_answer": "Escucha diálogos cortos", "audio": True, "skill_weights": {"listening": 1.0}},
+            {"type": "pronunciation", "instructions": "Escucha y repite.", "prompt": "Repite: Suelo estudiar con mis vecinos dos veces por semana", "options": None, "expected_answer": "Suelo estudiar con mis vecinos dos veces por semana", "audio": True, "skill_weights": {"pronunciation": 1.0, "fluency": 0.5}},
         ],
     },
 ]
