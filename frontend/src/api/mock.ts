@@ -130,8 +130,8 @@ export async function mockLesson(id: string): Promise<LessonDetail> {
     closing_challenge: 'Cambia un detalle para que se parezca a tu vida.',
     focus_phrase: '¿Qué planes tienes?',
     vocabulary: [
-      { text: 'el fin de semana', translation: 'weekend' },
-      { text: 'quedar para comer', translation: 'to meet for lunch' },
+      { text: 'el fin de semana', translation: 'weekend', definition_es: 'Una expresión para hablar del sábado y el domingo.', example_es: '¿Qué planes tienes para el fin de semana?' },
+      { text: 'quedar para comer', translation: 'to meet for lunch', definition_es: 'Acordar una hora y un lugar para comer juntos.', example_es: 'Podemos quedar para comer el sábado.' },
     ],
     segments,
   }

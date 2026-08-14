@@ -61,6 +61,9 @@ def test_lesson_detail(client: TestClient, auth_headers: dict) -> None:
     assert detail["closing_challenge"]
     assert len(detail["vocabulary"]) == 12
     assert {item["text"] for item in detail["vocabulary"]} >= {"los vecinos", "el fin de semana"}
+    weekend = next(item for item in detail["vocabulary"] if item["text"] == "el fin de semana")
+    assert weekend["definition_es"].startswith("Una palabra")
+    assert "fin de semana" in weekend["example_es"].lower()
 
 
 def test_select_lesson_remembers_catalog_choice(client: TestClient, auth_headers: dict) -> None:

@@ -26,6 +26,8 @@ class PhraseOut(BaseModel):
 class VocabularyItem(BaseModel):
     text: str
     translation: str
+    definition_es: str
+    example_es: str
 
 
 class SegmentOut(BaseModel):

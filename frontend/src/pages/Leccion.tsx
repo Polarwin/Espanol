@@ -41,7 +41,12 @@ export function Leccion() {
           {lesson.vocabulary.map((item) => (
             <div key={item.text} className="rounded-2xl bg-cream-deep px-4 py-3">
               <p className="font-bold">{item.text}</p>
-              <p className="text-sm font-semibold text-ink-soft">{item.translation}</p>
+              <p className="mt-1 text-sm font-semibold text-ink-soft">{item.definition_es}</p>
+              <p className="mt-2 text-sm italic text-ink">«{item.example_es}»</p>
+              <details className="mt-2">
+                <summary className="cursor-pointer text-xs font-extrabold text-river">Ver traducción</summary>
+                <p className="mt-1 text-sm font-semibold text-ink-soft">{item.translation}</p>
+              </details>
             </div>
           ))}
         </div>

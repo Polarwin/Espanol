@@ -40,6 +40,37 @@ ASSESSMENT_TYPES: list[tuple[str, str]] = [
 MINUTES_PER_QUESTION = 1.5
 
 
+def _spanish_vocabulary_support(lesson: Lesson, text: str) -> tuple[str, str]:
+    """Give glossary items Spanish-first context without exposing English first."""
+    topics = [topic for topic in lesson.topics if "vitamina" not in topic.lower()]
+    topic = topics[0] if topics else "esta unidad"
+    lowered = text.lower()
+    if text.startswith("¿"):
+        kind = "Una pregunta útil"
+    elif lowered.startswith(("el ", "la ", "los ", "las ", "un ", "una ")):
+        kind = "Una palabra que nombra algo"
+    elif lowered.split(" ", 1)[0].endswith(("ar", "er", "ir", "arse", "erse", "irse")):
+        kind = "Una acción"
+    else:
+        kind = "Una expresión útil"
+    if lesson.cefr_level == "A1":
+        definition = f"{kind} para hablar de {topic}."
+    else:
+        definition = f"{kind} que usamos en situaciones relacionadas con {topic}."
+
+    example = ""
+    for segment in lesson.segments:
+        for line in segment.transcript:
+            if lowered.strip("¿?¡!") in line.get("es", "").lower():
+                example = line["es"]
+                break
+        if example:
+            break
+    if not example:
+        example = f"En esta unidad usamos «{text}» para hablar de {topic}."
+    return definition, example
+
+
 @router.get("", response_model=list[LessonListItem])
 def list_lessons(db: Session = Depends(get_db)) -> list[LessonListItem]:
     lessons = db.scalars(
@@ -117,7 +148,12 @@ def lesson_detail(
         closing_challenge=challenges[variant],
         focus_phrase=focus_phrase,
         vocabulary=[
-            VocabularyItem(text=text, translation=translation)
+            VocabularyItem(
+                text=text,
+                translation=translation,
+                definition_es=_spanish_vocabulary_support(lesson, text)[0],
+                example_es=_spanish_vocabulary_support(lesson, text)[1],
+            )
             for text, translation in VOCABULARY_BANKS.get(lesson.title, [])
         ],
         segments=[

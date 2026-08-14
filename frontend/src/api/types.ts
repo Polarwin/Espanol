@@ -101,6 +101,8 @@ export interface Phrase {
 export interface VocabularyItem {
   text: string
   translation: string
+  definition_es: string
+  example_es: string
 }
 
 export interface LessonSegment {
