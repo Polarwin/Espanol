@@ -33,9 +33,9 @@ def test_sync_missing_lessons_is_non_destructive(db_session) -> None:
     assert sync_missing_lessons(db_session, media=False) == 0
 
 
-def test_lesson_detail(client: TestClient) -> None:
+def test_lesson_detail(client: TestClient, auth_headers: dict) -> None:
     lesson_id = client.get("/api/lessons").json()[0]["id"]
-    response = client.get(f"/api/lessons/{lesson_id}")
+    response = client.get(f"/api/lessons/{lesson_id}", headers=auth_headers)
     assert response.status_code == 200
     detail = response.json()
     assert detail["video_url"].startswith("/media/seed/charla-con-vecinos/")
@@ -47,6 +47,9 @@ def test_lesson_detail(client: TestClient) -> None:
         "en": "What plans do you have for the weekend?",
     }
     assert {phrase["text"] for phrase in segment["phrases"]} >= {"fin de semana"}
+    assert "Maya" in detail["personal_welcome"]
+    assert detail["session_mission"]
+    assert detail["closing_challenge"]
 
 
 def test_lesson_assessment_groups(client: TestClient) -> None:

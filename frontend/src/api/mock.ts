@@ -125,6 +125,10 @@ export async function mockLesson(id: string): Promise<LessonDetail> {
     source: 'Biblioteca local',
     duration_seconds: 336,
     video_url: '/media/lessons/charla-vecinos/video.mp4',
+    personal_welcome: 'Maya, hoy conectamos esta lección con tu vida diaria.',
+    session_mission: 'Escucha primero la idea principal.',
+    closing_challenge: 'Cambia un detalle para que se parezca a tu vida.',
+    focus_phrase: '¿Qué planes tienes?',
     segments,
   }
 }

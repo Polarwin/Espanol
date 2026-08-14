@@ -14,7 +14,7 @@ export function Leccion() {
 
   useEffect(() => {
     if (!lessonId) return
-    api.getLesson(lessonId).then(setLesson).catch(() => setError('No se pudo cargar la lección.'))
+    api.getLesson(lessonId, Date.now() % 1_000_000).then(setLesson).catch(() => setError('No se pudo cargar la lección.'))
     api.getMe().then(setUser).catch(() => {})
   }, [lessonId])
 
@@ -26,6 +26,7 @@ export function Leccion() {
       <div className="flex flex-wrap items-center gap-2"><Chip tone={lesson.cefr_level === 'A1' ? 'leaf' : 'river'}>{lesson.cefr_level}</Chip>{lesson.topics.map((topic) => <Chip key={topic} tone="cream">{topic}</Chip>)}</div>
       <h1 className="mt-3 font-display text-3xl font-bold sm:text-4xl">{lesson.title}</h1>
       <p className="mt-1 font-semibold text-ink-soft">{user ? `${preferredName(user)}, escucha el diálogo y sigue los subtítulos. Después podrás practicarlo con tu propia voz.` : 'Escucha el diálogo y sigue los subtítulos. Después podrás practicarlo con tu propia voz.'}</p>
+      <div className="mt-4 grid gap-3 rounded-2xl border border-river/15 bg-river-soft p-4 sm:grid-cols-2"><div><p className="text-xs font-extrabold uppercase tracking-wide text-river">Tu misión de esta visita</p><p className="mt-1 font-semibold">{lesson.personal_welcome}</p><p className="mt-1 text-sm font-semibold text-ink-soft">{lesson.session_mission}</p></div><div className="rounded-xl bg-paper p-3"><p className="text-xs font-extrabold uppercase tracking-wide text-terracotta">Frase especial</p><p className="mt-1 font-display text-lg font-bold">«{lesson.focus_phrase}»</p></div></div>
       <div className="mt-5"><VideoPlayer src={lesson.video_url} subtitle={firstLine} /></div>
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         {lesson.segments.map((segment, index) => (
@@ -36,6 +37,7 @@ export function Leccion() {
           </section>
         ))}
       </div>
+      <div className="mt-5 rounded-2xl bg-sun-soft p-4"><p className="text-xs font-extrabold uppercase tracking-wide text-terracotta-dark">Reto personal</p><p className="mt-1 font-bold">{lesson.closing_challenge}</p></div>
       <Link to={`/leccion/${lesson.id}/prueba`} className="mt-6 block w-full rounded-2xl bg-terracotta px-6 py-3.5 text-center font-bold text-paper shadow-card sm:ml-auto sm:w-fit">{user ? `${preferredName(user)}, empezar la práctica` : 'Empezar la práctica'}</Link>
     </div>
   )

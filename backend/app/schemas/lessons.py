@@ -41,6 +41,10 @@ class LessonDetail(BaseModel):
     source: str
     duration_seconds: int
     video_url: str
+    personal_welcome: str
+    session_mission: str
+    closing_challenge: str
+    focus_phrase: str
     segments: list[SegmentOut]
 
 

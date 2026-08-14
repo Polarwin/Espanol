@@ -116,6 +116,10 @@ export interface LessonDetail {
   source: string
   duration_seconds: number
   video_url: string
+  personal_welcome: string
+  session_mission: string
+  closing_challenge: string
+  focus_phrase: string
   segments: LessonSegment[]
 }
 

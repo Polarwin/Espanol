@@ -56,10 +56,32 @@ def list_lessons(db: Session = Depends(get_db)) -> list[LessonListItem]:
 
 
 @router.get("/{lesson_id}", response_model=LessonDetail)
-def lesson_detail(lesson_id: int, db: Session = Depends(get_db)) -> LessonDetail:
+def lesson_detail(
+    lesson_id: int,
+    variation: int = 0,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> LessonDetail:
     lesson = db.get(Lesson, lesson_id)
     if lesson is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
+    name = (user.nickname or user.display_name).strip()
+    interests = user.interests or lesson.topics or ["español"]
+    variant = (user.id * 7 + lesson.id * 3 + variation) % 4
+    missions = [
+        "Escucha primero sin traducir cada palabra; busca la idea principal.",
+        "Fíjate en la entonación y repite dos frases con el mismo ritmo.",
+        "Busca tres palabras que podrías usar esta semana en una conversación real.",
+        "Escucha cómo empieza y termina cada intervención del diálogo.",
+    ]
+    challenges = [
+        "Resume el diálogo en dos frases con tus propias palabras.",
+        "Cambia un detalle del diálogo para que se parezca a tu vida.",
+        "Imagina que eres uno de los personajes y responde en voz alta.",
+        "Usa una frase clave hoy con un compañero o vecino.",
+    ]
+    all_phrases = [phrase.text for segment in lesson.segments for phrase in segment.phrases]
+    focus_phrase = all_phrases[variant % len(all_phrases)] if all_phrases else lesson.title
     return LessonDetail(
         id=lesson.id,
         title=lesson.title,
@@ -68,6 +90,10 @@ def lesson_detail(lesson_id: int, db: Session = Depends(get_db)) -> LessonDetail
         source=lesson.source,
         duration_seconds=lesson.duration_seconds,
         video_url=media_url(lesson.video_path) or "",
+        personal_welcome=f"{name}, hoy conectamos «{lesson.title}» con tu interés por {interests[variant % len(interests)]}.",
+        session_mission=missions[variant],
+        closing_challenge=challenges[variant],
+        focus_phrase=focus_phrase,
         segments=[
             SegmentOut(
                 id=segment.id,
@@ -78,7 +104,7 @@ def lesson_detail(lesson_id: int, db: Session = Depends(get_db)) -> LessonDetail
                 transcript=[TranscriptLine.model_validate(line) for line in segment.transcript],
                 phrases=[
                     PhraseOut(id=phrase.id, text=phrase.text, translation=phrase.translation)
-                    for phrase in segment.phrases
+                    for phrase in (segment.phrases[variant % len(segment.phrases):] + segment.phrases[:variant % len(segment.phrases)] if segment.phrases else [])
                 ],
             )
             for segment in lesson.segments
