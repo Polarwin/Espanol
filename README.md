@@ -50,6 +50,17 @@ cd frontend
 npm run dev
 ```
 
+For microphone access on the intranet, start the additional mkcert-backed
+HTTPS server (reusing nextERP's LAN certificate):
+
+```bash
+cd frontend
+npm run dev:https
+```
+
+Open `https://192.168.0.9:5174`. Phones must trust the existing nextERP mkcert
+CA first; it is available from the home server at `/lucia/mkcert-ca.pem`.
+
 Vite listens on all network interfaces and proxies `/api` and `/media` to the
 backend at `http://localhost:8011`. From another device on the same network,
 open `http://<this-computer-ip>:5173`.
