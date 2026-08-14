@@ -29,6 +29,9 @@ export function VideoPlayer({ src, subtitle, fallbackDuration = 42 }: VideoPlaye
   const [muted, setMuted] = useState(false)
   const [captions, setCaptions] = useState(true)
   const hasVideo = Boolean(src)
+  const poster = src?.includes('/charla-con-vecinos/')
+    ? src.replace(/video\.mp4(?:\?.*)?$/, 'poster.png')
+    : undefined
 
   // Simulated clock for the placeholder (no media available in mock mode).
   useEffect(() => {
@@ -71,6 +74,7 @@ export function VideoPlayer({ src, subtitle, fallbackDuration = 42 }: VideoPlaye
           <video
             ref={videoRef}
             src={src}
+            poster={poster}
             muted={muted}
             className="absolute inset-0 h-full w-full object-cover"
             onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
@@ -90,6 +94,17 @@ export function VideoPlayer({ src, subtitle, fallbackDuration = 42 }: VideoPlaye
               CAFÉ de BARRIO
             </div>
           </div>
+        )}
+
+        {!playing && (
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label="Reproducir vídeo"
+            className="absolute left-1/2 top-1/2 z-10 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white/80 bg-terracotta/95 pl-1 text-paper shadow-xl transition hover:scale-105 hover:bg-terracotta-dark focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-sun sm:h-20 sm:w-20"
+          >
+            <IconPlay size={28} />
+          </button>
         )}
 
         {/* Spanish subtitle overlay */}
