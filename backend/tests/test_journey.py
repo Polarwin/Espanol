@@ -25,8 +25,8 @@ def test_complete_learner_journey(client: TestClient, auth_headers: dict) -> Non
     assert len(exercises) >= 4
 
     # A randomized lesson can contain two, three, or four clips. Each clip
-    # advances through mira -> escucha -> habla before the review step.
-    attempts_needed = today.json()["total_clips"] * 3
+    # advances through mira -> escucha -> comprueba -> habla before the review step.
+    attempts_needed = today.json()["total_clips"] * 4
     for index in range(attempts_needed):
         exercise = exercises[index % len(exercises)]
         answer = exercise["options"][0] if exercise.get("options") else "Esta es una respuesta completa"
@@ -68,13 +68,51 @@ def test_mi_ruta_stages_advance_and_stale_taps_do_not_skip(
     speaking = client.post(
         "/api/path/advance", json={"step": "escucha"}, headers=auth_headers
     )
-    assert speaking.json()["step"] == "habla"
+    assert speaking.json()["step"] == "comprueba"
+
+    checking = client.post(
+        "/api/path/advance", json={"step": "comprueba"}, headers=auth_headers
+    )
+    assert checking.json()["step"] == "habla"
 
     next_clip = client.post(
         "/api/path/advance", json={"step": "habla"}, headers=auth_headers
     ).json()
     assert next_clip["step"] == "mira"
     assert next_clip["clip_index"] == 1
+
+
+def test_clip_quiz_after_listening(client: TestClient, auth_headers: dict) -> None:
+    today = client.get("/api/path/today", headers=auth_headers).json()
+    assert today["quiz"] is None
+
+    client.post("/api/path/advance", json={"step": "mira"}, headers=auth_headers)
+    quiz_path = client.post(
+        "/api/path/advance", json={"step": "escucha"}, headers=auth_headers
+    ).json()
+    assert quiz_path["step"] == "comprueba"
+    quiz = quiz_path["quiz"]
+    assert quiz is not None
+    assert quiz["prompt"].startswith("¿Qué significa")
+    assert len(quiz["options"]) == 3
+
+    # The correct meaning is the current clip's first transcript translation.
+    detail = client.get(f"/api/lessons/{quiz_path['lesson']['id']}", headers=auth_headers).json()
+    clip = detail["segments"][quiz_path["clip_index"]]
+    answer = clip["transcript"][0]["en"]
+    assert answer in quiz["options"]
+
+    correct = client.post(
+        "/api/path/quiz", json={"choice": answer}, headers=auth_headers
+    )
+    assert correct.status_code == 200
+    assert correct.json() == {"correct": True, "correct_answer": answer}
+
+    wrong_option = next(option for option in quiz["options"] if option != answer)
+    wrong = client.post(
+        "/api/path/quiz", json={"choice": wrong_option}, headers=auth_headers
+    )
+    assert wrong.json()["correct"] is False
 
 
 def test_group_join_and_encouragement_journey(

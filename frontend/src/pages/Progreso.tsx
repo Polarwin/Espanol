@@ -9,6 +9,7 @@ import {
   IconEar,
   IconFlame,
   IconFluency,
+  IconGlobe,
   IconGrammar,
   IconPencil,
   IconPron,
@@ -23,6 +24,7 @@ const SKILL_STYLE: Record<string, { icon: typeof IconPron; bar: string; chip: st
   grammar: { icon: IconGrammar, bar: 'bg-leaf', chip: 'bg-leaf-soft text-leaf' },
   vocabulary: { icon: IconBook, bar: 'bg-terracotta', chip: 'bg-blush text-terracotta' },
   listening: { icon: IconEar, bar: 'bg-river', chip: 'bg-river-soft text-river' },
+  reading: { icon: IconGlobe, bar: 'bg-sun', chip: 'bg-sun-soft text-sun' },
   writing: { icon: IconPencil, bar: 'bg-river', chip: 'bg-river-soft text-river' },
 }
 const FALLBACK_STYLE = { icon: IconPuzzle, bar: 'bg-sun', chip: 'bg-sun-soft text-sun' }

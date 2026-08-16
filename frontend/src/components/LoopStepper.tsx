@@ -1,18 +1,19 @@
 import type { LoopStep } from '../api/types'
-import { IconChart, IconEar, IconEye, IconMic } from './icons'
+import { IconChart, IconCheck, IconEar, IconEye, IconMic } from './icons'
 
 const STEPS: { key: LoopStep; label: string; icon: typeof IconEye }[] = [
   { key: 'mira', label: 'Mira', icon: IconEye },
   { key: 'escucha', label: 'Escucha', icon: IconEar },
+  { key: 'comprueba', label: 'Comprueba', icon: IconCheck },
   { key: 'habla', label: 'Habla', icon: IconMic },
   { key: 'adapta', label: 'Adapta', icon: IconChart },
 ]
 
-/** Bottom stepper of the core loop: Mira → Escucha → Habla → Adapta. */
+/** Bottom stepper of the core loop: Mira → Escucha → Comprueba → Habla → Adapta. */
 export function LoopStepper({ current }: { current: LoopStep }) {
   const currentIndex = STEPS.findIndex((s) => s.key === current)
   return (
-    <div className="grid grid-cols-4 rounded-2xl bg-paper px-2 py-3 shadow-soft sm:flex sm:items-center sm:px-8 sm:py-4">
+    <div className="grid grid-cols-5 rounded-2xl bg-paper px-2 py-3 shadow-soft sm:flex sm:items-center sm:px-8 sm:py-4">
       {STEPS.map((step, i) => {
         const state = i < currentIndex ? 'done' : i === currentIndex ? 'active' : 'upcoming'
         const Icon = step.icon

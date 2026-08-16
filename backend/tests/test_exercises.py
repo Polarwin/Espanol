@@ -116,6 +116,8 @@ def test_attempt_advances_loop_and_streak(
     _attempt(client, auth_headers, exercise["id"], "reunirse")
     assert step() == ("escucha", 0)
     _attempt(client, auth_headers, exercise["id"], "reunirse")
+    assert step() == ("comprueba", 0)
+    _attempt(client, auth_headers, exercise["id"], "reunirse")
     assert step() == ("habla", 0)
     _attempt(client, auth_headers, exercise["id"], "reunirse")
     assert step() == ("mira", 1)

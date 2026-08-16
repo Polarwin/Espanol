@@ -17,6 +17,7 @@ _TYPE_LABELS = {
     "grammar": "la gramática",
     "writing": "la escritura",
     "listening": "la comprensión auditiva",
+    "reading": "la comprensión lectora",
     "pronunciation": "la pronunciación",
 }
 

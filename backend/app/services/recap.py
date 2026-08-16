@@ -17,6 +17,7 @@ SKILL_LABELS = {
     "grammar": "Gramática",
     "writing": "Escritura",
     "listening": "Comprensión",
+    "reading": "Lectura",
     "fluency": "Fluidez",
 }
 

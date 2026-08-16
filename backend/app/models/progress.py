@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from ..db import Base
 
-SKILLS = ("pronunciation", "vocabulary", "grammar", "writing", "listening", "fluency")
+SKILLS = ("pronunciation", "vocabulary", "grammar", "writing", "listening", "reading", "fluency")
 
 
 class SkillProgress(Base):

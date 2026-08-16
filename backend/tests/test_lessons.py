@@ -26,11 +26,11 @@ def test_lessons_list_published(client: TestClient) -> None:
         "Una ruta de senderismo",
         "Mensajes con intención",
     ]
-    assert len(lessons) == 30
+    assert len(lessons) == 42
     assert {
         level: sum(lesson["cefr_level"] == level for lesson in lessons)
-        for level in ("A1", "A2", "B1")
-    } == {"A1": 10, "A2": 10, "B1": 10}
+        for level in ("A1", "A2", "B1", "B2")
+    } == {"A1": 10, "A2": 10, "B1": 10, "B2": 12}
     first = lessons[0]
     assert first["cefr_level"] == "A2"
     assert first["topics"] == ["planes", "vida diaria"]
@@ -86,13 +86,14 @@ def test_lesson_assessment_groups(client: TestClient) -> None:
     assert [group["type"] for group in assessment["groups"]] == [
         "vocabulary",
         "grammar",
+        "reading",
         "writing",
         "listening",
     ]
-    assert assessment["total_questions"] == 11
-    assert assessment["duration_minutes"] == 17
+    assert assessment["total_questions"] == 13
+    assert assessment["duration_minutes"] == 20
 
-    listening = assessment["groups"][3]
+    listening = assessment["groups"][4]
     question = next(
         ex for ex in listening["exercises"] if "Lucía" in ex["prompt"]
     )

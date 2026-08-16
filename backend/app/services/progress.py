@@ -16,6 +16,7 @@ DEFAULT_SKILL_SCORES: dict[str, float] = {
     "vocabulary": 70.0,
     "writing": 65.0,
     "listening": 75.0,
+    "reading": 72.0,
 }
 
 MIN_SCORE = 0.0

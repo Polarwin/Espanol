@@ -80,11 +80,11 @@ def test_every_unit_has_its_own_conversation(
         ).json()
         for lesson in lessons
     ]
-    assert len(setups) == 30
+    assert len(setups) == 42
     assert {setup["lesson_id"] for setup in setups} == {lesson["id"] for lesson in lessons}
     assert all(setup["title"] and setup["goal"] and setup["greeting"] for setup in setups)
     assert all(len(setup["vocabulary"]) == 4 for setup in setups)
-    assert len({setup["scene"] for setup in setups}) == 30
+    assert len({setup["scene"] for setup in setups}) == 42
     vitamina_a2 = [setup for setup in setups if setup["title"].startswith("Vitamina A2 · U")]
     assert vitamina_a2[0]["greeting"] != vitamina_a2[1]["greeting"]
     assert vitamina_a2[0]["prompts"] != vitamina_a2[1]["prompts"]

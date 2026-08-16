@@ -6,7 +6,7 @@ import { preferredName } from '../api/types'
 import { Chip } from '../components/Chip'
 import { IconBook, IconChevronRight } from '../components/icons'
 
-const LEVELS = ['A1', 'A2', 'B1'] as const
+const LEVELS = ['A1', 'A2', 'B1', 'B2'] as const
 
 type CatalogLesson = LessonSummary & { unit: number }
 
@@ -20,7 +20,7 @@ function curriculum(lessons: LessonSummary[]): CatalogLesson[] {
 
 function lessonName(lesson: CatalogLesson) {
   return lesson.title
-    .replace(/^(?:A1|A2|B1) · Unidad \d+: /, '')
+    .replace(/^(?:A1|A2|B1|B2) · Unidad \d+: /, '')
     .replace(/^Vitamina A2 · U\d+: /, '')
 }
 
@@ -83,7 +83,7 @@ export function Lecciones() {
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-river-soft text-river"><IconBook size={24} /></span>
         <div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{user ? `${preferredName(user)}, tus unidades` : 'Tus unidades'}</h1>
-          <p className="font-semibold text-ink-soft">{current ? `Continuamos cerca de ${current.cefr_level} · Unidad ${current.unit}.` : 'Tu ruta desde A1 hasta B1.'}</p>
+          <p className="font-semibold text-ink-soft">{current ? `Continuamos cerca de ${current.cefr_level} · Unidad ${current.unit}.` : 'Tu ruta desde A1 hasta B2.'}</p>
         </div>
       </div>
       {error && <p className="mt-5 font-bold text-terracotta">{error}</p>}

@@ -1,5 +1,6 @@
 """Core loop route: GET /api/path/today."""
 
+import random
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -10,6 +11,8 @@ from sqlalchemy.orm import Session
 from ..db import get_db
 from ..models import Attempt, Exercise, Lesson, Segment, User
 from ..schemas import (
+    ClipQuiz,
+    ClipQuizResult,
     GrammarTip,
     LoopFeedback,
     NextSuggestion,
@@ -28,7 +31,11 @@ router = APIRouter(prefix="/api/path", tags=["path"])
 
 
 class AdvancePathRequest(BaseModel):
-    step: Literal["mira", "escucha", "habla", "adapta"]
+    step: Literal["mira", "escucha", "comprueba", "habla", "adapta"]
+
+
+class ClipQuizAnswer(BaseModel):
+    choice: str
 
 _DEFAULT_PRONUNCIATION_TIP = PronunciationTip(phrase="fin de semana", tip="Suaviza la d entre vocales")
 _DEFAULT_GRAMMAR_TIP = GrammarTip(
@@ -73,6 +80,8 @@ def path_today(user: User = Depends(get_current_user), db: Session = Depends(get
         gramatica=scores.get("grammar", DEFAULT_SKILL_SCORES["grammar"]),
     )
 
+    quiz_data = _clip_quiz(db, lesson, clip_index) if state.current_step == "comprueba" else None
+
     return PathToday(
         lesson=PathLesson(
             id=lesson.id, title=lesson.title, cefr_level=lesson.cefr_level, topics=lesson.topics
@@ -82,6 +91,7 @@ def path_today(user: User = Depends(get_current_user), db: Session = Depends(get
         total_clips=total_clips,
         video_url=media_url(lesson.video_path) or "",
         subtitle=subtitle,
+        quiz=ClipQuiz(**quiz_data) if quiz_data else None,
         feedback=feedback,
         pronunciation_tip=_pronunciation_tip(lesson, segment),
         grammar_tip=_grammar_tip(db, user, lesson),
@@ -113,6 +123,70 @@ def path_advance(
         record_activity(db, user)
         db.commit()
     return path_today(user, db)
+
+
+@router.post("/quiz", response_model=ClipQuizResult)
+def path_quiz(
+    payload: ClipQuizAnswer,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ClipQuizResult:
+    """Check the answer to the current clip's comprehension quiz."""
+    state = get_or_create_state(db, user, adaptive.choose_next_lesson(db, user))
+    lesson = db.get(Lesson, state.current_lesson_id) if state.current_lesson_id else None
+    if lesson is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No lesson available")
+    quiz_data = _clip_quiz(db, lesson, state.current_clip_index)
+    if quiz_data is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No quiz available")
+    correct = payload.choice == quiz_data["answer"]
+    return ClipQuizResult(correct=correct, correct_answer=quiz_data["answer"])
+
+
+def _clip_quiz(db: Session, lesson: Lesson, clip_index: int) -> dict | None:
+    """Build a deterministic meaning-check quiz for the clip's first line.
+
+    Options are English translations: the correct one plus two distractors from
+    the same lesson (or, if needed, other lessons at the same level).
+    """
+    segments = lesson.segments
+    if not segments:
+        return None
+    segment = segments[min(clip_index, len(segments) - 1)]
+    if not segment.transcript:
+        return None
+    line = segment.transcript[0]
+    correct = line["en"]
+
+    pool: list[str] = []
+    for seg in segments:
+        for item in seg.transcript:
+            if item["en"] != correct:
+                pool.append(item["en"])
+    if len(set(pool)) < 2:
+        others = db.scalars(
+            select(Lesson)
+            .where(Lesson.cefr_level == lesson.cefr_level, Lesson.id != lesson.id)
+            .order_by(Lesson.id)
+        ).all()
+        for other in others:
+            for seg in other.segments:
+                for item in seg.transcript:
+                    if item["en"] != correct:
+                        pool.append(item["en"])
+            if len(set(pool)) >= 2:
+                break
+
+    distractors = list(dict.fromkeys(pool))[:2]
+    if len(distractors) < 2:
+        return None
+    options = [correct, *distractors]
+    random.Random(f"{lesson.id}:{clip_index}").shuffle(options)
+    return {
+        "prompt": f"¿Qué significa «{line['es']}»?",
+        "options": options,
+        "answer": correct,
+    }
 
 
 def _pronunciation_tip(lesson: Lesson, segment: Segment | None) -> PronunciationTip:

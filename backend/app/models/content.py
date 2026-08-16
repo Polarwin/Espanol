@@ -65,9 +65,10 @@ class Exercise(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id"), index=True)
-    type: Mapped[str]  # "vocabulary" | "grammar" | "writing" | "listening" | "pronunciation"
+    type: Mapped[str]  # "vocabulary" | "grammar" | "writing" | "listening" | "pronunciation" | "reading"
     instructions: Mapped[str]
     prompt: Mapped[str] = mapped_column(Text)
+    passage: Mapped[str | None] = mapped_column(Text, nullable=True)  # reading text
     audio_path: Mapped[str | None] = mapped_column(nullable=True)  # relative to content_dir
     options: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     expected_answer: Mapped[str] = mapped_column(Text)

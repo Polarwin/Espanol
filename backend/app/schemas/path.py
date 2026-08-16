@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from .lessons import TranscriptLine
 
-LoopStep = Literal["mira", "escucha", "habla", "adapta"]
+LoopStep = Literal["mira", "escucha", "comprueba", "habla", "adapta"]
 
 
 class PathLesson(BaseModel):
@@ -40,6 +40,17 @@ class NextSuggestion(BaseModel):
     topics: list[str]
 
 
+class ClipQuiz(BaseModel):
+    """Quick comprehension check after watching/listening to a clip."""
+    prompt: str
+    options: list[str]
+
+
+class ClipQuizResult(BaseModel):
+    correct: bool
+    correct_answer: str
+
+
 class PathToday(BaseModel):
     lesson: PathLesson
     step: LoopStep
@@ -47,6 +58,7 @@ class PathToday(BaseModel):
     total_clips: int
     video_url: str
     subtitle: TranscriptLine
+    quiz: ClipQuiz | None = None
     feedback: LoopFeedback
     pronunciation_tip: PronunciationTip
     grammar_tip: GrammarTip

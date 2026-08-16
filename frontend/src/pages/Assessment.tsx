@@ -24,6 +24,7 @@ const GROUP_STYLE: Record<
 > = {
   vocabulary: { num: 'bg-leaf text-paper', ring: 'stroke-leaf', icon: IconBook, iconChip: 'bg-leaf-soft text-leaf' },
   grammar: { num: 'bg-sun text-paper', ring: 'stroke-sun', icon: IconPuzzle, iconChip: 'bg-sun-soft text-sun' },
+  reading: { num: 'bg-sun text-paper', ring: 'stroke-sun', icon: IconGlobe, iconChip: 'bg-sun-soft text-sun' },
   writing: { num: 'bg-river text-paper', ring: 'stroke-river', icon: IconPencil, iconChip: 'bg-river-soft text-river' },
   listening: { num: 'bg-terracotta text-paper', ring: 'stroke-river', icon: IconEar, iconChip: 'bg-river-soft text-river' },
 }
@@ -207,6 +208,12 @@ export function Assessment() {
                     <p className="text-sm font-semibold text-ink-soft">{activeGroup.instructions}</p>
                   </div>
                 </div>
+
+                {exercise.passage && (
+                  <div className="mt-4 rounded-2xl border border-river/15 bg-river-soft/60 px-4 py-3">
+                    <p className="text-[15px] font-semibold leading-relaxed text-ink">{exercise.passage}</p>
+                  </div>
+                )}
 
                 {exercise.audio_url && <div className="mt-4"><AudioPlayer src={exercise.audio_url} /></div>}
 

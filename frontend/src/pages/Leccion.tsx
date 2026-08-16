@@ -22,15 +22,23 @@ export function Leccion() {
 
   if (!lesson) return <div className="p-6 font-semibold text-ink-soft">{error || 'Cargando la lección…'}</div>
   const firstLine = lesson.segments[0]?.transcript[0]?.es ?? lesson.title
+  const cues = lesson.segments.flatMap((segment) => {
+    const span = segment.end_seconds - segment.start_seconds
+    return segment.transcript.map((line, index) => ({
+      start: segment.start_seconds + (index * span) / segment.transcript.length,
+      end: segment.start_seconds + ((index + 1) * span) / segment.transcript.length,
+      text: line.es,
+    }))
+  })
   const vocabularyWords = new Set(lesson.vocabulary.map((item) => item.text))
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8 sm:py-8">
       <div className="flex flex-wrap items-center gap-2"><Chip tone={lesson.cefr_level === 'A1' ? 'leaf' : 'river'}>{lesson.cefr_level}</Chip>{lesson.topics.map((topic) => <Chip key={topic} tone="cream">{topic}</Chip>)}</div>
       <h1 className="mt-3 font-display text-3xl font-bold sm:text-4xl">{lesson.title}</h1>
-      <p className="mt-1 font-semibold text-ink-soft">{user ? `${preferredName(user)}, escucha el diálogo y sigue los subtítulos. Después podrás practicarlo con tu propia voz.` : 'Escucha el diálogo y sigue los subtítulos. Después podrás practicarlo con tu propia voz.'}</p>
+      <p className="mt-1 font-semibold text-ink-soft">{user ? `${preferredName(user)}, escucha el diálogo y activa los subtítulos si los necesitas. Después podrás practicarlo con tu propia voz.` : 'Escucha el diálogo y activa los subtítulos si los necesitas. Después podrás practicarlo con tu propia voz.'}</p>
       <div className="mt-4 grid gap-3 rounded-2xl border border-river/15 bg-river-soft p-4 sm:grid-cols-2"><div><p className="text-xs font-extrabold uppercase tracking-wide text-river">Tu misión de esta visita</p><p className="mt-1 font-semibold">{lesson.personal_welcome}</p><p className="mt-1 text-sm font-semibold text-ink-soft">{lesson.session_mission}</p></div><div className="rounded-xl bg-paper p-3"><p className="text-xs font-extrabold uppercase tracking-wide text-terracotta">Frase especial</p><p className="mt-1 font-display text-lg font-bold">«{lesson.focus_phrase}»</p></div></div>
-      <div className="mt-5"><VideoPlayer src={lesson.video_url} subtitle={firstLine} /></div>
+      <div className="mt-5"><VideoPlayer src={lesson.video_url} subtitle={firstLine} cues={cues} /></div>
       <details className="mt-6 rounded-3xl bg-paper p-5 shadow-soft" open>
         <summary className="cursor-pointer list-none">
           <div className="flex items-center justify-between gap-3">

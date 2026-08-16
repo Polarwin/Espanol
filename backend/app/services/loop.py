@@ -1,11 +1,11 @@
-"""User position in the core loop (mira -> escucha -> habla per clip, then adapta)."""
+"""User position in the core loop (mira -> escucha -> comprueba -> habla per clip, then adapta)."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..models import Lesson, User, UserState
 
-STEPS = ("mira", "escucha", "habla", "adapta")
+STEPS = ("mira", "escucha", "comprueba", "habla", "adapta")
 
 
 def get_or_create_state(db: Session, user: User, first_lesson: Lesson | None) -> UserState:
@@ -25,8 +25,9 @@ def get_or_create_state(db: Session, user: User, first_lesson: Lesson | None) ->
 def advance_state(db: Session, user: User, next_lesson: Lesson | None = None) -> UserState:
     """Advance the user one tick through the loop.
 
-    mira -> escucha -> habla -> (next clip's mira) ... -> adapta after the last
-    clip. When adapta completes, the user moves on to the next lesson at mira/0.
+    mira -> escucha -> comprueba -> habla -> (next clip's mira) ... -> adapta
+    after the last clip. When adapta completes, the user moves on to the next
+    lesson at mira/0.
     """
     state = db.get(UserState, user.id)
     if state is None or state.current_lesson_id is None:
@@ -39,6 +40,8 @@ def advance_state(db: Session, user: User, next_lesson: Lesson | None = None) ->
     if state.current_step == "mira":
         state.current_step = "escucha"
     elif state.current_step == "escucha":
+        state.current_step = "comprueba"
+    elif state.current_step == "comprueba":
         state.current_step = "habla"
     elif state.current_step == "habla":
         if state.current_clip_index + 1 < total_clips:

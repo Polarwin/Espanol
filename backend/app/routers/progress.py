@@ -16,7 +16,8 @@ router = APIRouter(tags=["progress"])
 
 LABELS = {
     "pronunciation": "Pronunciación", "fluency": "Fluidez", "grammar": "Gramática",
-    "vocabulary": "Vocabulario", "listening": "Comprensión auditiva", "writing": "Escritura",
+    "vocabulary": "Vocabulario", "listening": "Comprensión auditiva", "reading": "Comprensión lectora",
+    "writing": "Escritura",
 }
 
 

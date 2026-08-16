@@ -59,6 +59,7 @@ class LessonDetail(BaseModel):
 class AssessmentExercise(BaseModel):
     id: int
     prompt: str
+    passage: str | None = None
     audio_url: str | None
     options: list[str] | None
 

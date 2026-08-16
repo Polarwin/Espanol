@@ -33,6 +33,7 @@ router = APIRouter(prefix="/api/lessons", tags=["lessons"])
 ASSESSMENT_TYPES: list[tuple[str, str]] = [
     ("vocabulary", "Vocabulario"),
     ("grammar", "Gramática"),
+    ("reading", "Lectura"),
     ("writing", "Escritura"),
     ("listening", "Comprensión"),
 ]
@@ -235,6 +236,7 @@ def _assessment_exercise(exercise: Exercise) -> AssessmentExercise:
     return AssessmentExercise(
         id=exercise.id,
         prompt=exercise.prompt,
+        passage=exercise.passage,
         audio_url=media_url(exercise.audio_path),
         options=exercise.options,
     )

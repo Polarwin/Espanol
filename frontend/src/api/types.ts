@@ -32,7 +32,7 @@ export interface AuthResponse {
   user: User
 }
 
-export type LoopStep = 'mira' | 'escucha' | 'habla' | 'adapta'
+export type LoopStep = 'mira' | 'escucha' | 'comprueba' | 'habla' | 'adapta'
 
 export interface LessonRef {
   id: string
@@ -65,6 +65,16 @@ export interface NextSuggestion {
   topics: string[]
 }
 
+export interface ClipQuiz {
+  prompt: string
+  options: string[]
+}
+
+export interface ClipQuizResult {
+  correct: boolean
+  correct_answer: string
+}
+
 export interface TodayPath {
   lesson: LessonRef
   step: LoopStep
@@ -72,6 +82,7 @@ export interface TodayPath {
   total_clips: number
   video_url: string
   subtitle: TranscriptLine
+  quiz?: ClipQuiz | null
   feedback: SkillFeedback
   pronunciation_tip: PronunciationTip
   grammar_tip: GrammarTip
@@ -131,11 +142,13 @@ export interface LessonDetail {
   segments: LessonSegment[]
 }
 
-export type ExerciseType = 'vocabulary' | 'grammar' | 'writing' | 'listening'
+export type ExerciseType = 'vocabulary' | 'grammar' | 'reading' | 'writing' | 'listening'
 
 export interface Exercise {
   id: string
   prompt: string
+  /** reading text shown above the question (reading exercises only) */
+  passage?: string | null
   audio_url?: string
   options?: string[]
   /** Present only in offline mock fixtures; the real API never returns answers. */

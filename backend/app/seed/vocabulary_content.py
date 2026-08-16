@@ -1,5 +1,6 @@
 """Curated thematic word banks and vocabulary practice for every unit."""
 
+import re
 from typing import Any
 
 
@@ -43,14 +44,42 @@ RAW_BANKS = {
     "B1 · Unidad 7: Relaciones humanas": "llevarse bien|to get along;interrumpir|to interrupt;hablar con sinceridad|to speak honestly;resolver un conflicto|to resolve a conflict;enfadarse|to get angry;apoyarse|to support each other;confiar en|to trust;sentirse decepcionado|to feel disappointed;me molesta que|it bothers me that;no soporto que|I cannot stand that;me encanta que|I love that;no estoy de acuerdo|I disagree;desde mi punto de vista|from my point of view;ponerse en el lugar de|to put oneself in someone's shoes;llegar a un acuerdo|to reach an agreement",
     "B1 · Unidad 8: ¡Que aproveche!": "la gastronomía|gastronomy;los ingredientes|ingredients;el sabor|flavour;el aroma|aroma;picante|spicy;suave|mild;la receta|recipe;mezclar|to mix;servir|to serve;conservar|to preserve;un truco de cocina|a cooking tip;para que|so that;puede que|it may;estar en su punto|to be perfectly cooked;¡Que aproveche!|Enjoy your meal!",
     "B1 · Unidad 9: Economía y consumo": "el ahorro|savings;los gastos|expenses;el presupuesto|budget;comprar por impulso|to buy impulsively;comparar precios|to compare prices;el consumo responsable|responsible consumption;desperdiciar|to waste;reparar|to repair;sustituir|to replace;la mayoría|the majority;uno de cada tres|one in three;según la encuesta|according to the survey;sin embargo|however;en lugar de|instead of;llegar a fin de mes|to make ends meet",
+
+    # B2: fifteen lexical items and discourse chunks per unit.
+    "B2 · Unidad 1: Señas de identidad": "el nombre propio|given name;el mote|nickname;el origen|origin;significar|to mean;poner el nombre|to name after;la bisabuela|great-grandmother;una tradición familiar|family tradition;coincidir con|to coincide with;la marca|brand;las señas de identidad|identity traits;de origen árabe|of Arabic origin;repetir un nombre|to repeat a name;llevar el nombre de|to bear someone's name;curiosamente|curiously;el sentido del humor|sense of humour",
+    "B2 · Unidad 2: Enigmas": "el enigma|enigma;la incógnita|unknown;el misterio|mystery;el testigo|witness;la explicación lógica|logical explanation;debe de haber|there must be;puede que haya|there may have been;desaparecer|to disappear;exagerar|to exaggerate;los investigadores|researchers;sin rastro|without a trace;el faro|lighthouse;seguir siendo|to remain;hacer suposiciones|to make guesses;resolver el misterio|to solve the mystery",
+    "B2 · Unidad 3: Al límite": "saltar en paracaídas|to skydive;la euforia|euphoria;el miedo|fear;la sensación|feeling;caer hacia el vacío|to fall into the void;tener valor|to have courage;escalar una montaña|to climb a mountain;una experiencia vital|life-changing experience;los derechos de los animales|animal rights;si tuviera|if I had;lo repetiría|I would repeat it;una aventura al límite|an extreme adventure;emocionarse|to get emotional;nunca olvidaré|I will never forget;al límite|at the limit",
+    "B2 · Unidad 4: Referentes": "el referente|role model;dejar huella|to leave a mark;la profesora|teacher;animar a|to encourage;los primeros relatos|first short stories;las mujeres precursoras|pioneering women;no ser reconocido|to go unrecognised;en su época|in their time;el influencer|influencer;los seguidores|followers;convertirse en|to become;fue ella quien|it was she who;admirar|to admire;un ejemplo a seguir|an example to follow;inspirar|to inspire",
+    "B2 · Unidad 5: Evolución": "la reseña|review;la novela|novel;el título|title;la autora|author;el estilo|style;los críticos|critics;elogiar|to praise;el final|ending;decepcionar|to disappoint;cuyo|whose;de quien|about whom;la evolución|evolution;los personajes|characters;la escritura formal|formal writing;una valoración|an assessment",
+    "B2 · Unidad 6: El paso del tiempo": "el paso del tiempo|the passing of time;la estética|aesthetics;la belleza|beauty;un objeto dañado|a damaged object;el valor especial|special value;conservar el encanto|to keep the charm;restaurar|to restore;el reloj antiguo|old clock;me habría gustado|I would have liked;habríamos hecho|we would have done;costar demasiado|to cost too much;la nostalgia|nostalgia;cien años|a hundred years;los bisabuelos|great-grandparents;el siglo pasado|last century",
+    "B2 · Unidad 7: Suerte": "la suerte|luck;la mala suerte|bad luck;tocar madera|to touch wood;el trébol de cuatro hojas|four-leaf clover;la manía|habit;ahuyentar|to ward off;la superstición|superstition;en cuanto|as soon as;cuando encuentre|when I find;guardar|to keep;el amuleto|amulet;la buena suerte|good luck;con esfuerzo|through effort;la obsesión|obsession;desarrollar manías|to develop habits",
+    "B2 · Unidad 8: Con duende": "el duende|magic charm;con encanto|charming;un rincón del mundo|a corner of the world;fascinante|fascinating;el rito|rite;la hoguera|bonfire;un plan seductor|an enticing plan;salido de un cuento|out of a fairy tale;la mezcla de culturas|mix of cultures;lo fascinante|the fascinating thing;cada verano|every summer;celebrar un rito|to celebrate a rite;proponer un plan|to propose a plan;las calles empedradas|cobbled streets;enamorarse de un lugar|to fall in love with a place",
+    "B2 · Unidad 9: Con sentido": "los sentidos|senses;el olor a café|smell of coffee;transportar|to transport;el gusto|sense of taste;oí cantar|I heard singing;los pájaros|birds;amanecer|to dawn;guardar recuerdos|to hold memories;el sentido predominante|predominant sense;el oído|hearing;la vista|eyesight;el olfato|sense of smell;el tacto|touch;la memoria sensorial|sensory memory;una obra de arte|a work of art",
+    "B2 · Unidad 10: Historia": "la historia|history;el acontecimiento|event;la probabilidad|probability;sería|it could be;debió de ser|it must have been;el siglo XIX|nineteenth century;seguir en pie|to still stand;los habitantes|inhabitants;la historia alterna|alternate history;¿qué habría pasado?|what would have happened?;fue construido|was built;está destruido|is destroyed;una época difícil|a difficult time;las fotos antiguas|old photos;el documento|document",
+    "B2 · Unidad 11: La imagen": "la imagen|image;la publicidad|advertising;ideas normativas|normative ideas;la sociedad|society;el sufijo apreciativo|appreciative suffix;el problemita|little problem;el hombretón|big burly man;el discursito|little speech;el desperdicio alimentario|food waste;la apariencia|appearance;merecer|to deserve;resultar ser|to turn out to be;el público|audience;cambiar de opinión|to change one's mind;con humor|with humour",
+    "B2 · Unidad 12: Más que palabras": "el matiz|nuance;más que palabras|more than words;ser listo|to be clever;estar listo|to be ready;estar frío|to be cold;ser abierto|to be open;estar callado|to be quiet;la constancia|consistency;una cuestión de perspectiva|a matter of perspective;la combinación frecuente|frequent collocation;buscar sinónimos|to look for synonyms;el aprendizaje de idiomas|language learning;por carácter|by nature;un estado temporal|a temporary state;el significado|meaning",
 }
 
 VOCABULARY_BANKS = {title: _pairs(items) for title, items in RAW_BANKS.items()}
 
 
+def _cloze_sentence(lesson: dict[str, Any], text: str) -> str | None:
+    """Find a lesson sentence containing the word and blank it out (DELE cloze)."""
+    needle = re.escape(text.lower())
+    candidates = [line["es"] for segment in lesson["segments"] for line in segment["transcript"]]
+    candidates += [
+        ex["expected_answer"] for ex in lesson["exercises"] if ex["type"] == "writing"
+    ]
+    for sentence in candidates:
+        match = re.search(rf"(?<!\w){needle}(?!\w)", sentence, flags=re.IGNORECASE)
+        if match:
+            return sentence[: match.start()] + "___" + sentence[match.end() :]
+    return None
+
+
 def enrich_lessons(lessons: list[dict[str, Any]]) -> None:
     """Add visible vocabulary and varied checks to the authored catalog."""
-    targets = {"A1": 4, "A2": 5, "B1": 6}
+    targets = {"A1": 4, "A2": 5, "B1": 6, "B2": 7}
     for lesson in lessons:
         bank = VOCABULARY_BANKS.get(lesson["title"], [])
         if not bank:
@@ -71,17 +100,32 @@ def enrich_lessons(lessons: list[dict[str, Any]]) -> None:
         needed = max(0, targets[lesson["cefr_level"]] - len(vocabulary))
         additions = []
         for index, (text, translation) in enumerate(candidates[:needed]):
-            other = [meaning for word, meaning in bank if word != text]
-            additions.append(
-                {
-                    "type": "vocabulary",
-                    "instructions": "Elige el significado en este contexto.",
-                    "prompt": text,
-                    "options": [translation, other[index % len(other)], other[(index + 3) % len(other)]],
-                    "expected_answer": translation,
-                    "skill_weights": {"vocabulary": 1.0},
-                }
-            )
+            other_words = [word for word, _ in bank if word != text]
+            distractors = [other_words[index % len(other_words)], other_words[(index + 3) % len(other_words)]]
+            cloze = _cloze_sentence(lesson, text)
+            if cloze:
+                # DELE-style: complete the sentence with the right word.
+                additions.append(
+                    {
+                        "type": "vocabulary",
+                        "instructions": "Elige la palabra que completa la frase.",
+                        "prompt": cloze,
+                        "options": [text, *distractors],
+                        "expected_answer": text,
+                        "skill_weights": {"vocabulary": 1.0},
+                    }
+                )
+            else:
+                additions.append(
+                    {
+                        "type": "vocabulary",
+                        "instructions": "Elige la palabra correcta.",
+                        "prompt": f"¿Qué palabra significa «{translation}»?",
+                        "options": [text, *distractors],
+                        "expected_answer": text,
+                        "skill_weights": {"vocabulary": 1.0},
+                    }
+                )
         lesson["exercises"] = vocabulary + additions + [
             ex for ex in lesson["exercises"] if ex["type"] != "vocabulary"
         ]

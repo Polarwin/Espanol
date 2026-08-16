@@ -54,22 +54,23 @@ def generate_media(lesson_data: dict) -> None:
     else:
         with TemporaryDirectory() as temp_dir:
             narration = Path(temp_dir) / "narration.mp3"
-            subtitles = Path(temp_dir) / "subtitles.srt"
             gTTS(" ".join(lines), lang="es", tld="es", slow=False).save(str(narration))
             duration = _media_duration(narration)
-            subtitles.write_text(_srt(lines, duration), encoding="utf-8")
+            # Clean video: subtitles are shown by the player's toggleable
+            # caption overlay instead of being burned into the frames.
             _run_ffmpeg(
                 [
                     "-f", "lavfi", "-i", f"color=c=0x16324f:s=960x540:d={duration:.2f}",
                     "-i", str(narration),
-                    "-vf", f"subtitles={subtitles}:force_style='FontName=DejaVu Sans,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H80000000,BorderStyle=3,Outline=1,MarginV=42'",
                     "-shortest", "-c:v", "libx264", "-c:a", "aac", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
                 ],
                 base / "video.mp4",
             )
     for order_index, exercise in enumerate(lesson_data["exercises"]):
         if exercise.get("audio"):
-            spoken = exercise["expected_answer"]
+            # Listening exercises speak a DELE-style script; pronunciation
+            # exercises speak the phrase to repeat.
+            spoken = exercise.get("audio_text") or exercise["expected_answer"]
             gTTS(spoken, lang="es", tld="es", slow=exercise["type"] == "pronunciation").save(
                 str(base / f"exercise-{order_index}.mp3")
             )
@@ -81,22 +82,6 @@ def _media_duration(path: Path) -> float:
         check=True, capture_output=True, text=True,
     )
     return max(float(result.stdout.strip()), 1.0)
-
-
-def _srt(lines: list[str], duration: float) -> str:
-    per_line = duration / max(len(lines), 1)
-    blocks = []
-    for index, line in enumerate(lines, start=1):
-        blocks.append(f"{index}\n{_srt_time((index - 1) * per_line)} --> {_srt_time(index * per_line)}\n{line}\n")
-    return "\n".join(blocks)
-
-
-def _srt_time(seconds: float) -> str:
-    milliseconds = round(seconds * 1000)
-    hours, remainder = divmod(milliseconds, 3_600_000)
-    minutes, remainder = divmod(remainder, 60_000)
-    secs, millis = divmod(remainder, 1000)
-    return f"{hours:02}:{minutes:02}:{secs:02},{millis:03}"
 
 
 def wipe(db: Session, remove_media: bool = True) -> None:
@@ -132,6 +117,10 @@ def sync_missing_lessons(db: Session, media: bool = True) -> int:
     missing = [lesson for lesson in LESSONS if lesson["title"] not in existing]
     for lesson_data in missing:
         _insert_lesson(db, lesson_data, media)
+    # Flush before the enrichment pass: SessionLocal runs with autoflush=False,
+    # so the last inserted segment's phrases are still pending and would
+    # otherwise be re-inserted by sync_lesson_enrichment's dedup check.
+    db.flush()
     sync_lesson_enrichment(db)
     db.commit()
     return len(missing)
@@ -157,23 +146,33 @@ def sync_lesson_enrichment(db: Session) -> tuple[int, int]:
                     existing.add(phrase["text"])
                     phrases_added += 1
 
-        existing_exercises = {(exercise.type, exercise.prompt) for exercise in lesson.exercises}
+        existing_by_key = {(exercise.type, exercise.prompt): exercise for exercise in lesson.exercises}
+        seen = set(existing_by_key)
         next_order = max((exercise.order_index for exercise in lesson.exercises), default=-1) + 1
         for authored in lesson_data["exercises"]:
             key = (authored["type"], authored["prompt"])
-            if key in existing_exercises:
+            if key in seen:
+                # Reconcile mutable fields (options, passage) with the source.
+                existing_exercise = existing_by_key.get(key)
+                if existing_exercise is not None and (
+                    existing_exercise.options != authored["options"]
+                    or existing_exercise.passage != authored.get("passage")
+                ):
+                    existing_exercise.options = authored["options"]
+                    existing_exercise.passage = authored.get("passage")
                 continue
             db.add(
                 Exercise(
                     lesson_id=lesson.id,
                     type=authored["type"], instructions=authored["instructions"],
-                    prompt=authored["prompt"], audio_path=None, options=authored["options"],
+                    prompt=authored["prompt"], passage=authored.get("passage"),
+                    audio_path=None, options=authored["options"],
                     expected_answer=authored["expected_answer"],
                     skill_weights=authored["skill_weights"], order_index=next_order,
                 )
             )
             next_order += 1
-            existing_exercises.add(key)
+            seen.add(key)
             exercises_added += 1
     return phrases_added, exercises_added
 
@@ -198,7 +197,7 @@ def _insert_lesson(db: Session, lesson_data: dict, media: bool) -> None:
         for phrase in seg["phrases"]:
             db.add(Phrase(segment_id=segment.id, text=phrase["text"], translation=phrase["translation"], tip=phrase["tip"]))
     for order_index, ex in enumerate(lesson_data["exercises"]):
-        db.add(Exercise(lesson_id=lesson.id, type=ex["type"], instructions=ex["instructions"], prompt=ex["prompt"], audio_path=audio_paths.get(order_index), options=ex["options"], expected_answer=ex["expected_answer"], skill_weights=ex["skill_weights"], order_index=order_index))
+        db.add(Exercise(lesson_id=lesson.id, type=ex["type"], instructions=ex["instructions"], prompt=ex["prompt"], passage=ex.get("passage"), audio_path=audio_paths.get(order_index), options=ex["options"], expected_answer=ex["expected_answer"], skill_weights=ex["skill_weights"], order_index=order_index))
 
 
 def load() -> None:

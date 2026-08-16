@@ -1,9 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { IconExpand, IconPause, IconPlay, IconVolume } from './icons'
 
+interface CaptionCue {
+  start: number
+  end: number
+  text: string
+}
+
 interface VideoPlayerProps {
   src?: string
   subtitle: string
+  /** timed caption lines; when provided, the overlay follows playback time */
+  cues?: CaptionCue[]
   /** fallback duration when there is no playable media (mock mode) */
   fallbackDuration?: number
 }
@@ -20,15 +28,18 @@ function formatTime(s: number): string {
  * fullscreen). Without a playable source it shows a warm placeholder scene
  * and simulates playback time.
  */
-export function VideoPlayer({ src, subtitle, fallbackDuration = 42 }: VideoPlayerProps) {
+export function VideoPlayer({ src, subtitle, cues, fallbackDuration = 42 }: VideoPlayerProps) {
   const playerRef = useRef<HTMLDivElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [playing, setPlaying] = useState(false)
   const [time, setTime] = useState(0)
   const [duration, setDuration] = useState(fallbackDuration)
   const [muted, setMuted] = useState(false)
-  const [captions, setCaptions] = useState(true)
+  const [captions, setCaptions] = useState(false)
   const hasVideo = Boolean(src)
+  const captionText = cues
+    ? (cues.find((cue) => time >= cue.start && time < cue.end)?.text ?? '')
+    : subtitle
   const poster = src?.includes('/charla-con-vecinos/')
     ? src.replace(/video\.mp4(?:\?.*)?$/, 'poster.png')
     : undefined
@@ -108,9 +119,9 @@ export function VideoPlayer({ src, subtitle, fallbackDuration = 42 }: VideoPlaye
         )}
 
         {/* Spanish subtitle overlay */}
-        {captions && <div className="absolute inset-x-0 bottom-14 flex justify-center px-6">
+        {captions && captionText && <div className="absolute inset-x-0 bottom-14 flex justify-center px-6">
           <span className="rounded-lg bg-black/65 px-4 py-1.5 text-center text-[15px] font-semibold text-paper">
-            {subtitle}
+            {captionText}
           </span>
         </div>}
       </div>

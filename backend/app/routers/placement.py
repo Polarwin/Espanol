@@ -18,11 +18,14 @@ QUESTIONS = [
     {"id": "v1", "skill": "vocabulary", "prompt": "¿Qué significa «la mañana»?", "options": ["morning", "afternoon", "night"], "answer": "morning", "level": "A1"},
     {"id": "g1", "skill": "grammar", "prompt": "Yo ___ de Valencia.", "options": ["soy", "eres", "es"], "answer": "soy", "level": "A1"},
     {"id": "l1", "skill": "listening", "prompt": "Lee como si lo escucharas: «Son las ocho y media». ¿Qué hora es?", "options": ["8:30", "8:15", "9:30"], "answer": "8:30", "level": "A1"},
+    {"id": "r1", "skill": "reading", "prompt": "Lee: «María vive en Sevilla con su gato». ¿Quién vive con María?", "options": ["Su gato", "Su hermana", "Su madre"], "answer": "Su gato", "level": "A1"},
     {"id": "v2", "skill": "vocabulary", "prompt": "«Quedar con amigos» significa…", "options": ["meet friends", "call friends", "help friends"], "answer": "meet friends", "level": "A2"},
     {"id": "g2", "skill": "grammar", "prompt": "Mañana nosotros ___ a visitar el museo.", "options": ["vamos", "hemos", "somos"], "answer": "vamos", "level": "A2"},
     {"id": "l2", "skill": "listening", "prompt": "«Aunque llueva, iremos al mercado». ¿Qué harán?", "options": ["Irán al mercado", "Se quedarán en casa", "No lo saben"], "answer": "Irán al mercado", "level": "A2"},
+    {"id": "r2", "skill": "reading", "prompt": "Lee: «Ayer compré entradas para el concierto del sábado». ¿Cuándo es el concierto?", "options": ["El sábado", "Ayer", "El domingo"], "answer": "El sábado", "level": "A2"},
     {"id": "v3", "skill": "vocabulary", "prompt": "¿Qué palabra se parece más a «sin embargo»?", "options": ["no obstante", "además", "por eso"], "answer": "no obstante", "level": "B1"},
     {"id": "g3", "skill": "grammar", "prompt": "Si tuviera tiempo, ___ más español.", "options": ["estudiaría", "estudiaré", "estudio"], "answer": "estudiaría", "level": "B1"},
+    {"id": "r3", "skill": "reading", "prompt": "Lee: «Aunque el tren salió con retraso, llegamos a tiempo a la entrevista». ¿Cómo llegaron a la entrevista?", "options": ["A tiempo", "Tarde", "No llegaron"], "answer": "A tiempo", "level": "B1"},
 ]
 
 
@@ -88,7 +91,7 @@ def submit(payload: PlacementSubmission, user: User = Depends(get_current_user),
 
 @router.post("/skip", response_model=PlacementResult)
 def skip(user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> PlacementResult:
-    levels = {skill: "A1" for skill in ("vocabulary", "grammar", "listening", "pronunciation", "fluency", "writing")}
+    levels = {skill: "A1" for skill in ("vocabulary", "grammar", "listening", "reading", "pronunciation", "fluency", "writing")}
     scores = {skill: 35.0 for skill in levels}
     _finish(db, user, "A1", levels, scores)
     return PlacementResult(overall_level="A1", skill_levels=levels, correct=0, total=len(QUESTIONS))

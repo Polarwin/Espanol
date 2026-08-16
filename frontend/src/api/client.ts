@@ -6,6 +6,7 @@ import { Capacitor } from '@capacitor/core'
 import type {
   AttemptResult,
   AuthResponse,
+  ClipQuizResult,
   LessonAssessment,
   LessonDetail,
   LessonSummary,
@@ -143,6 +144,13 @@ export const api = {
     return request<TodayPath>('/api/path/advance', {
       method: 'POST',
       body: JSON.stringify({ step }),
+    })
+  },
+
+  answerClipQuiz(choice: string): Promise<ClipQuizResult> {
+    return request<ClipQuizResult>('/api/path/quiz', {
+      method: 'POST',
+      body: JSON.stringify({ choice }),
     })
   },
 

@@ -8,6 +8,7 @@ const LABELS: Record<string, string> = {
   vocabulary: 'Vocabulario',
   grammar: 'Gramática',
   listening: 'Comprensión',
+  reading: 'Lectura',
 }
 
 export function Placement() {

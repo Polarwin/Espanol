@@ -4,6 +4,7 @@ import { api } from '../api/client'
 import type { Progress, TodayPath, User } from '../api/types'
 import { preferredName } from '../api/types'
 import { Chip } from '../components/Chip'
+import { ClipQuizCard } from '../components/ClipQuiz'
 import { FeedbackPanel } from '../components/FeedbackPanel'
 import { IconChart, IconFlame, IconSun } from '../components/icons'
 import { LoopStepper } from '../components/LoopStepper'
@@ -35,8 +36,9 @@ export function MiRuta() {
   }
 
   const stageCopy = {
-    mira: ['Mira el clip', 'Observa la situación y lee los subtítulos.', 'Ya lo he visto'],
+    mira: ['Mira el clip', 'Observa la situación; activa los subtítulos si los necesitas.', 'Ya lo he visto'],
     escucha: ['Escucha con atención', 'Reproduce el clip otra vez y céntrate en cómo suena.', 'Ya lo he escuchado'],
+    comprueba: ['Comprueba tu comprensión', 'Elige el significado de lo que acabas de oír.', 'Continuar'],
     habla: ['Habla en voz alta', 'Graba la frase y compara tu pronunciación.', 'He practicado la frase'],
     adapta: ['Adapta y continúa', 'Revisa tu feedback; la siguiente lección se ajustará a ti.', 'Ir a la siguiente lección'],
   }[today.step]
@@ -109,6 +111,10 @@ export function MiRuta() {
             </div>
             {error && <p className="mt-2 text-sm font-bold text-terracotta">{error}</p>}
           </section>
+
+          {today.step === 'comprueba' && today.quiz && (
+            <ClipQuizCard quiz={today.quiz} />
+          )}
 
           {today.step === 'habla' && (
             <RepeatPhraseCard
