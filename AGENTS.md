@@ -6,6 +6,12 @@ The app is a Capacitor shell: the web bundle from `frontend/dist` is copied into
 `frontend/android/app/src/main/assets/public/`. Data always comes from the API
 server, so only **frontend/UI changes** require a new APK.
 
+**Always update the APK with any frontend change**: bump `versionCode` /
+`versionName` in `frontend/android/app/build.gradle`, rebuild, publish to
+`content/downloads/vamos-espanol.apk`, then commit, push, tag `v<versionName>`
+and create a GitHub release with the APK attached (`gh release create`). Do not
+leave the site/APK serving a stale bundle.
+
 ### Environment gotchas (this machine)
 
 - System Java is a **JRE only** (`/usr/lib/jvm/java-25-openjdk-amd64` has no

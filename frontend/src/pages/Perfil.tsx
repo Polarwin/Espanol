@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { User } from '../api/types'
 import { preferredName } from '../api/types'
@@ -60,6 +61,16 @@ export function Perfil() {
         </button>
         {message && <p className="mt-4 font-bold text-leaf" role="status">{message}</p>}
       </form>
+
+      <section className="mt-6 rounded-3xl bg-paper p-5 shadow-card sm:p-7">
+        <h2 className="font-display text-xl font-bold">Prueba de nivel</h2>
+        <p className="mt-2 font-semibold text-ink-soft">
+          ¿Has mejorado? Repite la prueba cuando quieras: es diferente cada vez y ajusta tu ruta a tu nivel real.
+        </p>
+        <Link to="/nivel" className="mt-4 inline-block rounded-xl bg-river px-5 py-3 font-bold text-paper shadow-soft">
+          Hacer la prueba de nivel
+        </Link>
+      </section>
     </div>
   )
 }

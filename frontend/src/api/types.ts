@@ -18,6 +18,15 @@ export interface PlacementQuestion {
   skill: string
   prompt: string
   options: string[]
+  passage?: string | null
+  audio_url?: string | null
+}
+
+export interface PlacementGradeResult {
+  level: string
+  correct: number
+  total: number
+  passed: boolean
 }
 
 export interface PlacementResult {

@@ -1,38 +1,139 @@
-"""Short A1-B1 placement test used before the adaptive path begins."""
+"""Adaptive A1-B2 placement test sampled fresh from seeded lesson content.
+
+Every block is drawn at random from the published exercises of that level
+(grammar, vocabulary, reading with passage, listening with real audio), so no
+two tests are the same and the test stays in sync with the seeded content.
+"""
 
 import random
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..models import Lesson, SkillProgress, User, UserState
-from ..schemas.placement import PlacementQuestion, PlacementResult, PlacementSubmission
+from ..models import Exercise, Lesson, SkillProgress, User, UserState
+from ..schemas.placement import (
+    PlacementGradeResult,
+    PlacementGradeSubmission,
+    PlacementQuestion,
+    PlacementResult,
+    PlacementSubmission,
+)
 from ..services import adaptive
 from ..services.security import get_current_user
+from .path import media_url
 
 router = APIRouter(prefix="/api/placement", tags=["placement"])
 
-QUESTIONS = [
-    {"id": "v1", "skill": "vocabulary", "prompt": "¿Qué significa «la mañana»?", "options": ["morning", "afternoon", "night"], "answer": "morning", "level": "A1"},
-    {"id": "g1", "skill": "grammar", "prompt": "Yo ___ de Valencia.", "options": ["soy", "eres", "es"], "answer": "soy", "level": "A1"},
-    {"id": "l1", "skill": "listening", "prompt": "Lee como si lo escucharas: «Son las ocho y media». ¿Qué hora es?", "options": ["8:30", "8:15", "9:30"], "answer": "8:30", "level": "A1"},
-    {"id": "r1", "skill": "reading", "prompt": "Lee: «María vive en Sevilla con su gato». ¿Quién vive con María?", "options": ["Su gato", "Su hermana", "Su madre"], "answer": "Su gato", "level": "A1"},
-    {"id": "v2", "skill": "vocabulary", "prompt": "«Quedar con amigos» significa…", "options": ["meet friends", "call friends", "help friends"], "answer": "meet friends", "level": "A2"},
-    {"id": "g2", "skill": "grammar", "prompt": "Mañana nosotros ___ a visitar el museo.", "options": ["vamos", "hemos", "somos"], "answer": "vamos", "level": "A2"},
-    {"id": "l2", "skill": "listening", "prompt": "«Aunque llueva, iremos al mercado». ¿Qué harán?", "options": ["Irán al mercado", "Se quedarán en casa", "No lo saben"], "answer": "Irán al mercado", "level": "A2"},
-    {"id": "r2", "skill": "reading", "prompt": "Lee: «Ayer compré entradas para el concierto del sábado». ¿Cuándo es el concierto?", "options": ["El sábado", "Ayer", "El domingo"], "answer": "El sábado", "level": "A2"},
-    {"id": "v3", "skill": "vocabulary", "prompt": "¿Qué palabra se parece más a «sin embargo»?", "options": ["no obstante", "además", "por eso"], "answer": "no obstante", "level": "B1"},
-    {"id": "g3", "skill": "grammar", "prompt": "Si tuviera tiempo, ___ más español.", "options": ["estudiaría", "estudiaré", "estudio"], "answer": "estudiaría", "level": "B1"},
-    {"id": "r3", "skill": "reading", "prompt": "Lee: «Aunque el tren salió con retraso, llegamos a tiempo a la entrevista». ¿Cómo llegaron a la entrevista?", "options": ["A tiempo", "Tarde", "No llegaron"], "answer": "A tiempo", "level": "B1"},
-]
+LEVELS = ["A1", "A2", "B1", "B2"]
+PASS_RATIO = 0.7
+SKILL_PASS_RATIO = 0.5
+LEVEL_SCORES = {"A1": 40.0, "A2": 55.0, "B1": 70.0, "B2": 85.0}
+
+
+def _pool(db: Session, level: str, skill: str) -> list[Exercise]:
+    """Multiple-choice exercises of one skill at one level.
+
+    Filtered in Python: some legacy rows store JSON ``null`` instead of SQL
+    NULL, which ``isnot(None)`` would not catch.
+    """
+    rows = db.scalars(
+        select(Exercise)
+        .join(Lesson)
+        .where(
+            Lesson.cefr_level == level,
+            Lesson.status == "published",
+            Exercise.type == skill,
+        )
+    ).all()
+    return [row for row in rows if row.options]
+
+
+def _pick(rows: list[Exercise], count: int) -> list[Exercise]:
+    return random.sample(rows, k=min(count, len(rows))) if rows else []
+
+
+def _pick_reading(rows: list[Exercise], count: int) -> list[Exercise]:
+    """Reading questions come in pairs sharing one passage — sample per lesson."""
+    by_lesson: dict[int, list[Exercise]] = {}
+    for row in rows:
+        by_lesson.setdefault(row.lesson_id, []).append(row)
+    if not by_lesson:
+        return []
+    group = random.choice(list(by_lesson.values()))
+    return _pick(group, count)
+
+
+def _sample_block(db: Session, level: str) -> list[dict]:
+    rows = (
+        _pick(_pool(db, level, "grammar"), 2)
+        + _pick(_pool(db, level, "vocabulary"), 2)
+        + _pick_reading(_pool(db, level, "reading"), 2)
+        + _pick(_pool(db, level, "listening"), 2)
+    )
+    random.shuffle(rows)
+    return [
+        {
+            "id": f"ex-{row.id}",
+            "skill": row.type,
+            "prompt": row.prompt,
+            "options": row.options,
+            "passage": row.passage if row.type == "reading" else None,
+            "audio_url": media_url(row.audio_path) if row.type == "listening" else None,
+        }
+        for row in rows
+    ]
+
+
+def _grade(db: Session, answers: dict[str, str]) -> tuple[dict[str, list[bool]], dict[str, dict[str, list[bool]]], int, int]:
+    """Recompute results from the DB so the client cannot inflate its level."""
+    ids = [int(key[3:]) for key in answers if key.startswith("ex-") and key[3:].isdigit()]
+    rows = (
+        db.execute(select(Exercise, Lesson.cefr_level).join(Lesson).where(Exercise.id.in_(ids))).all()
+        if ids
+        else []
+    )
+    per_level: dict[str, list[bool]] = {}
+    per_skill: dict[str, dict[str, list[bool]]] = {}
+    correct = 0
+    for exercise, level in rows:
+        passed = answers[f"ex-{exercise.id}"] == exercise.expected_answer
+        correct += int(passed)
+        per_level.setdefault(level, []).append(passed)
+        per_skill.setdefault(exercise.type, {}).setdefault(level, []).append(passed)
+    return per_level, per_skill, correct, len(rows)
+
+
+def _passed(results: list[bool], ratio: float) -> bool:
+    return bool(results) and sum(results) / len(results) >= ratio
 
 
 @router.get("", response_model=list[PlacementQuestion])
-def questions(_: User = Depends(get_current_user)) -> list[dict]:
-    shuffled = random.sample(QUESTIONS, k=len(QUESTIONS))
-    return [{key: value for key, value in question.items() if key not in {"answer", "level"}} for question in shuffled]
+def questions(
+    level: str = Query(default="A2"),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    if level not in LEVELS:
+        raise HTTPException(status_code=400, detail=f"Nivel desconocido: {level}")
+    return _sample_block(db, level)
+
+
+@router.post("/grade", response_model=PlacementGradeResult)
+def grade(
+    payload: PlacementGradeSubmission,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> PlacementGradeResult:
+    per_level, _, correct, total = _grade(db, payload.answers)
+    results = per_level.get(payload.level, [])
+    return PlacementGradeResult(
+        level=payload.level,
+        correct=correct,
+        total=total,
+        passed=_passed(results, PASS_RATIO),
+    )
 
 
 def _random_lesson_for_level(db: Session, level: str) -> Lesson | None:
@@ -69,24 +170,22 @@ def _finish(db: Session, user: User, overall: str, levels: dict[str, str], score
 
 @router.post("", response_model=PlacementResult)
 def submit(payload: PlacementSubmission, user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> PlacementResult:
-    by_skill: dict[str, list[bool]] = {}
-    correct = 0
-    for question in QUESTIONS:
-        passed = payload.answers.get(question["id"]) == question["answer"]
-        correct += int(passed)
-        by_skill.setdefault(question["skill"], []).append(passed)
+    per_level, per_skill, correct, total = _grade(db, payload.answers)
+    passed_levels = [level for level in LEVELS if _passed(per_level.get(level, []), PASS_RATIO)]
+    overall = passed_levels[-1] if passed_levels else "A1"
     levels: dict[str, str] = {}
     scores: dict[str, float] = {}
-    for skill, results in by_skill.items():
-        count = sum(results)
-        levels[skill] = "B1" if count == len(results) else "A2" if count >= 2 else "A1"
-        scores[skill] = round(35 + 20 * count, 1)
-    overall = "B1" if correct >= 7 else "A2" if correct >= 4 else "A1"
+    for skill in ("vocabulary", "grammar", "listening", "reading"):
+        by_level = per_skill.get(skill, {})
+        skill_levels = [level for level in LEVELS if _passed(by_level.get(level, []), SKILL_PASS_RATIO)]
+        level = skill_levels[-1] if skill_levels else overall
+        levels[skill] = level
+        scores[skill] = LEVEL_SCORES[level]
     for skill in ("pronunciation", "fluency", "writing"):
         levels[skill] = overall
-        scores[skill] = 70.0 if overall == "B1" else 55.0 if overall == "A2" else 40.0
+        scores[skill] = LEVEL_SCORES[overall]
     _finish(db, user, overall, levels, scores)
-    return PlacementResult(overall_level=overall, skill_levels=levels, correct=correct, total=len(QUESTIONS))
+    return PlacementResult(overall_level=overall, skill_levels=levels, correct=correct, total=total)
 
 
 @router.post("/skip", response_model=PlacementResult)
@@ -94,4 +193,4 @@ def skip(user: User = Depends(get_current_user), db: Session = Depends(get_db)) 
     levels = {skill: "A1" for skill in ("vocabulary", "grammar", "listening", "reading", "pronunciation", "fluency", "writing")}
     scores = {skill: 35.0 for skill in levels}
     _finish(db, user, "A1", levels, scores)
-    return PlacementResult(overall_level="A1", skill_levels=levels, correct=0, total=len(QUESTIONS))
+    return PlacementResult(overall_level="A1", skill_levels=levels, correct=0, total=0)

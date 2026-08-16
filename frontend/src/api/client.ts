@@ -18,6 +18,7 @@ import type {
   WeeklyRecap,
   FriendGroup,
   PlacementQuestion,
+  PlacementGradeResult,
   PlacementResult,
   User,
 } from './types'
@@ -257,8 +258,12 @@ export const api = {
     })
   },
 
-  getPlacement(): Promise<PlacementQuestion[]> {
-    return request<PlacementQuestion[]>('/api/placement')
+  getPlacement(level: string): Promise<PlacementQuestion[]> {
+    return request<PlacementQuestion[]>(`/api/placement?level=${level}`)
+  },
+
+  gradePlacement(level: string, answers: Record<string, string>): Promise<PlacementGradeResult> {
+    return request<PlacementGradeResult>('/api/placement/grade', { method: 'POST', body: JSON.stringify({ level, answers }) })
   },
 
   submitPlacement(answers: Record<string, string>): Promise<PlacementResult> {
