@@ -115,6 +115,30 @@ def test_clip_quiz_after_listening(client: TestClient, auth_headers: dict) -> No
     assert wrong.json()["correct"] is False
 
 
+def test_conversa_step_closes_the_lesson(client: TestClient, auth_headers: dict) -> None:
+    today = client.get("/api/path/today", headers=auth_headers).json()
+    first_lesson = today["lesson"]["id"]
+
+    state = today
+    while state["step"] != "adapta":
+        state = client.post(
+            "/api/path/advance", json={"step": state["step"]}, headers=auth_headers
+        ).json()
+
+    review = client.post(
+        "/api/path/advance", json={"step": "adapta"}, headers=auth_headers
+    ).json()
+    assert review["step"] == "conversa"
+    assert review["lesson"]["id"] == first_lesson  # same lesson, closing conversation
+
+    moved = client.post(
+        "/api/path/advance", json={"step": "conversa"}, headers=auth_headers
+    ).json()
+    assert moved["step"] == "mira"
+    assert moved["clip_index"] == 0
+    assert moved["lesson"]["id"] != first_lesson
+
+
 def test_group_join_and_encouragement_journey(
     client: TestClient, auth_headers: dict
 ) -> None:

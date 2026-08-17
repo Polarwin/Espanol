@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type { ConversationResult, ConversationSetup } from '../api/types'
 import { IconMic, IconSpeaker } from '../components/icons'
@@ -13,13 +13,28 @@ function TutorMessage({ text }: { text: string }) {
 
 export function Conversacion() {
   const { lessonId } = useParams()
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const fromRoute = searchParams.get('desde') === 'ruta'
   const { state, blob, seconds, start, stop, reset } = useRecorder()
   const [turn, setTurn] = useState(0)
   const [messages, setMessages] = useState<{ role: 'tutor' | 'user'; text: string }[]>([])
   const [setup, setSetup] = useState<ConversationSetup | null>(null)
   const [result, setResult] = useState<ConversationResult | null>(null)
   const [busy, setBusy] = useState(false)
+  const [routeBusy, setRouteBusy] = useState(false)
   const [error, setError] = useState('')
+
+  async function continueRoute() {
+    setRouteBusy(true)
+    try {
+      await api.advancePath('conversa')
+    } catch {
+      // The route may already have moved on; either way we return to it.
+    } finally {
+      navigate('/ruta')
+    }
+  }
 
   useEffect(() => {
     api.getConversationSetup(lessonId).then((data) => {
@@ -50,6 +65,6 @@ export function Conversacion() {
       <p className="mt-2 text-sm font-semibold">{result.feedback}</p>{!result.complete && <div className="mt-2 flex flex-wrap gap-2">{result.suggestions.map((s) => <span key={s} className="rounded-full bg-paper px-3 py-1 text-xs font-bold text-ink-soft">{s}</span>)}</div>}
     </div>}
     {error && <p className="mt-3 font-bold text-terracotta">{error}</p>}
-    <div className="sticky bottom-16 mt-5 rounded-3xl bg-paper p-4 text-center shadow-card md:bottom-4">{result?.complete ? <button onClick={restart} className="rounded-full bg-terracotta px-6 py-3 font-bold text-paper">Empezar otra vez</button> : <button onClick={() => state === 'recording' ? stop() : void start()} disabled={busy || !setup} className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full text-paper shadow-card disabled:opacity-50 ${state === 'recording' ? 'animate-pulse bg-terracotta-dark' : 'bg-terracotta'}`}><IconMic size={28} /></button>}<p className="mt-2 text-sm font-bold text-ink-soft">{busy ? 'Ana está pensando…' : state === 'recording' ? `Grabando… ${seconds}s — toca para terminar` : result?.complete ? '¡Conversación completada!' : 'Toca y responde en español'}</p>{setup && <Link to={`/leccion/${setup.lesson_id}`} className="mt-2 inline-block text-xs font-extrabold text-river">Volver a la unidad</Link>}</div>
+    <div className="sticky bottom-16 mt-5 rounded-3xl bg-paper p-4 text-center shadow-card md:bottom-4">{result?.complete ? <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-center">{fromRoute && <button onClick={() => void continueRoute()} disabled={routeBusy} className="rounded-full bg-terracotta px-6 py-3 font-bold text-paper disabled:opacity-50">{routeBusy ? 'Guardando…' : 'Continuar mi ruta'}</button>}<button onClick={restart} className={`rounded-full px-6 py-3 font-bold ${fromRoute ? 'bg-cream text-ink' : 'bg-terracotta text-paper'}`}>Empezar otra vez</button></div> : <button onClick={() => state === 'recording' ? stop() : void start()} disabled={busy || !setup} className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full text-paper shadow-card disabled:opacity-50 ${state === 'recording' ? 'animate-pulse bg-terracotta-dark' : 'bg-terracotta'}`}><IconMic size={28} /></button>}<p className="mt-2 text-sm font-bold text-ink-soft">{busy ? 'Ana está pensando…' : state === 'recording' ? `Grabando… ${seconds}s — toca para terminar` : result?.complete ? '¡Conversación completada!' : 'Toca y responde en español'}</p>{setup && <Link to={`/leccion/${setup.lesson_id}`} className="mt-2 inline-block text-xs font-extrabold text-river">Volver a la unidad</Link>}</div>
   </div>
 }

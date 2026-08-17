@@ -1,11 +1,11 @@
-"""User position in the core loop (mira -> escucha -> comprueba -> habla per clip, then adapta)."""
+"""User position in the core loop (mira -> escucha -> comprueba -> habla per clip, then adapta -> conversa)."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..models import Lesson, User, UserState
 
-STEPS = ("mira", "escucha", "comprueba", "habla", "adapta")
+STEPS = ("mira", "escucha", "comprueba", "habla", "adapta", "conversa")
 
 
 def get_or_create_state(db: Session, user: User, first_lesson: Lesson | None) -> UserState:
@@ -26,8 +26,8 @@ def advance_state(db: Session, user: User, next_lesson: Lesson | None = None) ->
     """Advance the user one tick through the loop.
 
     mira -> escucha -> comprueba -> habla -> (next clip's mira) ... -> adapta
-    after the last clip. When adapta completes, the user moves on to the next
-    lesson at mira/0.
+    after the last clip, then conversa closes the lesson with the role-play.
+    When conversa completes, the user moves on to the next lesson at mira/0.
     """
     state = db.get(UserState, user.id)
     if state is None or state.current_lesson_id is None:
@@ -49,7 +49,9 @@ def advance_state(db: Session, user: User, next_lesson: Lesson | None = None) ->
             state.current_step = "mira"
         else:
             state.current_step = "adapta"
-    else:  # adapta -> move on to the next lesson
+    elif state.current_step == "adapta":
+        state.current_step = "conversa"
+    else:  # conversa -> move on to the next lesson
         if next_lesson is not None:
             state.current_lesson_id = next_lesson.id
         state.current_step = "mira"

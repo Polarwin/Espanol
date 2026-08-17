@@ -40,7 +40,8 @@ export function MiRuta() {
     escucha: ['Escucha con atención', 'Reproduce el clip otra vez y céntrate en cómo suena.', 'Ya lo he escuchado'],
     comprueba: ['Comprueba tu comprensión', 'Elige el significado de lo que acabas de oír.', 'Continuar'],
     habla: ['Habla en voz alta', 'Graba la frase y compara tu pronunciación.', 'He practicado la frase'],
-    adapta: ['Adapta y continúa', 'Revisa tu feedback; la siguiente lección se ajustará a ti.', 'Ir a la siguiente lección'],
+    adapta: ['Adapta y continúa', 'Revisa tu feedback; queda la conversación final de la unidad.', 'Continuar a la conversación'],
+    conversa: ['Cierra con una conversación', 'Pon en práctica la unidad con Ana. Al terminar, pasas a la siguiente lección.', 'Hablar con Ana'],
   }[today.step]
 
   const advance = async () => {
@@ -100,14 +101,23 @@ export function MiRuta() {
                 <p className="font-display text-lg font-bold">{stageCopy[0]}</p>
                 <p className="text-sm font-semibold text-ink-soft">{stageCopy[1]}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => void advance()}
-                disabled={advancing}
-                className="shrink-0 rounded-full bg-terracotta px-5 py-3 text-sm font-bold text-paper shadow-soft transition hover:bg-terracotta-dark disabled:cursor-wait disabled:opacity-60"
-              >
-                {advancing ? 'Guardando…' : stageCopy[2]}
-              </button>
+              {today.step === 'conversa' ? (
+                <Link
+                  to={`/leccion/${today.lesson.id}/conversacion?desde=ruta`}
+                  className="shrink-0 rounded-full bg-terracotta px-5 py-3 text-center text-sm font-bold text-paper shadow-soft transition hover:bg-terracotta-dark"
+                >
+                  {stageCopy[2]}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void advance()}
+                  disabled={advancing}
+                  className="shrink-0 rounded-full bg-terracotta px-5 py-3 text-sm font-bold text-paper shadow-soft transition hover:bg-terracotta-dark disabled:cursor-wait disabled:opacity-60"
+                >
+                  {advancing ? 'Guardando…' : stageCopy[2]}
+                </button>
+              )}
             </div>
             {error && <p className="mt-2 text-sm font-bold text-terracotta">{error}</p>}
           </section>

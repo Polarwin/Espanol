@@ -31,7 +31,7 @@ router = APIRouter(prefix="/api/path", tags=["path"])
 
 
 class AdvancePathRequest(BaseModel):
-    step: Literal["mira", "escucha", "comprueba", "habla", "adapta"]
+    step: Literal["mira", "escucha", "comprueba", "habla", "adapta", "conversa"]
 
 
 class ClipQuizAnswer(BaseModel):
@@ -115,7 +115,7 @@ def path_advance(
     state = get_or_create_state(db, user, adaptive.choose_next_lesson(db, user))
     if state.current_step == payload.step:
         next_lesson = None
-        if state.current_step == "adapta":
+        if state.current_step == "conversa":
             next_lesson = adaptive.choose_next_lesson(
                 db, user, exclude_lesson_id=state.current_lesson_id
             )

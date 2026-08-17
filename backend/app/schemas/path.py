@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from .lessons import TranscriptLine
 
-LoopStep = Literal["mira", "escucha", "comprueba", "habla", "adapta"]
+LoopStep = Literal["mira", "escucha", "comprueba", "habla", "adapta", "conversa"]
 
 
 class PathLesson(BaseModel):

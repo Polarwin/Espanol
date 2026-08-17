@@ -41,7 +41,7 @@ export interface AuthResponse {
   user: User
 }
 
-export type LoopStep = 'mira' | 'escucha' | 'comprueba' | 'habla' | 'adapta'
+export type LoopStep = 'mira' | 'escucha' | 'comprueba' | 'habla' | 'adapta' | 'conversa'
 
 export interface LessonRef {
   id: string
