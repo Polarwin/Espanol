@@ -44,16 +44,37 @@ def _conversation_lesson(db: Session, user: User, lesson_id: int | None) -> Less
 
 
 def _conversation_profile(lesson: Lesson, name: str) -> dict:
-    vocabulary = [text for text, _ in VOCABULARY_BANKS.get(lesson.title, [])]
+    # Video lessons ("… · Vídeo") share their base unit's vocabulary bank.
+    bank_title = lesson.title.removesuffix(" · Vídeo")
+    vocabulary = [
+        text
+        for text, _ in VOCABULARY_BANKS.get(
+            lesson.title, VOCABULARY_BANKS.get(bank_title, [])
+        )
+    ]
     topics = [topic for topic in lesson.topics if "vitamina" not in topic.lower()]
     topic = topics[0] if topics else lesson.title.lower()
-    scenario = CONVERSATION_SCENARIOS.get(lesson.title) or {
-        "role": "compañera",
-        "scene": f"Hablar de {topic}",
-        "opening": f"¿Qué experiencia tienes con {topic}?",
-        "prompts": [f"Cuéntame un ejemplo sobre {topic}.", "¿Por qué es importante para ti?", "¿Qué recomendarías?"],
-        "closing": "Gracias por compartir tus ideas.",
-    }
+    scenario = CONVERSATION_SCENARIOS.get(lesson.title)
+    if scenario is None and lesson.title.endswith(" · Vídeo"):
+        scenario = {
+            "role": "compañera",
+            "scene": f"Comentar el vídeo: {bank_title}",
+            "opening": f"¿Qué te ha parecido el vídeo sobre {topic}?",
+            "prompts": [
+                "¿Qué idea del vídeo te ha llamado más la atención?",
+                "¿Estás de acuerdo con lo que dice? ¿Por qué?",
+                "¿Qué más te gustaría saber sobre el tema?",
+            ],
+            "closing": "Gracias por comentar el vídeo conmigo.",
+        }
+    if scenario is None:
+        scenario = {
+            "role": "compañera",
+            "scene": f"Hablar de {topic}",
+            "opening": f"¿Qué experiencia tienes con {topic}?",
+            "prompts": [f"Cuéntame un ejemplo sobre {topic}.", "¿Por qué es importante para ti?", "¿Qué recomendarías?"],
+            "closing": "Gracias por compartir tus ideas.",
+        }
     return {
         "lesson_id": lesson.id,
         "title": lesson.title,

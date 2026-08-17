@@ -10,6 +10,7 @@ from .curriculum_content import CURRICULUM_LESSONS
 from .listening_content import enrich_listening
 from .reading_content import enrich_reading
 from .video_content import VIDEO_LESSONS
+from .video_lessons_c import C_VIDEO_LESSONS
 from .vocabulary_content import enrich_lessons
 
 LESSONS: list[dict[str, Any]] = [
@@ -1038,6 +1039,7 @@ LESSONS: list[dict[str, Any]] = [
 ]
 
 LESSONS.extend(VIDEO_LESSONS)
+LESSONS.extend(C_VIDEO_LESSONS)
 LESSONS.extend(CURRICULUM_LESSONS)
 enrich_lessons(LESSONS)
 enrich_reading(LESSONS)

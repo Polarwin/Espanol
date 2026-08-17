@@ -3,7 +3,10 @@
 Each entry is a short text in an authentic exam genre (mensaje, anuncio,
 correo, noticia, artículo, blog, informe) with two comprehension questions:
 A1/A2 ask for concrete details; B1 adds "según el texto" formulations; B2
-includes inference questions ("se deduce", "se desprende").
+includes inference questions ("se deduce", "se desprende"). C1/C2 use longer,
+genre-framed texts (artículo de opinión, reseña, crónica, ensayo breve) and
+add inference, attitude and tone items ("la intención del autor", "el tono
+del texto").
 """
 
 from typing import Any
@@ -13,6 +16,8 @@ INSTRUCTIONS = {
     "A2": "Lee el texto y elige la opción correcta.",
     "B1": "Lee el texto. Según lo que lees, elige la opción correcta.",
     "B2": "Lee el texto y elige la opción que mejor refleja su contenido.",
+    "C1": "Lee el texto y elige la opción que mejor refleja su contenido y la intención del autor.",
+    "C2": "Lee el texto y elige la opción que mejor recoge su contenido, la intención y el tono del autor.",
 }
 
 # title -> {"passage": text, "questions": [(prompt, options, answer), ...]}
@@ -313,6 +318,162 @@ READING: dict[str, dict[str, Any]] = {
         "questions": [
             ("¿De qué depende la elección entre ser y estar?", ["De la perspectiva del hablante", "Del país", "De la edad"], "De la perspectiva del hablante"),
             ("¿Qué han creado los investigadores?", ["Una herramienta para buscar combinaciones", "Un diccionario", "Una aplicación de citas"], "Una herramienta para buscar combinaciones"),
+        ],
+    },
+    # --- C1: artículos de opinión, reseñas, crónicas y ensayos con inferencia y actitud ---
+    "C1 · Unidad 1: Individuo": {
+        "passage": "Artículo de opinión:\n«Se ha puesto de moda hablar de la autenticidad como si fuera una mercancía más: algo que se exhibe, se mide y, en última instancia, se vende. Sin embargo, quienes defienden esa autenticidad de escaparate olvidan que el individuo se construye precisamente en los márgenes, en aquello que no se cuenta ni se etiqueta. No estoy diciendo que deba uno esconderse; digo que la identidad es un proceso y no un producto terminado. Las redes sociales premian la coherencia inmediata, esa marca personal que nunca duda, mientras que dudar, contradecirse y cambiar de opinión son quizá las señas más honestas de una persona. Me pregunto si el empeño en parecer únicos no nos estará haciendo sospechosamente parecidos. Tal vez la verdadera singularidad consista en aceptar que somos, ante todo, una suma provisional de influencias, recuerdos y contradicciones que no caben en ningún perfil».",
+        "questions": [
+            ("¿Cuál es la intención principal del autor?", ["Cuestionar la idea de autenticidad que se vende en las redes", "Enseñar a crear una marca personal", "Animar a usar más las redes sociales"], "Cuestionar la idea de autenticidad que se vende en las redes"),
+            ("Según el texto, ¿qué premian las redes sociales?", ["La coherencia inmediata", "Las contradicciones", "El cambio de opinión"], "La coherencia inmediata"),
+        ],
+    },
+    "C1 · Unidad 2: Tiempo libre": {
+        "passage": "Crónica:\n«Los domingos por la mañana, la plaza de Chamberí se llena de un rumor peculiar: el chasquido de las fichas de dominó contra las mesas de mármol. Llevo meses acudiendo a este club improvisado que reunió en su día a jubilados del barrio y que ahora atrae también a estudiantes y teletrabajadores con horarios imposibles. Nadie cobra entrada ni reparte premios; el único requisito es respetar el turno y aguantar las bromas de Marcial, el decano, que a sus ochenta y dos años recuerda cada partida jugada desde 1998. Conversando con él, uno comprende que el tiempo libre no siempre necesita una aplicación que lo organice ni una foto que lo certifique. A veces basta una mesa, cuatro vecinos y la lentitud deliberada de quien no tiene ninguna prisa por llegar a ninguna parte. Quizá por eso, cuando suena el mediodía, cuesta tanto recoger las fichas».",
+        "questions": [
+            ("Se deduce que la narradora valora el club porque…", ["ofrece un ocio sencillo y sin prisas", "reparte premios todos los domingos", "está organizado por una aplicación"], "ofrece un ocio sencillo y sin prisas"),
+            ("¿Qué papel tiene Marcial en el club?", ["Es el decano, que recuerda las partidas antiguas", "Es el dueño de la plaza", "Es un estudiante recién llegado"], "Es el decano, que recuerda las partidas antiguas"),
+        ],
+    },
+    "C1 · Unidad 3: Mundo laboral": {
+        "passage": "Artículo de opinión:\n«El teletrabajo se ha instalado entre nosotros con la naturalidad de quien siempre estuvo ahí, pero sus efectos más profundos aún están por verse. Trabajar desde casa ha devuelto a muchas personas horas de transporte y una flexibilidad impensable hace una década; sin embargo, también ha difuminado la frontera entre la oficina y el salón, convirtiendo la cocina en sala de reuniones y la noche en prolongación de la jornada. Los defensores del modelo presencial alegan que la creatividad necesita del encuentro casual, de esa conversación junto a la máquina de café que ninguna videollamada reproduce. Los del modelo a distancia responden que la confianza se demuestra con autonomía y no con fichajes. Probablemente ambos tengan razón a medias. Lo que parece claro es que el debate ya no trata de dónde trabajamos, sino de qué tipo de vida queremos construir alrededor del trabajo».",
+        "questions": [
+            ("La intención del autor es…", ["reflexionar sobre los efectos del teletrabajo en la vida", "demostrar que el trabajo presencial es mejor", "criticar a las empresas tecnológicas"], "reflexionar sobre los efectos del teletrabajo en la vida"),
+            ("Según el texto, ¿qué alegan los defensores del modelo presencial?", ["Que la creatividad necesita del encuentro casual", "Que el transporte es demasiado caro", "Que las videollamadas son ilegales"], "Que la creatividad necesita del encuentro casual"),
+        ],
+    },
+    "C1 · Unidad 4: Experiencia gastronómica": {
+        "passage": "Reseña de restaurante:\n«No todos los días se encuentra uno con un restaurante que cumpla lo que promete sin aspavientos. La Taberna del Puerto, regentada por los hermanos Sotelo desde hace tres décadas, es de esos locales que no necesitan carta de treinta platos: bastan seis guisos de temporada y una vitrina con el pescado del día. El arroz caldoso con bogavante, servido sin prisa y con el punto justo de fumet, justifica por sí solo la espera en la barra. Menos afortunado resulta el comedor, algo ruidoso cuando el local se llena, y la carta de vinos, correcta pero poco ambiciosa. El servicio, cercano sin ser invasivo, redondea una experiencia que apuesta por el producto por encima de cualquier postureo. Sale uno con la sensación de haber pagado un precio honesto por una cocina honesta, algo que hoy, por desgracia, empieza a ser noticia».",
+        "questions": [
+            ("Según la reseña, ¿qué aspecto del restaurante se critica?", ["El comedor ruidoso y la carta de vinos", "La calidad del pescado", "La lentitud del servicio"], "El comedor ruidoso y la carta de vinos"),
+            ("El tono general de la reseña es…", ["positivo, con algunas reservas menores", "duramente negativo", "completamente neutro"], "positivo, con algunas reservas menores"),
+        ],
+    },
+    "C1 · Unidad 5: Alternativas ambientales": {
+        "passage": "Ensayo breve:\n«Los cafés de reparación que han surgido en los barrios de media Europa plantean una pregunta incómoda: ¿cuándo decidimos que arreglar era cosa de nostálgicos? Durante décadas, la economía del usar y tirar se nos vendió como progreso, y reparar un electrodoméstico pasó a costar más que comprar uno nuevo. Frente a esta lógica, estos espacios comunitarios recuperan oficios casi perdidos y, sobre todo, una manera distinta de relacionarse con los objetos. No se trata solo de ahorrar recursos, que también, sino de comprender que cada aparato desechado antes de tiempo representa energía, materiales y horas de trabajo que no vuelven. Sería ingenuo pensar que un café de reparación va a frenar el cambio climático por sí solo. Pero sería igual de ingenuo despreciar el poder de un gesto que, repetido miles de veces, empieza a cambiar la cultura del consumo desde abajo».",
+        "questions": [
+            ("Se deduce que los cafés de reparación…", ["recuperan oficios y otra relación con los objetos", "venden electrodomésticos nuevos", "son negocios muy rentables"], "recuperan oficios y otra relación con los objetos"),
+            ("¿Qué actitud adopta el autor hacia estos espacios?", ["Los considera valiosos, aunque no milagrosos", "Los desprecia por nostálgicos", "Cree que frenarán el cambio climático por sí solos"], "Los considera valiosos, aunque no milagrosos"),
+        ],
+    },
+    "C1 · Unidad 6: Educación": {
+        "passage": "Ensayo breve:\n«Cada cierto tiempo, el debate educativo español vuelve a enfrentar a dos fantasmas: el de la memorización pura y el de la creatividad sin contenidos. La dicotomía es falsa, y sin embargo sigue condicionando leyes, programas y conversaciones de patio. Memorizar sin comprender produce alumnos que recitan sin pensar; pero fomentar el pensamiento crítico sin una base sólida de conocimientos produce opiniones sin fundamento. La experiencia de los países con mejores resultados sugiere que el equilibrio no es un término medio perezoso, sino una secuencia: primero dominar los contenidos básicos, después aprender a interrogarlos. Quizá el verdadero problema no esté en elegir un bando, sino en la precariedad de quienes deberían aplicar cualquier pedagogía: docentes sobrecargados, ratios imposibles y una formación permanente que se financia con buenas intenciones. Sin maestros bien tratados, todo debate metodológico es pura teoría».",
+        "questions": [
+            ("Según el autor, ¿en qué consiste el equilibrio educativo?", ["En dominar primero los contenidos y luego interrogarlos", "En elegir entre memorizar y crear", "En eliminar los exámenes"], "En dominar primero los contenidos y luego interrogarlos"),
+            ("¿Cuál es, para el autor, el verdadero problema de la educación?", ["La precariedad de los docentes", "Los alumnos que memorizan", "Las leyes educativas extranjeras"], "La precariedad de los docentes"),
+        ],
+    },
+    "C1 · Unidad 7: Paisajes urbanos": {
+        "passage": "Crónica:\n«El mercado de la Cebada amanece estos días entre andamios. Donde antes se alineaban los puestos de fruta de toda la vida, ahora conviven paradistas veteranos con obreros, turistas despistados y arquitectos con cascos blancos. La reforma, prometida desde hace quince años, llega por fin, y con ella la mezcla habitual de esperanza y recelo. Los vecinos celebran que el edificio deje de gotear cada vez que llueve, pero temen que el nuevo mercado, moderno y luminoso, acabe siendo otra sucursal más de las cadenas que ya pueblan el barrio. Carmen, que lleva cuarenta años vendiendo pescado, resume el ambiente con una frase: que mejoren el techo, pero que no nos quiten el alma. La ciudad, una vez más, se enfrenta a su dilema eterno: cómo renovarse sin convertirse en el decorado de sí misma».",
+        "questions": [
+            ("¿Qué temen los vecinos del nuevo mercado?", ["Que acabe siendo una sucursal más de las cadenas", "Que las obras se retrasen de nuevo", "Que llueva dentro del edificio"], "Que acabe siendo una sucursal más de las cadenas"),
+            ("Se deduce que Carmen…", ["quiere mejoras sin perder la identidad del mercado", "se opone a cualquier reforma", "lleva poco tiempo en el barrio"], "quiere mejoras sin perder la identidad del mercado"),
+        ],
+    },
+    "C1 · Unidad 8: Geografías y viajes": {
+        "passage": "Crónica de viajes:\n«Viajar despacio es una forma de resistencia. Lo descubrí en el tren regional que une León con Gijón, tres horas de paisaje por las que ningún pasajero pagaría un suplemento de velocidad. En mi compartimento, una mujer mayor señalaba por la ventana cada pueblo donde había pasado un verano de su infancia; en el vagón cafetería, dos ciclistas estudiaban un mapa de papel como si el teléfono no existiera. El turismo de imprescindibles, ese que colecciona monumentos como quien sella un pasaporte, nos ha enseñado a mirar sin ver. Frente a él, el viaje lento propone otra economía de la mirada: menos destinos, más permanencia; menos fotos, más conversaciones con desconocidos. No es una cuestión de dinero ni de edad, sino de disponibilidad interior. Al llegar a la costa, llovía, y a nadie del tren pareció importarle demasiado».",
+        "questions": [
+            ("¿Qué propone el viaje lento, según la autora?", ["Menos destinos y más permanencia", "Coleccionar más monumentos", "Viajar siempre en avión"], "Menos destinos y más permanencia"),
+            ("El tono de la crónica hacia el turismo de imprescindibles es…", ["crítico", "admirado", "indiferente"], "crítico"),
+        ],
+    },
+    "C1 · Unidad 9: Deporte y bienestar": {
+        "passage": "Artículo de opinión:\n«El deporte amateur vive una paradoja curiosa: nunca hubo tantas personas corriendo por los parques y nunca fue tan difícil encontrar a alguien que corra sin auriculares, reloj inteligente y aplicación que registre cada zancada. La medición constante ha traído beneficios evidentes (motivación, prevención de lesiones, comunidades virtuales de apoyo), pero también ha convertido el ocio en una segunda jornada laboral, con sus objetivos, sus informes y sus comparaciones. Varios estudios recientes advierten de que una parte de los deportistas populares entrena más para alimentar su estadística que para disfrutar del esfuerzo. Nadie sugiere volver a la sandalia de esparto; se trata, más bien, de recuperar algo que el deporte siempre ofreció gratis: el aburrimiento fecundo de una carrera sin cronómetro, la conversación a pie de pista, la aceptación de que no toda actividad necesita ser optimizada para merecer la pena».",
+        "questions": [
+            ("Se deduce del texto que la medición constante del deporte…", ["puede convertir el ocio en una obligación", "siempre perjudica la salud", "ha acabado con el deporte amateur"], "puede convertir el ocio en una obligación"),
+            ("¿Qué defiende el autor al final?", ["Recuperar el disfrute del deporte sin optimizarlo todo", "Entrenar solo con reloj inteligente", "Volver a la sandalia de esparto"], "Recuperar el disfrute del deporte sin optimizarlo todo"),
+        ],
+    },
+    "C1 · Unidad 10: Economía y negocios": {
+        "passage": "Artículo de opinión:\n«Cada vez que cierra una tienda de barrio, los comentarios se repiten: qué pena, era de toda la vida. Pero la pena, por sincera que sea, no paga alquileres. El pequeño comercio agoniza bajo una doble presión: la de las plataformas digitales, que venden comodidad a precios imposibles, y la de los alquileres comerciales, que crecen al ritmo de la especulación y no de las ventas. Frente a esto, algunos barrios ensayan respuestas interesantes: bonos de consumo local, cooperativas de reparto propio, mercadillos que combinan tienda física y pedido en línea. Ninguna de estas fórmulas es milagrosa, y probablemente ninguna salve por sí sola a la librería de la esquina. Pero plantean la pregunta correcta: no si el comercio de proximidad puede sobrevivir, sino qué tipo de ciudad queremos cuando las calles se queden sin escaparates. Porque una ciudad sin tiendas no es más barata; es, sencillamente, más pobre».",
+        "questions": [
+            ("Según el autor, ¿cuál es la pregunta correcta sobre el pequeño comercio?", ["Qué tipo de ciudad queremos cuando desaparezcan las tiendas", "Cómo comprar más por internet", "Cuánto subirán los alquileres"], "Qué tipo de ciudad queremos cuando desaparezcan las tiendas"),
+            ("La frase final sugiere que la pérdida del comercio local…", ["empobrece la vida de la ciudad", "hace subir los precios", "es inevitable y positiva"], "empobrece la vida de la ciudad"),
+        ],
+    },
+    "C1 · Unidad 11: Palabras, palabras": {
+        "passage": "Ensayo breve:\n«Los diccionarios, nos guste o no, llegan siempre tarde a la fiesta. Cuando una palabra nueva aparece por fin en sus páginas, lleva años circulando por las conversaciones, los titulares y los mensajes de los adolescentes. Este retraso no es un defecto, sino la prueba de que la lengua pertenece a quienes la hablan y no a quienes la registran. Ahora bien, reconocer esto no obliga a aplaudirlo todo. La velocidad actual del cambio léxico, alimentada por las redes y por el préstamo indiscriminado del inglés, plantea un problema real: no el de la pureza, concepto discutible, sino el de la comunicación entre generaciones. Cuando un abuelo y su nieto necesitan traductor para hablar del trabajo, algo se ha roto. La actitud razonable no es ni la alarma ni la unción de cada novedad, sino la curiosidad crítica: preguntarse qué necesidad cubre cada palabra nueva y qué palabra antigua estamos dejando morir al adoptarla».",
+        "questions": [
+            ("Según el texto, ¿qué demuestra el retraso de los diccionarios?", ["Que la lengua pertenece a quienes la hablan", "Que los diccionarios son inútiles", "Que los adolescentes escriben mal"], "Que la lengua pertenece a quienes la hablan"),
+            ("¿Qué actitud considera razonable el autor ante las palabras nuevas?", ["La curiosidad crítica", "La alarma", "Aplaudirlo todo"], "La curiosidad crítica"),
+        ],
+    },
+    "C1 · Unidad 12: Siglo XXI": {
+        "passage": "Artículo de opinión:\n«Se habla mucho de la atención como la nueva moneda del siglo XXI, pero quizá convendría precisar el símil: nuestra atención no es una moneda que gastamos, sino un recurso que nos extraen. Las plataformas digitales compiten por ella con algoritmos diseñados para interrumpir, precisamente porque la interrupción es rentable. Frente a esta economía extractiva, han surgido movimientos que reivindican el derecho a la desconexión, aplicaciones que prometen calma y hasta retiros sin teléfono que se pagan a precio de hotel de lujo. La ironía es evidente: convertimos hasta el silencio en producto. Tal vez la respuesta no pase por comprar herramientas contra la distracción, sino por recuperar hábitos que nunca debimos abandonar: leer textos largos, pasear sin destino, mantener conversaciones que no se interrumpen cada treinta segundos. El siglo XXI no será recordado por sus inventos, sino por cómo decidimos vivir con ellos».",
+        "questions": [
+            ("¿A qué se refiere el autor al hablar de «economía extractiva»?", ["A que las plataformas extraen nuestra atención", "A la minería del siglo XXI", "A la venta de aplicaciones de calma"], "A que las plataformas extraen nuestra atención"),
+            ("Se deduce que el autor ve con ironía…", ["que hasta el silencio se haya convertido en producto", "los paseos sin destino", "la lectura de textos largos"], "que hasta el silencio se haya convertido en producto"),
+        ],
+    },
+    # --- C2: textos formales con ironía, matización y preguntas de tono e intención ---
+    "C2 · Unidad 1: Retórica y debate": {
+        "passage": "Ensayo breve:\n«La oratoria política contemporánea padece una curiosa metamorfosis: cuanto más sofisticados se vuelven los instrumentos de medición del discurso, más elemental resulta el discurso medido. El debate parlamentario, concebido en su origen como confrontación de argumentos, ha devendido con frecuencia en sucedáneo televisivo donde la réplica se sustituye por el titular y la refutación, por el aspaviento. No se trata de idealizar un pasado que también conoció sus demagogos, sino de constatar un desplazamiento: el éxito ya no se evalúa por la solidez del razonamiento, sino por la viralidad del fragmento. Que esta transformación responda a incentivos del mercado informativo resulta plausible; que sea irreversible, menos. La recuperación de la retórica como disciplina ciudadana, no como artefacto de persuasión sino como ejercicio de escucha argumentada, constituiría, a juicio de quien esto escribe, la reforma institucional más urgente y, previsiblemente, la menos aplaudida».",
+        "questions": [
+            ("El tono del texto es…", ["crítico y reflexivo, con cierta ironía", "entusiasta y celebratorio", "puramente descriptivo"], "crítico y reflexivo, con cierta ironía"),
+            ("Se deduce que, para el autor, el éxito del discurso político actual se mide por…", ["la viralidad del fragmento", "la solidez del razonamiento", "el número de asistentes al debate"], "la viralidad del fragmento"),
+        ],
+    },
+    "C2 · Unidad 2: Lengua y sociedad": {
+        "passage": "Artículo de opinión:\n«Pocas cuestiones concentran tanta pasión con tan escasa evidencia como el debate sobre el lenguaje inclusivo. A un lado, quienes sostienen que la lengua moldea la realidad y que, en consecuencia, toda innovación morfológica constituye un avance democrático; al otro, quienes denuncian una ingeniería social disfrazada de cortesía gramatical. Cabría preguntarse, sin embargo, si ambos contendientes no sobrestiman el poder de la norma y subestiman el del uso. La historia de las lenguas ofrece escasos ejemplos de reformas impuestas desde arriba que hayan prosperado, y numerosos ejemplos de usos espontáneos que acabaron por imponerse sin decreto alguno. Lo que la controversia oculta es una constatación más incómoda: las desigualdades que se pretenden corregir por vía léxica suelen requerir intervenciones de otra índole: laborales, educativas, económicas. Cambiar una desinencia resulta, al fin y al cabo, considerablemente más económico que cambiar un salario».",
+        "questions": [
+            ("La intención del autor es…", ["matizar el debate mostrando los límites de ambas posturas", "defender el lenguaje inclusivo sin matices", "atacar a las instituciones lingüísticas"], "matizar el debate mostrando los límites de ambas posturas"),
+            ("¿Qué sugiere la frase final del texto?", ["Que corregir desigualdades reales cuesta más que cambiar la gramática", "Que cambiar una desinencia es muy caro", "Que los salarios dependen de la lengua"], "Que corregir desigualdades reales cuesta más que cambiar la gramática"),
+        ],
+    },
+    "C2 · Unidad 3: Ciencia y divulgación": {
+        "passage": "Reseña de ensayo:\n«El último ensayo de Lucía Ferrán, El azar domesticado, llega a las librerías precedido de una expectación que la propia autora, con prudencia encomiable, se ha encargado de moderar. La tesis central, según la cual la estadística, lejos de ser un instrumento técnico, constituye una gramática de la incertidumbre cotidiana, se expone con una elegancia expositiva poco frecuente en un género que tiende a oscilar entre la simplificación condescendiente y la jerga inexpugnable. Ferrán evita ambos escollos, aunque no siempre: los capítulos dedicados a la inteligencia artificial, por momentos, sucumben a esa tentación tan propia del divulgador de confundir lo verosímil con lo demostrado. Son, en cualquier caso, deslices menores en una obra que logra lo esencial: hacer sentir al lector no que ha comprendido la estadística, sino que ha estado toda la vida pensando estadísticamente sin saberlo. Distinción sutil, y quizá la única que importa».",
+        "questions": [
+            ("Según la reseña, ¿qué defecto se señala en algunos capítulos?", ["Confunden lo verosímil con lo demostrado", "Abusan de las estadísticas", "Son demasiado cortos"], "Confunden lo verosímil con lo demostrado"),
+            ("El tono de la reseña es…", ["favorable, aunque con reservas precisas", "demoledor", "indiferente"], "favorable, aunque con reservas precisas"),
+        ],
+    },
+    "C2 · Unidad 4: Literatura": {
+        "passage": "Reseña literaria:\n«Releer ahora Los inviernos de la casa, la novela que consagró a Andrés Solana hace cuarenta años, permite comprobar hasta qué punto el prestigio literario se nutre tanto del olvido como del recuerdo. La prosa de Solana, celebrada entonces por su sobriedad, revela hoy una economía expresiva que roza la avaricia: frases de una contundencia casi hostil que el lector contemporáneo, acostumbrado a la sobreexplicación, recibe con desconcierto. La trama, el deterioro silencioso de una familia de industriales asturianos, interesa menos que el punto de vista: una narradora que miente sin que el texto se permita jamás desmentirla. Ahí reside la modernidad intacta de la novela. Si algo ha envejecido es su envoltorio moral, esa severidad con el mundo rural que los críticos de la época confundieron con lucidez. Recomendable, en suma, con la advertencia de que no estamos ante una obra maestra intocable, sino ante algo mejor: una obra maestra discutible».",
+        "questions": [
+            ("¿Qué considera la reseñista que ha envejecido de la novela?", ["Su envoltorio moral", "El punto de vista narrativo", "La economía expresiva de la prosa"], "Su envoltorio moral"),
+            ("Se deduce que para la reseñista el prestigio literario…", ["depende tanto del olvido como del recuerdo", "es siempre merecido", "desaparece con los años"], "depende tanto del olvido como del recuerdo"),
+        ],
+    },
+    "C2 · Unidad 5: Medios y opinión": {
+        "passage": "Artículo de opinión:\n«El periodismo de opinión atraviesa una edad de oro que, según se mire, podría pasar por su ocaso. Nunca hubo tantas columnas, tantos análisis, tantas firmas; y rara vez el conjunto produjo una sensación tan uniforme de déjà vu. La explicación no es misteriosa: el columnista contemporáneo no escribe para convencer al escéptico, sino para confirmar al converso, y ese cometido exige una previsibilidad que el oficio antes castigaba con el desprecio. El lector, por su parte, ha desarrollado una destreza notable para el consumo ritual del artículo: lo comparte antes de leerlo, lo aprueba antes de entenderlo, lo olvida antes de almorzar. Sería injusto, no obstante, atribuir la decadencia a la pereza de unos u otros. El mercado de la atención premia la certidumbre instantánea y penaliza la duda elaborada, y contra esa economía no hay talento que valga. Los que todavía dudan en público merecen, cuando menos, la cortesía de la suscripción».",
+        "questions": [
+            ("Según el autor, el columnista contemporáneo escribe para…", ["confirmar al converso", "convencer al escéptico", "informar al lector despistado"], "confirmar al converso"),
+            ("¿Cuál es la actitud del autor hacia quienes «todavía dudan en público»?", ["De respeto", "De desprecio", "De indiferencia"], "De respeto"),
+        ],
+    },
+    "C2 · Unidad 6: Memoria histórica": {
+        "passage": "Crónica:\n«El acto comenzó, como tantos, con veinte minutos de retraso y una lista de nombres. En la plaza del pueblo, unos sesenta vecinos escuchaban la lectura de las víctimas de la represión mientras el viento obligaba a sujetar el micrófono. No hubo discursos largos: la nieta de uno de los fusilados leyó una carta que su abuelo escribió desde la cárcel, y el alcalde, visiblemente incómodo con el protocolo, prefirió ceder la palabra a la historiadora que documentó los casos. Cabría preguntarse qué efecto tiene esta liturgia laica sobre una comunidad que ya conoce los hechos. La respuesta, quizá, no esté en la información, sino en la repetición: nombrar cada año a los muertos no añade datos, pero sostiene una exigencia, la de que el pasado no se archive, que ningún libro, por riguroso que sea, puede mantener solo. Al terminar, alguien aplaudió; la mayoría, sencillamente, se quedó un rato más».",
+        "questions": [
+            ("¿Qué sugiere la cronista sobre el valor del acto anual?", ["Que la repetición sostiene una exigencia que los libros no pueden mantener solos", "Que aporta datos nuevos cada año", "Que es una costumbre vacía"], "Que la repetición sostiene una exigencia que los libros no pueden mantener solos"),
+            ("El tono de la crónica es…", ["respetuoso y reflexivo", "burlón", "sensacionalista"], "respetuoso y reflexivo"),
+        ],
+    },
+    "C2 · Unidad 7: Humor e ironía": {
+        "passage": "Columna de humor:\n«Me he apuntado a un retiro de silencio. La decisión, confieso, la tomé tras leer que el silencio previene el estrés, la hipertensión y, según un estudio que no he leído pero cuyo titular me convenció, prácticamente todo lo demás. El retiro, situado en un valle de belleza ofensiva, prohíbe el teléfono, la conversación y, por lo visto, el sentido del humor: la monitora me miró con compasión clínica cuando pregunté si el silencio incluía los ronquidos. He pasado tres días contemplando mi respiración, actividad que, sorprendentemente, me ha dejado sin nada que contar. Lo cual, ahora que lo pienso, es exactamente lo que buscaba: volver con anécdotas habría sido fracasar. Regreso, pues, renovado y en paz, dispuesto a explicar a todo el que quiera escucharme, y a varios que no, las incomparables ventajas de callarse».",
+        "questions": [
+            ("El tono de la columna es…", ["irónico y autocrítico", "solemne", "didáctico"], "irónico y autocrítico"),
+            ("Se deduce que la narradora vuelve del retiro…", ["tan locuaz como antes, pese a las lecciones del silencio", "decidida a no hablar nunca más", "decepcionada con la monitora"], "tan locuaz como antes, pese a las lecciones del silencio"),
+        ],
+    },
+    "C2 · Unidad 8: Lenguaje administrativo": {
+        "passage": "Artículo de opinión:\n«La Administración española ha perfeccionado un género literario propio: el texto que informa de todo salvo de lo que interesa. Cualquier ciudadano que haya solicitado una subvención conoce la experiencia: páginas de considerandos, referencias normativas remitidas a otras normas que remiten a las primeras, y un plazo final expresado en días hábiles contados desde una fecha que depende de un boletín. Sería tentador atribuir esta prosa a la maldad o a la incompetencia, cuando lo más probable es que responda a algo más prosaico: el miedo. Cada circunlocución es un escudo jurídico; cada subordinada, un parapeto ante el recurso contencioso. El resultado, sin embargo, es una ciudadanía que necesita gestores para relacionarse con su propio Estado, lo que constituye, pensándolo bien, la privatización más eficaz jamás diseñada: la del derecho a entender. Las administraciones que han apostado por el lenguaje claro demuestran que otra burocracia es posible; que sea rentable para alguien, ya es otro asunto».",
+        "questions": [
+            ("Según el autor, ¿qué explica la prosa administrativa?", ["El miedo jurídico de la Administración", "La maldad de los funcionarios", "La falta de formación literaria"], "El miedo jurídico de la Administración"),
+            ("¿A qué llama el autor «la privatización más eficaz jamás diseñada»?", ["A la pérdida del derecho a entender, delegado en gestores", "A la venta de empresas públicas", "A las subvenciones privadas"], "A la pérdida del derecho a entender, delegado en gestores"),
+        ],
+    },
+    "C2 · Unidad 9: Identidades": {
+        "passage": "Ensayo breve:\n«Toda identidad, sostenía un antropólogo que ahora no viene al caso, es una biografía escrita por otros. La formulación resulta incómoda porque desmonta la fantasía de la autenticidad: nadie se inventa a sí mismo, y lo que llamamos identidad no es más que la negociación permanente entre lo que creemos ser y lo que los demás están dispuestos a reconocer. Las sociedades contemporáneas han intensificado esa negociación hasta convertirla en espectáculo: nunca fue tan fácil declarar una pertenencia ni tan arduo sostenerla sin etiqueta visible. Cabría preguntarse si la multiplicación de identidades disponibles ha ampliado la libertad individual o si, por el contrario, ha sofisticado la obligación de definirse. No hay respuesta cómoda. Quizá lo sensato sea aceptar que la identidad funciona menos como esencia que como cortesía: el nombre provisional que damos a una conversación que no termina nunca, y que empezó, además, mucho antes de que llegáramos nosotros».",
+        "questions": [
+            ("La intención del autor es…", ["reflexionar sobre la identidad como negociación social", "catalogar los tipos de identidad", "defender que nadie cambia nunca"], "reflexionar sobre la identidad como negociación social"),
+            ("¿Qué metáfora usa el autor al final para definir la identidad?", ["Una cortesía: un nombre provisional", "Una esencia inmutable", "Un escaparate"], "Una cortesía: un nombre provisional"),
+        ],
+    },
+    "C2 · Unidad 10: El siglo digital": {
+        "passage": "Ensayo breve:\n«La promesa fundacional de internet, el acceso universal al conocimiento, se ha cumplido con una puntualidad que roza lo sarcástico: nunca dispusimos de tanta información ni de menos criterios para evaluarla. La desaparición de los intermediarios tradicionales, celebrada como emancipación, ha comportado la sustitución del editor por el algoritmo, es decir, de un filtro imperfecto pero legible por otro opaco e indiferente a la verdad. No se trata de añorar las redacciones de antaño, que también mintieron con métodos más artesanales, sino de reconocer que la verificación se ha convertido en una tarea individual en un entorno diseñado para impedirla. Frente a quienes anuncian la muerte de la credibilidad, convendría señalar que los bulos siempre circularon con eficacia admirable; lo que ha cambiado es su coste de producción, hoy cercano a cero. La alfabetización digital, esa asignatura pendiente, debería enseñar menos a desconfiar de todo, receta del cinismo, que a merecer confianza: un arte más lento y, por desgracia, menos viral».",
+        "questions": [
+            ("Se deduce que, para el autor, el problema actual no es la cantidad de bulos, sino…", ["su coste de producción cercano a cero", "la existencia de editores", "la falta de información"], "su coste de producción cercano a cero"),
+            ("¿Qué debería enseñar la alfabetización digital, según el texto?", ["A merecer confianza, más que a desconfiar de todo", "A usar más redes sociales", "A programar algoritmos"], "A merecer confianza, más que a desconfiar de todo"),
         ],
     },
 }

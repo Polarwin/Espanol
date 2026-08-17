@@ -4,6 +4,9 @@ Idempotent: wipes existing lesson content (and attempts referencing it) and
 re-seeds. Run from the project root:
 
     ./bin/python -m backend.app.seed.load
+
+Pass ``--news N`` to additionally fetch N random RTVE news lessons (C1/C2)
+from the network before reseeding.
 """
 
 import shutil
@@ -200,7 +203,15 @@ def _insert_lesson(db: Session, lesson_data: dict, media: bool) -> None:
         db.add(Exercise(lesson_id=lesson.id, type=ex["type"], instructions=ex["instructions"], prompt=ex["prompt"], passage=ex.get("passage"), audio_path=audio_paths.get(order_index), options=ex["options"], expected_answer=ex["expected_answer"], skill_weights=ex["skill_weights"], order_index=order_index))
 
 
-def load() -> None:
+def load(news: int = 0) -> None:
+    if news > 0:
+        from .news_content import fetch_news_lessons
+
+        news_lessons = fetch_news_lessons(news)
+        # LESSONS is the single catalog both seed_db and sync_missing_lessons
+        # iterate, so the news lessons get the standard insert + media path.
+        LESSONS.extend(news_lessons)
+        print(f"Fetched {len(news_lessons)} news lessons from RTVE")
     db = SessionLocal()
     try:
         seed_db(db, media=True)
@@ -211,7 +222,18 @@ def load() -> None:
 
 
 def main() -> None:
-    load()
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--news",
+        type=int,
+        default=0,
+        metavar="N",
+        help="also fetch N random RTVE news lessons (0 = no network access)",
+    )
+    args = parser.parse_args()
+    load(news=args.news)
 
 
 if __name__ == "__main__":

@@ -69,10 +69,20 @@ curl -s http://127.0.0.1:8011/api/lessons | python -c "import json,sys; print(le
 
 - Lessons are authored Python dicts in `backend/app/seed/` (`content.py`,
   `curriculum_content.py`, `vocabulary_content.py`, `conversation_content.py`,
-  `reading_content.py`). Titles must match exactly across vocabulary banks,
-  conversation scenarios, and reading passages.
+  `reading_content.py`, `listening_content.py`). Titles must match exactly
+  across vocabulary banks, conversation scenarios, reading passages and
+  listening scripts. C1 units mirror `Vitamina/Vitamina C1` guía titles;
+  C2 units are authored (no Vitamina C2 book exists).
+- C1/C2 video lessons come from YouTube: `./bin/python -m backend.app.seed.video_fetch`
+  (yt-dlp download → `content/sources/`, faster-whisper transcription, ffmpeg
+  cut) generates `backend/app/seed/video_lessons_c.py`. `content/sources/` is
+  git-ignored — a fresh clone must re-run `video_fetch` before seeding those
+  lessons. Preview clips land in `content/seed/video-c*/video.mp4`.
 - Non-destructive load: `sync_missing_lessons(db, media=True)` in
   `backend/app/seed/load.py`. Full wipe/reseed: `./bin/python -m backend.app.seed.load`
-  (needs network for gTTS and ffmpeg for video rendering).
+  (needs network for gTTS and ffmpeg for video rendering). Add `--news N` to
+  also fetch N random RTVE news lessons (C1/C2, built by
+  `backend/app/seed/news_content.py`); default 0 never touches the network.
+  Dedup keys on lesson **title**, so news titles are deterministic per article.
 - `SessionLocal` runs with `autoflush=False` — flush explicitly before any
   dedup-by-query logic.

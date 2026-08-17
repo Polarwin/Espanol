@@ -42,7 +42,7 @@ def test_block_includes_reading_passage_and_listening_audio(
 
 
 def test_unknown_level_rejected(client: TestClient, auth_headers: dict) -> None:
-    response = client.get("/api/placement?level=C1", headers=auth_headers)
+    response = client.get("/api/placement?level=D1", headers=auth_headers)
     assert response.status_code == 400
 
 
@@ -59,21 +59,21 @@ def test_grade_pass_and_fail(
     assert response.json()["passed"] is False
 
 
-def test_all_levels_correct_place_at_b2(
+def test_all_levels_correct_place_at_c2(
     client: TestClient, auth_headers: dict, db_session: Session
 ) -> None:
     answers: dict[str, str] = {}
-    for level in ("A2", "B1", "B2"):
+    for level in ("A2", "B1", "B2", "C1", "C2"):
         answers.update(_correct_answers(db_session, _block(client, auth_headers, level)))
     response = client.post("/api/placement", json={"answers": answers}, headers=auth_headers)
     assert response.status_code == 200
     body = response.json()
-    assert body["overall_level"] == "B2"
+    assert body["overall_level"] == "C2"
     assert body["correct"] == body["total"] > 0
     levels = db_session.scalars(select(SkillProgress.level)).all()
-    assert "B2" in levels
+    assert "C2" in levels
     path = client.get("/api/path/today", headers=auth_headers).json()
-    assert path["lesson"]["cefr_level"] == "B2"
+    assert path["lesson"]["cefr_level"] == "C2"
 
 
 def test_only_lower_levels_correct_place_at_a2(

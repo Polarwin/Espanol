@@ -35,8 +35,12 @@ dist-ssr/
 
 # Logs and editor/OS files
 /content/generated/
+/content/sources/
 *.log
 .DS_Store
 .idea/
 .vscode/
 *.sw?
+
+# venv artifacts
+/share/

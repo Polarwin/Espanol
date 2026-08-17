@@ -5,7 +5,7 @@ import type { PlacementQuestion, PlacementResult } from '../api/types'
 import { AudioPlayer } from '../components/AudioPlayer'
 import { ThemeToggle } from '../theme'
 
-const LEVELS = ['A1', 'A2', 'B1', 'B2']
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 const START_LEVEL = 'A2'
 
 const LABELS: Record<string, string> = {

@@ -26,10 +26,10 @@ from .path import media_url
 
 router = APIRouter(prefix="/api/placement", tags=["placement"])
 
-LEVELS = ["A1", "A2", "B1", "B2"]
+LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"]
 PASS_RATIO = 0.7
 SKILL_PASS_RATIO = 0.5
-LEVEL_SCORES = {"A1": 40.0, "A2": 55.0, "B1": 70.0, "B2": 85.0}
+LEVEL_SCORES = {"A1": 40.0, "A2": 55.0, "B1": 70.0, "B2": 85.0, "C1": 92.0, "C2": 97.0}
 
 
 def _pool(db: Session, level: str, skill: str) -> list[Exercise]:

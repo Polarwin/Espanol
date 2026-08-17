@@ -26,11 +26,11 @@ def test_lessons_list_published(client: TestClient) -> None:
         "Una ruta de senderismo",
         "Mensajes con intención",
     ]
-    assert len(lessons) == 42
+    assert len(lessons) == 86
     assert {
         level: sum(lesson["cefr_level"] == level for lesson in lessons)
-        for level in ("A1", "A2", "B1", "B2")
-    } == {"A1": 10, "A2": 10, "B1": 10, "B2": 12}
+        for level in ("A1", "A2", "B1", "B2", "C1", "C2")
+    } == {"A1": 10, "A2": 10, "B1": 10, "B2": 12, "C1": 24, "C2": 20}
     first = lessons[0]
     assert first["cefr_level"] == "A2"
     assert first["topics"] == ["planes", "vida diaria"]
