@@ -11,6 +11,7 @@ from ..services.loop import advance_state, get_or_create_state
 from ..services.progress import apply_skill_deltas
 from ..services.scoring import score_attempt
 from ..services.security import get_current_user
+from ..services.spaced_review import review_item_from_failed_exercise
 from ..services.streak import record_activity
 
 router = APIRouter(prefix="/api/exercises", tags=["exercises"])
@@ -40,6 +41,8 @@ def post_attempt(
         )
     )
     updates = apply_skill_deltas(db, user, result.deltas)
+    if not result.correct:
+        review_item_from_failed_exercise(db, user, exercise, force_due=True)
 
     # Advance the core loop and record today's activity for the streak.
     state = get_or_create_state(db, user, adaptive.choose_next_lesson(db, user))

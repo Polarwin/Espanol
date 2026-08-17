@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { Progress, WeeklyRecap } from '../api/types'
 import { Chip } from '../components/Chip'
@@ -14,6 +15,7 @@ import {
   IconPencil,
   IconPron,
   IconPuzzle,
+  IconReplay,
   IconSparkle,
 } from '../components/icons'
 import { SkillBar } from '../components/SkillBar'
@@ -51,6 +53,7 @@ export function Progreso() {
       <p className="mt-1 text-[15px] font-semibold text-ink-soft">
         Cada habilidad avanza a su propio ritmo. Tienes {progress.lessons_completed_total} {progress.lessons_completed_total === 1 ? 'lección guardada' : 'lecciones guardadas'}.
       </p>
+      <Link to="/repaso" className="mt-4 inline-flex items-center gap-2 rounded-full bg-terracotta px-5 py-3 text-sm font-bold text-paper shadow-soft"><IconReplay size={17} />Repasar mis errores</Link>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Streak */}

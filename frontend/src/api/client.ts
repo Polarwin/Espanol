@@ -11,6 +11,8 @@ import type {
   LessonDetail,
   LessonSummary,
   Progress,
+  ReviewItem,
+  ReviewResult,
   PronunciationResult,
   ConversationResult,
   ConversationSetup,
@@ -233,6 +235,14 @@ export const api = {
 
   getProgress(): Promise<Progress> {
     return withMock(() => request<Progress>('/api/progress'), () => mock.mockProgress())
+  },
+
+  getReviewItems(): Promise<ReviewItem[]> {
+    return request<ReviewItem[]>('/api/review')
+  },
+
+  answerReview(itemId: number, answer: string): Promise<ReviewResult> {
+    return request<ReviewResult>(`/api/review/${itemId}`, { method: 'POST', body: JSON.stringify({ answer }) })
   },
 
   getWeeklyRecap(): Promise<WeeklyRecap> {

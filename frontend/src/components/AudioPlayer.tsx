@@ -22,7 +22,7 @@ export function AudioPlayer({ src, durationSeconds = 18, compact = false }: Audi
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [playing, setPlaying] = useState(false)
   const [time, setTime] = useState(0)
-  const duration = durationSeconds
+  const [duration, setDuration] = useState(durationSeconds)
   const hasAudio = Boolean(src)
 
   useEffect(() => {
@@ -61,6 +61,14 @@ export function AudioPlayer({ src, durationSeconds = 18, compact = false }: Audi
         <audio
           ref={audioRef}
           src={src}
+          onLoadedMetadata={(e) => {
+            const realDuration = e.currentTarget.duration
+            if (Number.isFinite(realDuration) && realDuration > 0) setDuration(realDuration)
+          }}
+          onDurationChange={(e) => {
+            const realDuration = e.currentTarget.duration
+            if (Number.isFinite(realDuration) && realDuration > 0) setDuration(realDuration)
+          }}
           onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
           onEnded={() => setPlaying(false)}
         />

@@ -44,6 +44,18 @@ def test_wrong_text_answer(client: TestClient, auth_headers: dict) -> None:
         "grammar": -1.0,
         "writing": -0.5,
     }
+    reviews = client.get("/api/review", headers=auth_headers)
+    assert reviews.status_code == 200
+    item = next(row for row in reviews.json() if row["prompt"] == exercise["prompt"])
+    assert item["answer"] == "¿Qué planes tienes?"
+    retried = client.post(
+        f"/api/review/{item['id']}",
+        json={"answer": "Que planes tienes"},
+        headers=auth_headers,
+    )
+    assert retried.status_code == 200
+    assert retried.json()["correct"] is True
+    assert client.get("/api/review", headers=auth_headers).json() == []
 
 
 def test_option_answer_is_exact(client: TestClient, auth_headers: dict) -> None:

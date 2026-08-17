@@ -189,6 +189,23 @@ export interface AttemptResult {
   skill_updates: SkillUpdate[]
 }
 
+export interface ReviewItem {
+  id: number
+  kind: ExerciseType | 'pronunciation'
+  prompt: string
+  answer: string
+  options?: string[] | null
+  passage?: string | null
+  audio_url?: string | null
+  due_date: string
+}
+
+export interface ReviewResult {
+  correct: boolean
+  feedback: string
+  next_due: string
+}
+
 export interface WordScore {
   word: string
   score: number

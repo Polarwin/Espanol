@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import type { AttemptResult, Exercise, TodayPath } from '../api/types'
 import { IconChat, IconCheck } from '../components/icons'
+import { Link } from 'react-router-dom'
 
 export function Practica() {
   const [today, setToday] = useState<TodayPath | null>(null)
@@ -57,6 +58,7 @@ export function Practica() {
   return (
     <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-2xl flex-col justify-center px-4 py-8 sm:px-8 md:min-h-screen">
       <div className="rounded-3xl bg-paper p-5 shadow-card sm:p-8">
+        <Link to="/repaso" className="float-right rounded-full bg-sun-soft px-4 py-2 text-sm font-bold text-terracotta-dark">Repasar mis errores</Link>
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-blush text-terracotta">
           {done ? <IconCheck size={27} /> : <IconChat size={27} />}
         </span>

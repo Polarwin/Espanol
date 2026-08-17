@@ -17,7 +17,7 @@ MIN_EASINESS = 1.3
 DEFAULT_EASINESS = 2.5
 
 # Map exercise types to review item kinds.
-_REVIEW_KINDS = {"vocabulary", "grammar", "pronunciation"}
+_REVIEW_KINDS = {"vocabulary", "grammar", "pronunciation", "listening", "reading", "writing"}
 
 
 def week_start_of(day: date) -> date:
@@ -91,14 +91,31 @@ def create_review_item(
     return item
 
 
-def review_item_from_failed_exercise(db: Session, user: User, exercise: Exercise) -> ReviewItem | None:
-    """Turn a failed vocabulary/grammar/pronunciation exercise into a review item."""
+def review_item_from_failed_exercise(
+    db: Session, user: User, exercise: Exercise, *, force_due: bool = False
+) -> ReviewItem | None:
+    """Turn a failed exercise into a review item, without duplicating the same mistake."""
     if exercise.type not in _REVIEW_KINDS:
         return None
-    if exercise.type == "vocabulary":
-        content = {"word": exercise.prompt, "translation": exercise.expected_answer}
-    else:
-        content = {"concept": exercise.prompt, "example": exercise.expected_answer}
+    existing = db.scalar(
+        select(ReviewItem).where(
+            ReviewItem.user_id == user.id,
+            ReviewItem.kind == exercise.type,
+            ReviewItem.content["exercise_id"].as_integer() == exercise.id,
+        )
+    )
+    if existing is not None:
+        if force_due:
+            existing.due_date = date.today()
+        return existing
+    content = {
+        "exercise_id": exercise.id,
+        "prompt": exercise.prompt,
+        "answer": exercise.expected_answer,
+        "options": exercise.options,
+        "passage": exercise.passage,
+        "audio_path": exercise.audio_path,
+    }
     return create_review_item(db, user, exercise.type, content)
 
 

@@ -13,6 +13,7 @@ import { Lecciones } from './pages/Lecciones'
 import { Leccion } from './pages/Leccion'
 import { Perfil } from './pages/Perfil'
 import { Conversacion } from './pages/Conversacion'
+import { Repaso } from './pages/Repaso'
 
 function RequireAuth() {
   return getToken() ? <Outlet /> : <Navigate to="/entrar" replace />
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="/lecciones" element={<Lecciones />} />
             <Route path="/leccion/:lessonId" element={<Leccion />} />
             <Route path="/practica" element={<Practica />} />
+            <Route path="/repaso" element={<Repaso />} />
             <Route path="/conversacion" element={<Conversacion />} />
             <Route path="/leccion/:lessonId/conversacion" element={<Conversacion />} />
             <Route path="/progreso" element={<Progreso />} />
