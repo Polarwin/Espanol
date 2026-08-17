@@ -21,6 +21,10 @@ class PlacementGradeSubmission(BaseModel):
     answers: dict[str, str]
 
 
+class LevelSelection(BaseModel):
+    level: str
+
+
 class PlacementGradeResult(BaseModel):
     level: str
     correct: int

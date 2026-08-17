@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from ..db import get_db
 from ..models import Exercise, Lesson, SkillProgress, User, UserState
 from ..schemas.placement import (
+    LevelSelection,
     PlacementGradeResult,
     PlacementGradeSubmission,
     PlacementQuestion,
@@ -188,9 +189,23 @@ def submit(payload: PlacementSubmission, user: User = Depends(get_current_user),
     return PlacementResult(overall_level=overall, skill_levels=levels, correct=correct, total=total)
 
 
+SKILLS = ("vocabulary", "grammar", "listening", "reading", "pronunciation", "fluency", "writing")
+
+
 @router.post("/skip", response_model=PlacementResult)
 def skip(user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> PlacementResult:
-    levels = {skill: "A1" for skill in ("vocabulary", "grammar", "listening", "reading", "pronunciation", "fluency", "writing")}
+    levels = {skill: "A1" for skill in SKILLS}
     scores = {skill: 35.0 for skill in levels}
     _finish(db, user, "A1", levels, scores)
     return PlacementResult(overall_level="A1", skill_levels=levels, correct=0, total=0)
+
+
+@router.post("/manual", response_model=PlacementResult)
+def manual(payload: LevelSelection, user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> PlacementResult:
+    """Pick a level directly, without taking the test."""
+    if payload.level not in LEVELS:
+        raise HTTPException(status_code=400, detail=f"Nivel desconocido: {payload.level}")
+    levels = {skill: payload.level for skill in SKILLS}
+    scores = {skill: LEVEL_SCORES[payload.level] for skill in SKILLS}
+    _finish(db, user, payload.level, levels, scores)
+    return PlacementResult(overall_level=payload.level, skill_levels=levels, correct=0, total=0)

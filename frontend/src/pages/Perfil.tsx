@@ -11,6 +11,9 @@ export function Perfil() {
   const [nickname, setNickname] = useState('')
   const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
+  const [pickedLevel, setPickedLevel] = useState('')
+  const [levelMessage, setLevelMessage] = useState('')
+  const [changingLevel, setChangingLevel] = useState(false)
 
   useEffect(() => {
     api.getMe().then((profile) => {
@@ -38,6 +41,21 @@ export function Perfil() {
     }
   }
 
+  async function changeLevel() {
+    if (!pickedLevel || changingLevel) return
+    setChangingLevel(true)
+    setLevelMessage('')
+    try {
+      const result = await api.setLevel(pickedLevel)
+      setLevelMessage(`Tu nivel ahora es ${result.overall_level}. Tu ruta se ha ajustado.`)
+      setPickedLevel('')
+    } catch {
+      setLevelMessage('No se pudo cambiar el nivel. Inténtalo de nuevo.')
+    } finally {
+      setChangingLevel(false)
+    }
+  }
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-8 md:py-12">
       <p className="text-sm font-bold uppercase tracking-[0.18em] text-terracotta">Tu perfil</p>
@@ -61,6 +79,35 @@ export function Perfil() {
         </button>
         {message && <p className="mt-4 font-bold text-leaf" role="status">{message}</p>}
       </form>
+
+      <section className="mt-6 rounded-3xl bg-paper p-5 shadow-card sm:p-7">
+        <h2 className="font-display text-xl font-bold">Tu nivel</h2>
+        <p className="mt-2 font-semibold text-ink-soft">
+          Elige tu nivel directamente y tu ruta empezará desde ahí.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => { setPickedLevel(item); setLevelMessage('') }}
+              className={`rounded-full px-4 py-2 text-sm font-extrabold ${pickedLevel === item ? 'bg-terracotta text-paper' : 'bg-cream text-ink shadow-soft'}`}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+        {pickedLevel && (
+          <button
+            disabled={changingLevel}
+            onClick={() => void changeLevel()}
+            className="mt-4 rounded-xl bg-terracotta px-5 py-3 font-bold text-paper shadow-soft disabled:opacity-50"
+          >
+            {changingLevel ? 'Cambiando…' : `Cambiar a ${pickedLevel}`}
+          </button>
+        )}
+        {levelMessage && <p className="mt-4 font-bold text-leaf" role="status">{levelMessage}</p>}
+      </section>
 
       <section className="mt-6 rounded-3xl bg-paper p-5 shadow-card sm:p-7">
         <h2 className="font-display text-xl font-bold">Prueba de nivel</h2>

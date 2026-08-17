@@ -130,3 +130,17 @@ def test_skip_starts_at_random_a1_lesson(client: TestClient, auth_headers: dict,
     assert path["lesson"]["cefr_level"] == "A1"
     state = db_session.scalar(select(UserState))
     assert state is not None
+
+
+def test_manual_level_selection(client: TestClient, auth_headers: dict, db_session: Session) -> None:
+    response = client.post("/api/placement/manual", json={"level": "B2"}, headers=auth_headers)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["overall_level"] == "B2"
+    assert set(body["skill_levels"].values()) == {"B2"}
+    levels = db_session.scalars(select(SkillProgress.level)).all()
+    assert levels and set(levels) == {"B2"}
+    path = client.get("/api/path/today", headers=auth_headers).json()
+    assert path["lesson"]["cefr_level"] == "B2"
+    bad = client.post("/api/placement/manual", json={"level": "D1"}, headers=auth_headers)
+    assert bad.status_code == 400

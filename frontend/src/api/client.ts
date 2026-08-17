@@ -283,4 +283,8 @@ export const api = {
   skipPlacement(): Promise<PlacementResult> {
     return request<PlacementResult>('/api/placement/skip', { method: 'POST' })
   },
+
+  setLevel(level: string): Promise<PlacementResult> {
+    return request<PlacementResult>('/api/placement/manual', { method: 'POST', body: JSON.stringify({ level }) })
+  },
 }
