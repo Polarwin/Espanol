@@ -74,16 +74,18 @@ def path_today(user: User = Depends(get_current_user), db: Session = Depends(get
     if segment is not None and segment.transcript:
         subtitle = TranscriptLine.model_validate(segment.transcript[0])
     captions: list[CaptionCue] = []
-    if segment is not None and segment.transcript:
-        span = max(0.2, segment.end_seconds - segment.start_seconds)
-        captions = [
+    for lesson_segment in segments:
+        if not lesson_segment.transcript:
+            continue
+        span = max(0.2, lesson_segment.end_seconds - lesson_segment.start_seconds)
+        captions.extend(
             CaptionCue(
-                start=segment.start_seconds + (index * span) / len(segment.transcript),
-                end=segment.start_seconds + ((index + 1) * span) / len(segment.transcript),
+                start=lesson_segment.start_seconds + (index * span) / len(lesson_segment.transcript),
+                end=lesson_segment.start_seconds + ((index + 1) * span) / len(lesson_segment.transcript),
                 text=line["es"],
             )
-            for index, line in enumerate(segment.transcript)
-        ]
+            for index, line in enumerate(lesson_segment.transcript)
+        )
 
     scores = get_skill_scores(db, user)
     feedback = LoopFeedback(

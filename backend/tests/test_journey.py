@@ -55,6 +55,7 @@ def test_mi_ruta_stages_advance_and_stale_taps_do_not_skip(
     assert len(today["captions"]) >= 2
     assert today["captions"][0]["text"] == today["subtitle"]["es"]
     assert today["clip_start"] < today["clip_end"]
+    assert today["captions"][-1]["end"] > today["clip_end"]
 
     listening = client.post(
         "/api/path/advance", json={"step": "mira"}, headers=auth_headers

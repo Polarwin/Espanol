@@ -91,7 +91,7 @@ export function MiRuta() {
           <section className="rounded-3xl bg-paper p-4 shadow-soft sm:p-5">
             <h2 className="font-display text-2xl font-bold sm:text-[30px]">{today.lesson.title}</h2>
             <div className="mt-3">
-              <VideoPlayer src={today.video_url} subtitle={today.subtitle.es} cues={today.captions} startTime={today.clip_start} endTime={today.clip_end} />
+              <VideoPlayer src={today.video_url} subtitle={today.subtitle.es} cues={today.captions} startTime={today.clip_start} />
             </div>
             <p className="mt-2.5 text-[13px] font-semibold text-ink-soft">
               Clip {today.clip_index + 1} de {today.total_clips} · 00:42
