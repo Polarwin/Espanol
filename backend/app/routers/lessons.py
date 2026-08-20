@@ -117,7 +117,7 @@ def lesson_detail(
     db: Session = Depends(get_db),
 ) -> LessonDetail:
     lesson = db.get(Lesson, lesson_id)
-    if lesson is None:
+    if lesson is None or lesson.status != "published":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
     name = (user.nickname or user.display_name).strip()
     interests = user.interests or lesson.topics or ["español"]
@@ -182,7 +182,7 @@ def complete_lesson(
     db: Session = Depends(get_db),
 ) -> dict[str, int | bool]:
     lesson = db.get(Lesson, lesson_id)
-    if lesson is None:
+    if lesson is None or lesson.status != "published":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
     completion = db.scalar(
         select(LessonCompletion).where(
@@ -207,7 +207,7 @@ def complete_lesson(
 @router.get("/{lesson_id}/assessment", response_model=Assessment)
 def lesson_assessment(lesson_id: int, db: Session = Depends(get_db)) -> Assessment:
     lesson = db.get(Lesson, lesson_id)
-    if lesson is None:
+    if lesson is None or lesson.status != "published":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
 
     groups: list[AssessmentGroup] = []

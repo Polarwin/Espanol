@@ -20,6 +20,7 @@ from ..seed.vocabulary_content import VOCABULARY_BANKS
 from ..services.goals import increment_goal
 from ..services.progress import apply_skill_deltas
 from ..services.pronunciation import score_pronunciation, transcribe_spanish
+from ..services.ratelimit import rate_limit
 from ..services.security import get_current_user
 from ..services.speech import spanish_example_audio
 from ..services.streak import record_activity
@@ -146,7 +147,7 @@ def content_sources(_: User = Depends(get_current_user)) -> list[dict]:
     return [_source("Español", settings.watch_dir), _source("Vitamina", settings.vitamina_dir)]
 
 
-@router.post("/api/pronunciation/evaluate")
+@router.post("/api/pronunciation/evaluate", dependencies=[Depends(rate_limit(max_calls=30, window_seconds=60))])
 async def pronunciation_evaluate(
     audio: UploadFile = File(...),
     phrase: str = Form(..., min_length=1, max_length=300),
@@ -192,7 +193,7 @@ async def pronunciation_evaluate(
     return result
 
 
-@router.post("/api/speech/example", response_class=FileResponse)
+@router.post("/api/speech/example", response_class=FileResponse, dependencies=[Depends(rate_limit(max_calls=30, window_seconds=60))])
 async def speech_example(
     payload: SpeechExampleRequest,
     _: User = Depends(get_current_user),
@@ -217,7 +218,7 @@ def conversation_setup(
     return _conversation_profile(lesson, (user.nickname or user.display_name).strip())
 
 
-@router.post("/api/conversation/respond")
+@router.post("/api/conversation/respond", dependencies=[Depends(rate_limit(max_calls=30, window_seconds=60))])
 async def conversation_respond(
     audio: UploadFile = File(...),
     turn: int = Form(0),

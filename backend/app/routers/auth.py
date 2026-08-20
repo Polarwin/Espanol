@@ -8,13 +8,19 @@ from ..db import get_db
 from ..models import User
 from ..schemas import AuthResponse, LoginRequest, ProfileUpdate, RegisterRequest, UserOut
 from ..services.progress import init_skill_progress
+from ..services.ratelimit import rate_limit
 from ..services.security import create_token, get_current_user, hash_password, verify_password
 from ..services.streak import get_or_create_streak
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register",
+    response_model=AuthResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit(max_calls=10, window_seconds=60))],
+)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> AuthResponse:
     existing = db.scalar(select(User).where(User.email == payload.email))
     if existing is not None:
@@ -35,7 +41,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> AuthRes
     return AuthResponse(token=create_token(user.id), user=UserOut.model_validate(user))
 
 
-@router.post("/login", response_model=AuthResponse)
+@router.post("/login", response_model=AuthResponse, dependencies=[Depends(rate_limit(max_calls=10, window_seconds=60))])
 def login(payload: LoginRequest, db: Session = Depends(get_db)) -> AuthResponse:
     user = db.scalar(select(User).where(User.email == payload.email))
     if user is None or not verify_password(payload.password, user.password_hash):

@@ -30,3 +30,5 @@ class UserState(Base):
     current_lesson_id: Mapped[int | None] = mapped_column(ForeignKey("lessons.id"), nullable=True)
     current_step: Mapped[str] = mapped_column(default="mira")
     current_clip_index: Mapped[int] = mapped_column(default=0)
+    # True once the current clip's comprueba quiz has been answered correctly.
+    quiz_passed: Mapped[bool] = mapped_column(default=False)

@@ -12,13 +12,32 @@ export function Leccion() {
   const [lesson, setLesson] = useState<LessonDetail | null>(null)
   const [error, setError] = useState('')
   const [user, setUser] = useState<User | null>(null)
+  const [isCurrentUnit, setIsCurrentUnit] = useState<boolean | null>(null)
+  const [selecting, setSelecting] = useState(false)
+  const [selectError, setSelectError] = useState('')
 
   useEffect(() => {
     if (!lessonId) return
-    api.selectLesson(lessonId).catch(() => {})
+    // Viewing a lesson must not change the user's route; only detect whether
+    // this lesson already is the current unit.
+    api.getTodayPath().then((path) => setIsCurrentUnit(path.lesson.id === lessonId)).catch(() => {})
     api.getLesson(lessonId, Date.now() % 1_000_000).then(setLesson).catch(() => setError('No se pudo cargar la lección.'))
     api.getMe().then(setUser).catch(() => {})
   }, [lessonId])
+
+  async function beginUnit() {
+    if (!lessonId) return
+    setSelecting(true)
+    setSelectError('')
+    try {
+      await api.selectLesson(lessonId)
+      setIsCurrentUnit(true)
+    } catch {
+      setSelectError('No se pudo cambiar de unidad. Inténtalo de nuevo.')
+    } finally {
+      setSelecting(false)
+    }
+  }
 
   if (!lesson) return <div className="p-6 font-semibold text-ink-soft">{error || 'Cargando la lección…'}</div>
   const firstLine = lesson.segments[0]?.transcript[0]?.es ?? lesson.title
@@ -39,6 +58,14 @@ export function Leccion() {
       <p className="mt-1 font-semibold text-ink-soft">{user ? `${preferredName(user)}, escucha el diálogo y activa los subtítulos si los necesitas. Después podrás practicarlo con tu propia voz.` : 'Escucha el diálogo y activa los subtítulos si los necesitas. Después podrás practicarlo con tu propia voz.'}</p>
       <div className="mt-4 grid gap-3 rounded-2xl border border-river/15 bg-river-soft p-4 sm:grid-cols-2"><div><p className="text-xs font-extrabold uppercase tracking-wide text-river">Tu misión de esta visita</p><p className="mt-1 font-semibold">{lesson.personal_welcome}</p><p className="mt-1 text-sm font-semibold text-ink-soft">{lesson.session_mission}</p></div><div className="rounded-xl bg-paper p-3"><p className="text-xs font-extrabold uppercase tracking-wide text-terracotta">Frase especial</p><p className="mt-1 font-display text-lg font-bold">«{lesson.focus_phrase}»</p></div></div>
       <div className="mt-5"><VideoPlayer src={lesson.video_url} subtitle={firstLine} cues={cues} /></div>
+      {isCurrentUnit === false && (
+        <div className="mt-4">
+          <button onClick={() => void beginUnit()} disabled={selecting} className="w-full rounded-2xl bg-terracotta px-6 py-3.5 font-bold text-paper shadow-card disabled:opacity-50 sm:w-fit">
+            {selecting ? 'Cambiando de unidad…' : 'Empezar esta unidad (sustituye tu unidad actual)'}
+          </button>
+          {selectError && <p className="mt-2 font-bold text-terracotta">{selectError}</p>}
+        </div>
+      )}
       <Link to={`/leccion/${lesson.id}/repetir-video`} className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-river px-5 py-3 font-bold text-paper shadow-soft sm:w-fit"><IconMic size={19} />Escuchar, repetir y recibir puntuación</Link>
       <details className="mt-6 rounded-3xl bg-paper p-5 shadow-soft" open>
         <summary className="cursor-pointer list-none">

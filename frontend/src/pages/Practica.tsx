@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import type { AttemptResult, Exercise, TodayPath } from '../api/types'
+import { AudioPlayer } from '../components/AudioPlayer'
 import { IconChat, IconCheck } from '../components/icons'
 import { Link } from 'react-router-dom'
 
@@ -74,6 +75,12 @@ export function Practica() {
               <div><h1 className="font-display text-2xl font-bold">Práctica rápida</h1><p className="text-sm font-semibold text-ink-soft">{today?.lesson.title}</p></div>
               <span className="rounded-full bg-river-soft px-3 py-1 text-sm font-bold text-river">{index + 1} de {exercises.length}</span>
             </div>
+            {exercise.passage && (
+              <div className="mt-6 rounded-2xl border border-river/15 bg-river-soft/60 px-4 py-3">
+                <p className="text-[15px] font-semibold leading-relaxed text-ink">{exercise.passage}</p>
+              </div>
+            )}
+            {exercise.audio_url && <div className="mt-6"><AudioPlayer src={exercise.audio_url} /></div>}
             <p className="mt-6 text-lg font-bold">{exercise.prompt}</p>
             {exercise.options ? (
               <div className="mt-4 grid gap-2">

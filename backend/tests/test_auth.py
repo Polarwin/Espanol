@@ -49,6 +49,59 @@ def test_me_requires_auth(client: TestClient) -> None:
     assert client.get("/api/path/today").status_code == 401
 
 
+def test_register_rejects_short_or_empty_password(client: TestClient) -> None:
+    for password in ("", "short", "1234567"):
+        response = client.post(
+            "/api/auth/register",
+            json={**USER, "email": f"{len(password)}@example.com", "password": password},
+        )
+        assert response.status_code == 422
+
+
+def test_register_rejects_non_email(client: TestClient) -> None:
+    for email in ("not-an-email", "missing@tld", "two@@example.com", "spaces in@example.com"):
+        response = client.post("/api/auth/register", json={**USER, "email": email})
+        assert response.status_code == 422
+
+
+def test_register_rejects_oversized_fields(client: TestClient) -> None:
+    too_long_password = client.post(
+        "/api/auth/register", json={**USER, "password": "p" * 129}
+    )
+    assert too_long_password.status_code == 422
+
+    too_long_name = client.post(
+        "/api/auth/register", json={**USER, "display_name": "Maya " * 20}
+    )
+    assert too_long_name.status_code == 422
+
+    too_many_interests = client.post(
+        "/api/auth/register",
+        json={**USER, "interests": [f"tema{i}" for i in range(11)]},
+    )
+    assert too_many_interests.status_code == 422
+
+    too_long_interest = client.post(
+        "/api/auth/register", json={**USER, "interests": ["x" * 41]}
+    )
+    assert too_long_interest.status_code == 422
+
+
+def test_register_valid_payload_still_works_and_is_trimmed(client: TestClient) -> None:
+    response = client.post(
+        "/api/auth/register",
+        json={
+            "email": "lucia@example.com",
+            "password": "una-clave-segura",
+            "display_name": "  Lucía   García  ",
+            "interests": ["planes", "", "viajes"],
+        },
+    )
+    assert response.status_code == 201
+    assert response.json()["user"]["display_name"] == "Lucía García"
+    assert response.json()["user"]["interests"] == ["planes", "viajes"]
+
+
 def test_user_can_change_name_and_nickname(client: TestClient, auth_headers: dict) -> None:
     response = client.patch(
         "/api/me",

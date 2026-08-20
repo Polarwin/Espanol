@@ -6,10 +6,29 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class RegisterRequest(BaseModel):
-    email: str
-    password: str
-    display_name: str
-    interests: list[str] = []
+    email: str = Field(
+        max_length=254,
+        pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+    )
+    password: str = Field(min_length=8, max_length=128)
+    display_name: str = Field(min_length=1, max_length=60)
+    interests: list[str] = Field(default=[], max_length=10)
+
+    @field_validator("display_name")
+    @classmethod
+    def trim_display_name(cls, value: str) -> str:
+        cleaned = " ".join(value.split())
+        if not cleaned:
+            raise ValueError("Name cannot be blank")
+        return cleaned
+
+    @field_validator("interests")
+    @classmethod
+    def trim_interests(cls, value: list[str]) -> list[str]:
+        cleaned = [" ".join(interest.split()) for interest in value]
+        if any(len(interest) > 40 for interest in cleaned):
+            raise ValueError("Interests must be 40 characters or fewer")
+        return [interest for interest in cleaned if interest]
 
 
 class LoginRequest(BaseModel):

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../api/client'
+import { api, ApiError } from '../api/client'
 import type { Progress, TodayPath, User } from '../api/types'
 import { preferredName } from '../api/types'
 import { Chip } from '../components/Chip'
@@ -48,12 +48,19 @@ export function MiRuta() {
     setError('')
     try {
       setToday(await api.advancePath(today.step))
-      setProgress(await api.getProgress())
-    } catch {
-      setError('No se pudo guardar este paso. Inténtalo de nuevo.')
-    } finally {
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setError('Aprueba el cuestionario antes de continuar.')
+      } else {
+        setError('No se pudo guardar este paso. Inténtalo de nuevo.')
+      }
       setAdvancing(false)
+      return
     }
+    // Best-effort refresh of streak/progress; a failure here must not look
+    // like the advance failed (it already succeeded).
+    api.getProgress().then(setProgress).catch(() => {})
+    setAdvancing(false)
   }
 
   return (
@@ -90,7 +97,7 @@ export function MiRuta() {
           <section className="rounded-3xl bg-paper p-4 shadow-soft sm:p-5">
             <h2 className="font-display text-2xl font-bold sm:text-[30px]">{today.lesson.title}</h2>
             <div className="mt-3">
-              <VideoPlayer src={today.video_url} subtitle={today.subtitle.es} cues={today.captions} startTime={today.clip_start} />
+              <VideoPlayer src={today.video_url} subtitle={today.subtitle.es} cues={today.captions} startTime={today.clip_start} endTime={today.clip_end} />
             </div>
             <p className="mt-2.5 text-[13px] font-semibold text-ink-soft">
               Clip {today.clip_index + 1} de {today.total_clips} · 00:42

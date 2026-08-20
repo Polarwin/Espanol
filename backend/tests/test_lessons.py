@@ -1,6 +1,9 @@
 """Seeded content endpoints and the /api/path/today core-loop shape."""
 
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
+
+from backend.app.models import Lesson
 from backend.app.seed.load import sync_missing_lessons
 
 
@@ -150,3 +153,19 @@ def test_lesson_completion_is_saved_once(client: TestClient, auth_headers: dict)
     assert progress["lessons_completed_total"] == 1
     assert progress["completed_lesson_ids"] == [lesson_id]
     assert progress["weekly_goal"]["current"] == 1
+
+
+def test_draft_lesson_not_reachable_by_id(
+    client: TestClient, auth_headers: dict, db_session: Session
+) -> None:
+    draft = Lesson(title="Borrador sin publicar", cefr_level="A1", status="draft")
+    db_session.add(draft)
+    db_session.commit()
+
+    assert client.get(f"/api/lessons/{draft.id}", headers=auth_headers).status_code == 404
+    assert (
+        client.post(f"/api/lessons/{draft.id}/complete", headers=auth_headers).status_code
+        == 404
+    )
+    assert client.get(f"/api/lessons/{draft.id}/assessment").status_code == 404
+    assert draft.id not in [lesson["id"] for lesson in client.get("/api/lessons").json()]

@@ -54,49 +54,60 @@ Audited 2026-08-20. Scope: full backend (`backend/app`, routers/services/seed/mi
 - `backend/app/seed/video_fetch.py:259-261,476-488`: transcript cache is keyed only by slug; after a "no clean window" failure the video is deleted but the transcript kept, so the next candidate video is cut at timestamps from the wrong audio — a silently wrong generated lesson.
 - Fix: include the source filename/hash in the cache key, or delete the transcript when the video is replaced.
 
-### M6. Registration accepts empty passwords and non-emails
+### M6. Registration accepts empty passwords and non-emails — **fixed 2026-08-20**
 - `backend/app/schemas/auth.py:8-12`: `RegisterRequest` has no `Field` constraints, no `EmailStr` — 0-length passwords, arbitrary strings as email, unbounded names/interests. (Contrast: `ProfileUpdate` does validate, so a garbage-at-registration name can never be re-set via PATCH.)
 - Fix: `EmailStr`, `password: Field(min_length=8, …)`, bounds on the rest.
+- Fixed: `RegisterRequest` now enforces an email regex pattern, `password` 8–128 chars, `display_name` 1–60 (trimmed), `interests` ≤10 entries of ≤40 chars; covered by new tests in `backend/tests/test_auth.py`.
 
-### M7. No rate limiting anywhere, including auth and CPU/disk-expensive endpoints
+### M7. No rate limiting anywhere, including auth and CPU/disk-expensive endpoints — **fixed 2026-08-20**
 - No limiter middleware in `main.py`. Login is online-brute-forceable; `/api/pronunciation/evaluate` and `/api/conversation/respond` run faster-whisper inference per call; each unique `/api/speech/example` phrase triggers an outbound gTTS request and writes a permanent cache file — unbounded disk growth.
 - Fix: `slowapi` or equivalent on `/api/auth/*` and the speech endpoints; cap the TTS cache.
+- Fixed: new in-memory sliding-window limiter (`backend/app/services/ratelimit.py`, no new deps) applied as a FastAPI dependency — 10/min on register+login, 30/min on pronunciation/conversation/speech-example; tests in `backend/tests/test_ratelimit.py`. (The TTS cache cap remains open.)
 
-### M8. Draft/unpublished lessons readable and completable by ID
+### M8. Draft/unpublished lessons readable and completable by ID — **fixed 2026-08-20**
 - `routers/lessons.py:112-121` (`lesson_detail`), `178-186` (`complete_lesson`), `207-211` (assessment) don't check `lesson.status`, while list/select do filter `status == "published"`. Unfinished content is reachable by guessing IDs and inflates completion counts.
 - Fix: 404 on non-published lessons in detail/complete/assessment.
+- Fixed: all three endpoints now 404 unless `lesson.status == "published"`; test in `backend/tests/test_lessons.py::test_draft_lesson_not_reachable_by_id`.
 
-### M9. Review answers farmable; queue leaks answers to the client
+### M9. Review answers farmable; queue leaks answers to the client — **fixed 2026-08-20**
 - `routers/review.py:53-75`: `answer_review` never checks `item.due_date <= today` — the same item can be answered in a loop, applying skill deltas each time. `GET /api/review` (`review.py:23-34`) also ships the expected `answer` for every item up front.
 - Fix: reject answers for not-yet-due items; omit `answer` from the queue payload.
+- Fixed: `answer_review` returns 409 while `due_date` is in the future; the queue payload no longer includes `answer` (backend `review.py` + frontend `ReviewItem` type); tests in `backend/tests/test_review.py`.
 
-### M10. `comprueba` quiz is unenforced
+### M10. `comprueba` quiz is unenforced — **fixed 2026-08-20**
 - `routers/path.py:121-160`: `/api/path/quiz` records nothing, and `path/advance` with `step="comprueba"` never requires a passed quiz. The quiz is client-side decoration.
 - Fix: persist quiz pass per clip and require it to advance (or accept the step is advisory).
+- Fixed: new `user_state.quiz_passed` column (migration `b4e8c2a71d05`), set on a correct quiz answer while on `comprueba`; `path/advance` returns 409 without it; `advance_state` resets it on every transition; frontend allows quiz retries and shows the 409 message; tests in `backend/tests/test_journey.py`.
 
-### M11. "Práctica rápida" strips passages and audio from reading/listening exercises
+### M11. "Práctica rápida" strips passages and audio from reading/listening exercises — **fixed 2026-08-20**
 - `frontend/src/pages/Practica.tsx:25,77-84`: exercises are flattened from all assessment groups but the page renders only `prompt` + options/textarea — reading exercises without their `passage`, listening without the audio player.
 - Fix: render passage/audio like `Assessment.tsx:212-218`, or filter to self-contained types.
+- Fixed: `Practica.tsx` now renders `exercise.passage` in the same styled block and `exercise.audio_url` via `AudioPlayer`, matching `Assessment.tsx`.
 
-### M12. MiRuta clip player ignores `clip_end`
+### M12. MiRuta clip player ignores `clip_end` — **fixed 2026-08-20**
 - `frontend/src/pages/MiRuta.tsx:93` passes `startTime={today.clip_start}` but never `endTime={today.clip_end}` (though `VideoPlayer` supports it and the API supplies it). "Mira el clip" plays the rest of the video; the scrubber spans the full file.
 - Fix: pass `endTime` (or change the copy).
+- Fixed: `MiRuta.tsx` now passes `endTime={today.clip_end}` to `VideoPlayer`.
 
-### M13. Misleading error after a successful route advance
+### M13. Misleading error after a successful route advance — **fixed 2026-08-20**
 - `frontend/src/pages/MiRuta.tsx:46-57`: `advancePath` + `getProgress` share one `try`; if the refresh fails after a successful advance, the UI shows "No se pudo guardar este paso" even though it saved — and a retry advances the *new* step, skipping one.
 - Fix: handle the two calls separately; treat the progress refresh as best-effort.
+- Fixed: `advance()` uses the `TodayPath` returned by `advancePath` and runs the `getProgress` refresh afterwards as fire-and-forget with its own `.catch()` — no error banner on refresh failure.
 
-### M14. Opening any lesson silently re-points the user's route
+### M14. Opening any lesson silently re-points the user's route — **fixed 2026-08-20**
 - `frontend/src/pages/Leccion.tsx:18` calls `api.selectLesson` on every page view; the backend (`lessons.py:93-109`) makes it the current unit and resets loop state to `mira`/clip 0. Catalog cards say "Abrir unidad" — nothing says viewing resets the route. *Needs product verification* whether this is intended.
 - Fix: explicit selection action or a confirmation notice.
+- Fixed: the page no longer auto-selects on view; it fetches `/api/path/today` to compare against the viewed lesson and only shows an explicit "Empezar esta unidad (sustituye tu unidad actual)" button when the lesson is not the current unit.
 
-### M15. Mock fallback turns auth failures into successful logins (dormant hazard)
+### M15. Mock fallback turns auth failures into successful logins (dormant hazard) — **fixed 2026-08-20**
 - `frontend/src/api/client.ts:99-106,131-140`: `withMock` catches *any* error. With `VITE_ENABLE_MOCKS=true`, a 401 wrong-password login or 409 duplicate register falls through to `mockLogin()`/`mockRegister()` "success". Verified the current `dist` bundle compiled the fallback out, so production is safe today — but nothing in code prevents a bad build. Mock code ships in the production bundle regardless.
 - Fix: fall back only on network errors, never on `ApiError` from `/api/auth/*`.
+- Fixed: `withMock` now falls back only when the error is a `TypeError` (fetch network failure) and not an `ApiError`; HTTP errors always propagate.
 
-### M16. Double-tap on record leaks a mic stream and an interval
+### M16. Double-tap on record leaks a mic stream and an interval — **fixed 2026-08-20**
 - `frontend/src/hooks/useRecorder.ts:38-75`: `start()` is async; mic buttons (`Conversacion.tsx:68`, `RepeatPhraseCard.tsx:50-58`, `VideoShadowing.tsx:111`) aren't disabled while `getUserMedia` is in flight. Two fast taps overwrite the refs — the first stream tracks and interval are never cleaned up.
 - Fix: guard `start()` with an in-flight flag; disable buttons until state settles.
+- Fixed: `start()` no-ops while a start is in flight (`startingRef`) or already recording; the hook exposes a new `starting` state and all three mic buttons are disabled while it is true.
 
 ### M17. HTTPS service depends on another project's cert directory and a hardcoded LAN IP
 - `deploy/systemd/vamos-web-https.service:14` reads certs from `/home/justin/Projects/nextERP/certs` (default also in `vite.config.ts:7`); certs are issued for IP `192.168.0.9`. Removing nextERP or a DHCP change silently breaks the service.

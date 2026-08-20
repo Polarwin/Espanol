@@ -3,6 +3,19 @@
 from fastapi.testclient import TestClient
 
 
+def _pass_current_quiz(client: TestClient, headers: dict) -> None:
+    """Answer the comprueba quiz of the current clip correctly."""
+    today = client.get("/api/path/today", headers=headers).json()
+    assert today["step"] == "comprueba"
+    detail = client.get(
+        f"/api/lessons/{today['lesson']['id']}", headers=headers
+    ).json()
+    answer = detail["segments"][today["clip_index"]]["transcript"][0]["en"]
+    result = client.post("/api/path/quiz", json={"choice": answer}, headers=headers)
+    assert result.status_code == 200
+    assert result.json()["correct"] is True
+
+
 def test_complete_learner_journey(client: TestClient, auth_headers: dict) -> None:
     placement = client.post("/api/placement/skip", headers=auth_headers)
     assert placement.status_code == 200
@@ -38,6 +51,8 @@ def test_complete_learner_journey(client: TestClient, auth_headers: dict) -> Non
     # Only the guarded Mi Ruta endpoint advances visible stages.
     route = today.json()
     while route["step"] != "adapta":
+        if route["step"] == "comprueba":
+            _pass_current_quiz(client, auth_headers)
         route = client.post(
             "/api/path/advance", json={"step": route["step"]}, headers=auth_headers
         ).json()
@@ -79,6 +94,7 @@ def test_mi_ruta_stages_advance_and_stale_taps_do_not_skip(
     )
     assert speaking.json()["step"] == "comprueba"
 
+    _pass_current_quiz(client, auth_headers)
     checking = client.post(
         "/api/path/advance", json={"step": "comprueba"}, headers=auth_headers
     )
@@ -130,6 +146,8 @@ def test_conversa_step_closes_the_lesson(client: TestClient, auth_headers: dict)
 
     state = today
     while state["step"] != "adapta":
+        if state["step"] == "comprueba":
+            _pass_current_quiz(client, auth_headers)
         state = client.post(
             "/api/path/advance", json={"step": state["step"]}, headers=auth_headers
         ).json()
@@ -183,3 +201,57 @@ def test_group_join_and_encouragement_journey(
     )
     assert encouraged.status_code == 200
     assert encouraged.json()["encouragements"][0]["message"] == "¡Sigue así!"
+
+
+def test_comprueba_advance_requires_passed_quiz(
+    client: TestClient, auth_headers: dict
+) -> None:
+    client.post("/api/path/advance", json={"step": "mira"}, headers=auth_headers)
+    quiz_step = client.post(
+        "/api/path/advance", json={"step": "escucha"}, headers=auth_headers
+    ).json()
+    assert quiz_step["step"] == "comprueba"
+
+    blocked = client.post(
+        "/api/path/advance", json={"step": "comprueba"}, headers=auth_headers
+    )
+    assert blocked.status_code == 409
+    assert blocked.json()["detail"] == "Aprueba el cuestionario antes de continuar"
+    assert (
+        client.get("/api/path/today", headers=auth_headers).json()["step"] == "comprueba"
+    )
+
+    _pass_current_quiz(client, auth_headers)
+    advanced = client.post(
+        "/api/path/advance", json={"step": "comprueba"}, headers=auth_headers
+    )
+    assert advanced.status_code == 200
+    assert advanced.json()["step"] == "habla"
+
+
+def test_quiz_pass_resets_for_next_clip(client: TestClient, auth_headers: dict) -> None:
+    client.post("/api/path/advance", json={"step": "mira"}, headers=auth_headers)
+    client.post("/api/path/advance", json={"step": "escucha"}, headers=auth_headers)
+    _pass_current_quiz(client, auth_headers)
+    client.post("/api/path/advance", json={"step": "comprueba"}, headers=auth_headers)
+
+    next_clip = client.post(
+        "/api/path/advance", json={"step": "habla"}, headers=auth_headers
+    ).json()
+    assert next_clip["step"] == "mira"
+    assert next_clip["clip_index"] == 1
+
+    client.post("/api/path/advance", json={"step": "mira"}, headers=auth_headers)
+    client.post("/api/path/advance", json={"step": "escucha"}, headers=auth_headers)
+    # The previous clip's pass must not carry over.
+    blocked = client.post(
+        "/api/path/advance", json={"step": "comprueba"}, headers=auth_headers
+    )
+    assert blocked.status_code == 409
+
+    _pass_current_quiz(client, auth_headers)
+    advanced = client.post(
+        "/api/path/advance", json={"step": "comprueba"}, headers=auth_headers
+    )
+    assert advanced.status_code == 200
+    assert advanced.json()["step"] == "habla"

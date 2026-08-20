@@ -131,6 +131,11 @@ def path_advance(
     """
     state = get_or_create_state(db, user, adaptive.choose_next_lesson(db, user))
     if state.current_step == payload.step:
+        if payload.step == "comprueba" and not state.quiz_passed:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Aprueba el cuestionario antes de continuar",
+            )
         next_lesson = None
         if state.current_step == "conversa":
             next_lesson = adaptive.choose_next_lesson(
@@ -157,6 +162,9 @@ def path_quiz(
     if quiz_data is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No quiz available")
     correct = payload.choice == quiz_data["answer"]
+    if correct and state.current_step == "comprueba":
+        state.quiz_passed = True
+        db.commit()
     return ClipQuizResult(correct=correct, correct_answer=quiz_data["answer"])
 
 

@@ -13,7 +13,7 @@ export function ClipQuizCard({ quiz }: { quiz: ClipQuiz }) {
   const [error, setError] = useState('')
 
   const check = async (choice: string) => {
-    if (result || checking) return
+    if (result?.correct || checking) return
     setSelected(choice)
     setChecking(true)
     setError('')
@@ -39,7 +39,7 @@ export function ClipQuizCard({ quiz }: { quiz: ClipQuiz }) {
             <button
               key={opt}
               type="button"
-              disabled={Boolean(result) || checking}
+              disabled={Boolean(result?.correct) || checking}
               onClick={() => void check(opt)}
               className={`rounded-2xl border-2 px-4 py-3 text-left text-[15px] font-semibold transition ${
                 result && isAnswer

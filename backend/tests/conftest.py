@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from backend.app.db import Base, get_db  # noqa: E402
 from backend.app.main import app  # noqa: E402
 from backend.app.seed.load import seed_db  # noqa: E402
+from backend.app.services.ratelimit import reset_rate_limits  # noqa: E402
 
 USER = {
     "email": "maya@example.com",
@@ -44,6 +45,8 @@ def db_session() -> Iterator[Session]:
 
 @pytest.fixture()
 def client(db_session: Session) -> Iterator[TestClient]:
+    reset_rate_limits()  # per-test isolation: the limiter is process-global
+
     def override_get_db() -> Iterator[Session]:
         yield db_session
 

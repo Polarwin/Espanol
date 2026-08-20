@@ -100,7 +100,10 @@ async function withMock<T>(call: () => Promise<T>, fallback: () => Promise<T>): 
   try {
     return await call()
   } catch (err) {
-    if (MOCK_FALLBACK_ENABLED) return fallback()
+    // Fall back to mocks only on genuine network failures (fetch rejects with
+    // a TypeError). API errors (401/409/…) must reach the caller, otherwise a
+    // failed login or register would look like a success when mocks are on.
+    if (MOCK_FALLBACK_ENABLED && !(err instanceof ApiError) && err instanceof TypeError) return fallback()
     throw err
   }
 }

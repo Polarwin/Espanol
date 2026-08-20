@@ -37,6 +37,9 @@ def advance_state(db: Session, user: User, next_lesson: Lesson | None = None) ->
         return state
     total_clips = len(lesson.segments)
 
+    # Every transition requires a fresh quiz pass for the new clip/step.
+    state.quiz_passed = False
+
     if state.current_step == "mira":
         state.current_step = "escucha"
     elif state.current_step == "escucha":

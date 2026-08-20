@@ -5,6 +5,8 @@ export type RecorderState = 'idle' | 'recording' | 'recorded' | 'error'
 
 interface UseRecorderResult {
   state: RecorderState
+  /** true while getUserMedia/MediaRecorder setup is in flight */
+  starting: boolean
   error: string | null
   blob: Blob | null
   seconds: number
@@ -16,6 +18,7 @@ interface UseRecorderResult {
 /** MediaRecorder wrapper for the "Repite la frase" pronunciation flow. */
 export function useRecorder(): UseRecorderResult {
   const [state, setState] = useState<RecorderState>('idle')
+  const [starting, setStarting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [blob, setBlob] = useState<Blob | null>(null)
   const [seconds, setSeconds] = useState(0)
@@ -23,6 +26,7 @@ export function useRecorder(): UseRecorderResult {
   const streamRef = useRef<MediaStream | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<number | null>(null)
+  const startingRef = useRef(false)
 
   const cleanup = useCallback(() => {
     if (timerRef.current) {
@@ -36,11 +40,17 @@ export function useRecorder(): UseRecorderResult {
   useEffect(() => cleanup, [cleanup])
 
   const start = useCallback(async () => {
+    // No-op on double-tap: one mic stream / timer at a time.
+    if (startingRef.current || recorderRef.current?.state === 'recording') return
+    startingRef.current = true
+    setStarting(true)
     setError(null)
     setBlob(null)
     if (typeof MediaRecorder === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
       setError('Tu navegador no permite grabar audio.')
       setState('error')
+      startingRef.current = false
+      setStarting(false)
       return
     }
     try {
@@ -71,6 +81,9 @@ export function useRecorder(): UseRecorderResult {
         : 'No pudimos acceder al micrófono. Revisa que esté disponible.')
       setState('error')
       cleanup()
+    } finally {
+      startingRef.current = false
+      setStarting(false)
     }
   }, [cleanup])
 
@@ -85,5 +98,5 @@ export function useRecorder(): UseRecorderResult {
     setError(null)
   }, [])
 
-  return { state, error, blob, seconds, start, stop, reset }
+  return { state, starting, error, blob, seconds, start, stop, reset }
 }

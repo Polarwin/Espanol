@@ -14,7 +14,7 @@ interface RepeatPhraseCardProps {
 
 /** "Repite la frase" card: mic button (MediaRecorder) + waveform + feedback. */
 export function RepeatPhraseCard({ phraseId, phrase, tip }: RepeatPhraseCardProps) {
-  const { state, error, blob, seconds, start, stop, reset } = useRecorder()
+  const { state, starting, error, blob, seconds, start, stop, reset } = useRecorder()
   const [evaluating, setEvaluating] = useState(false)
   const [result, setResult] = useState<PronunciationResult | null>(null)
   const [evaluationError, setEvaluationError] = useState('')
@@ -57,6 +57,7 @@ export function RepeatPhraseCard({ phraseId, phrase, tip }: RepeatPhraseCardProp
             }
           }}
           aria-label={recording ? 'Detener grabación' : 'Grabar'}
+          disabled={starting}
           className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-paper shadow-card transition ${
             recording ? 'animate-pulse bg-terracotta-dark' : 'bg-terracotta hover:bg-terracotta-dark'
           }`}

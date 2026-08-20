@@ -202,7 +202,6 @@ export interface ReviewItem {
   id: number
   kind: ExerciseType | 'pronunciation'
   prompt: string
-  answer: string
   options?: string[] | null
   passage?: string | null
   audio_url?: string | null

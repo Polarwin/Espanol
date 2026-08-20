@@ -47,7 +47,7 @@ def test_wrong_text_answer(client: TestClient, auth_headers: dict) -> None:
     reviews = client.get("/api/review", headers=auth_headers)
     assert reviews.status_code == 200
     item = next(row for row in reviews.json() if row["prompt"] == exercise["prompt"])
-    assert item["answer"] == "¿Qué planes tienes?"
+    assert "answer" not in item  # the queue must not leak the expected answer
     retried = client.post(
         f"/api/review/{item['id']}",
         json={"answer": "Que planes tienes"},

@@ -1,5 +1,7 @@
 """Personal mistake review backed by the spaced-repetition scheduler."""
 
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -26,7 +28,6 @@ def _out(item: ReviewItem) -> dict:
         "id": item.id,
         "kind": item.kind,
         "prompt": content.get("prompt") or content.get("word") or content.get("concept", "Repasa este punto"),
-        "answer": content.get("answer") or content.get("translation") or content.get("example", ""),
         "options": content.get("options"),
         "passage": content.get("passage"),
         "audio_url": media_url(content.get("audio_path")),
@@ -60,6 +61,11 @@ def answer_review(
     item = db.get(ReviewItem, item_id)
     if item is None or item.user_id != user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Review item not found")
+    if item.due_date > date.today():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Este repaso aún no toca; vuelve cuando llegue su fecha.",
+        )
     exercise_id = (item.content or {}).get("exercise_id")
     exercise = db.get(Exercise, exercise_id) if exercise_id else None
     if exercise is None:
