@@ -22,7 +22,8 @@ from sqlalchemy.orm import Session
 
 from ..config import settings
 from ..db import SessionLocal
-from ..models import Attempt, Exercise, Lesson, Phrase, Segment, UserState
+from ..models import Attempt, Exercise, Lesson, LessonCompletion, Phrase, Segment, UserState
+from ..services.backup import backup_database
 from .content import LESSONS
 
 def _run_ffmpeg(args: list[str], out: Path) -> None:
@@ -90,8 +91,10 @@ def _media_duration(path: Path) -> float:
 
 def wipe(db: Session, remove_media: bool = True) -> None:
     """Remove all lesson content plus rows that reference it."""
+    backup_database(db)
     db.execute(update(UserState).values(current_lesson_id=None, current_step="mira", current_clip_index=0))
     db.execute(delete(Attempt))
+    db.execute(delete(LessonCompletion))
     db.execute(delete(Exercise))
     db.execute(delete(Phrase))
     db.execute(delete(Segment))

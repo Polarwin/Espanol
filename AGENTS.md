@@ -39,10 +39,10 @@ npm --prefix frontend exec cap sync android
 
 # 2. Build the APK with the project-local JDK
 JAVA_HOME=/home/justin/Projects/Espanol/.android-sdk/jdk \
-  frontend/android/gradlew -p frontend/android assembleDebug
+  frontend/android/gradlew -p frontend/android assembleRelease
 
 # 3. Publish to the site's download link and verify
-cp frontend/android/app/build/outputs/apk/debug/app-debug.apk content/downloads/vamos-espanol.apk
+cp frontend/android/app/build/outputs/apk/release/app-release.apk content/downloads/vamos-espanol.apk
 .android-sdk/build-tools/35.0.0/apksigner verify content/downloads/vamos-espanol.apk
 sha256sum content/downloads/vamos-espanol.apk
 ```

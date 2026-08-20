@@ -1,0 +1,13 @@
+[Unit]
+Description=Back up the Vamos production database
+
+[Service]
+Type=oneshot
+User=justin
+Group=justin
+WorkingDirectory=/home/justin/Projects/Espanol
+Environment=VAMOS_ENVIRONMENT=production
+Environment=VAMOS_JWT_SECRET_FILE=/home/justin/Projects/Espanol/.secrets/jwt-secret
+ExecStart=/home/justin/Projects/Espanol/bin/python -m backend.app.services.backup
+NoNewPrivileges=true
+PrivateTmp=true

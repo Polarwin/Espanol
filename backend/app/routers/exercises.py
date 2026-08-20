@@ -1,13 +1,12 @@
 """Exercise attempt route: scoring, skill updates, loop advancement, streaks."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..db import get_db
 from ..models import Attempt, Exercise, User
 from ..schemas import AttemptRequest, AttemptResponse, SkillUpdate
-from ..services import adaptive
-from ..services.loop import advance_state, get_or_create_state
 from ..services.progress import apply_skill_deltas
 from ..services.scoring import score_attempt
 from ..services.security import get_current_user
@@ -29,6 +28,11 @@ def post_attempt(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found")
 
     result = score_attempt(exercise, payload.answer)
+    already_scored = db.scalar(
+        select(Attempt.id).where(
+            Attempt.user_id == user.id, Attempt.exercise_id == exercise.id
+        ).limit(1)
+    ) is not None
 
     db.add(
         Attempt(
@@ -40,18 +44,12 @@ def post_attempt(
             feedback=result.feedback,
         )
     )
-    updates = apply_skill_deltas(db, user, result.deltas)
-    if not result.correct:
+    updates = [] if already_scored else apply_skill_deltas(db, user, result.deltas)
+    if not result.correct and not already_scored:
         review_item_from_failed_exercise(db, user, exercise, force_due=True)
 
-    # Advance the core loop and record today's activity for the streak.
-    state = get_or_create_state(db, user, adaptive.choose_next_lesson(db, user))
-    next_lesson = None
-    if state.current_step == "adapta":
-        next_lesson = adaptive.choose_next_lesson(
-            db, user, exclude_lesson_id=state.current_lesson_id
-        )
-    advance_state(db, user, next_lesson)
+    # Attempts count as study activity, but Mi Ruta advances only through its
+    # guarded /api/path/advance endpoint.
     record_activity(db, user)
 
     db.commit()

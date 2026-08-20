@@ -24,19 +24,23 @@ def test_complete_learner_journey(client: TestClient, auth_headers: dict) -> Non
     assert len(exercises) == assessment["total_questions"]
     assert len(exercises) >= 4
 
-    # A randomized lesson can contain two, three, or four clips. Each clip
-    # advances through mira -> escucha -> comprueba -> habla before the review step.
-    attempts_needed = today.json()["total_clips"] * 4
-    for index in range(attempts_needed):
-        exercise = exercises[index % len(exercises)]
-        answer = exercise["options"][0] if exercise.get("options") else "Esta es una respuesta completa"
-        response = client.post(
-            f"/api/exercises/{exercise['id']}/attempt",
-            json={"answer": answer},
-            headers=auth_headers,
-        )
-        assert response.status_code == 200
-        assert "feedback" in response.json()
+    exercise = exercises[0]
+    answer = exercise["options"][0] if exercise.get("options") else "Esta es una respuesta completa"
+    response = client.post(
+        f"/api/exercises/{exercise['id']}/attempt",
+        json={"answer": answer},
+        headers=auth_headers,
+    )
+    assert response.status_code == 200
+    assert "feedback" in response.json()
+    assert client.get("/api/path/today", headers=auth_headers).json()["step"] == "mira"
+
+    # Only the guarded Mi Ruta endpoint advances visible stages.
+    route = today.json()
+    while route["step"] != "adapta":
+        route = client.post(
+            "/api/path/advance", json={"step": route["step"]}, headers=auth_headers
+        ).json()
 
     completed = client.get("/api/path/today", headers=auth_headers).json()
     assert completed["step"] == "adapta"

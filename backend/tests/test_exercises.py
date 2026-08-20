@@ -115,7 +115,7 @@ def test_skill_score_clamped_at_0(
     assert row.score == 0.0
 
 
-def test_attempt_advances_loop_and_streak(
+def test_attempt_does_not_advance_loop_and_records_streak(
     client: TestClient, auth_headers: dict, db_session: Session
 ) -> None:
     exercise = _exercise(client, "vocabulary", "quedar")
@@ -126,14 +126,22 @@ def test_attempt_advances_loop_and_streak(
 
     assert step() == ("mira", 0)
     _attempt(client, auth_headers, exercise["id"], "reunirse")
-    assert step() == ("escucha", 0)
-    _attempt(client, auth_headers, exercise["id"], "reunirse")
-    assert step() == ("comprueba", 0)
-    _attempt(client, auth_headers, exercise["id"], "reunirse")
-    assert step() == ("habla", 0)
-    _attempt(client, auth_headers, exercise["id"], "reunirse")
-    assert step() == ("mira", 1)
+    assert step() == ("mira", 0)
 
     user_id = db_session.scalar(select(Streak.user_id).limit(1))
     streak = db_session.scalar(select(Streak).where(Streak.user_id == user_id))
     assert streak.current_days == 1  # same-day activity counts once
+
+
+def test_only_first_attempt_updates_skills(
+    client: TestClient, auth_headers: dict, db_session: Session
+) -> None:
+    exercise = _exercise(client, "grammar", "¿Qué planes tú tienes?")
+    first = _attempt(client, auth_headers, exercise["id"], "no lo sé")
+    assert first["skill_updates"]
+
+    retried = _attempt(client, auth_headers, exercise["id"], "¿Qué planes tienes?")
+    repeated = _attempt(client, auth_headers, exercise["id"], "¿Qué planes tienes?")
+    assert retried["correct"] is True
+    assert retried["skill_updates"] == []
+    assert repeated["skill_updates"] == []

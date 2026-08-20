@@ -22,6 +22,8 @@ __pycache__/
 .env
 .env.*
 !.env.example
+/.secrets/
+/backups/
 
 # Frontend dependencies and generated output
 node_modules/

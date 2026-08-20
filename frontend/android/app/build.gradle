@@ -1,5 +1,12 @@
 apply plugin: 'com.android.application'
 
+def releaseKeystore = rootProject.file('../../.secrets/vamos-release.keystore')
+def releasePasswordFile = rootProject.file('../../.secrets/android-password')
+def releaseSigningAvailable = releaseKeystore.exists() && releasePasswordFile.exists()
+if (gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') } && !releaseSigningAvailable) {
+    throw new GradleException('Release signing files are missing from .secrets/')
+}
+
 android {
     namespace = "org.duckdns.justinrecipes.espanol"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +14,8 @@ android {
         applicationId "org.duckdns.justinrecipes.espanol"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 37
-        versionName "1.0.36"
+        versionCode 38
+        versionName "1.0.37"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +23,19 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (releaseSigningAvailable) {
+                storeFile releaseKeystore
+                storePassword releasePasswordFile.text.trim()
+                keyAlias 'vamos'
+                keyPassword releasePasswordFile.text.trim()
+            }
+        }
+    }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
