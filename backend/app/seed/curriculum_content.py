@@ -77,8 +77,8 @@ def _unit(spec: dict[str, Any]) -> dict[str, Any]:
         },
         "segments": [
             {
-                "start": index * duration / 2,
-                "end": (index + 1) * duration / 2,
+                "start": index * duration / ((len(lines) + 1) // 2),
+                "end": (index + 1) * duration / ((len(lines) + 1) // 2),
                 "transcript": [
                     {"es": es, "en": en}
                     for es, en in lines[index * 2 : index * 2 + 2]
@@ -91,7 +91,7 @@ def _unit(spec: dict[str, Any]) -> dict[str, Any]:
                     }
                 ],
             }
-            for index in range(2)
+            for index in range((len(lines) + 1) // 2)
         ],
         "exercises": [
             {
@@ -170,7 +170,28 @@ SPECS = [
 
     # Nine units complete the B1 catalog with Vitamina B1's communicative arc.
     dict(slug="companion-b1-reencuentros", title="B1 · Unidad 1: Volver a vernos", level="B1", topics=["reencuentros", "cambios"],
-         lines=[("¡Cuánto tiempo! Te veo muy cambiado.", "Long time no see! You look very different."), ("Sí, desde que nos vimos he cambiado de trabajo.", "Yes, since we last met I have changed jobs."), ("Antes vivía lejos, pero ahora trabajo desde casa.", "I used to live far away, but now I work from home."), ("Tenemos que quedar y ponernos al día.", "We must meet and catch up." )],
+         lines=[
+             ("¡Cuánto tiempo! Te veo muy cambiado.", "Long time no see! You look very different."),
+             ("Sí, han pasado casi cinco años desde la última vez.", "Yes, almost five years have passed since the last time."),
+             ("¿Qué ha sido de ti durante todo este tiempo?", "What have you been up to all this time?"),
+             ("He cambiado de trabajo y ahora vivo cerca del centro.", "I changed jobs and now I live near the city centre."),
+             ("¿Ya no trabajas en aquella empresa de informática?", "Do you no longer work at that IT company?"),
+             ("No. La dejé hace dos años porque quería hacer algo diferente.", "No. I left two years ago because I wanted to do something different."),
+             ("Ahora trabajo desde casa para una pequeña editorial.", "Now I work from home for a small publishing company."),
+             ("Parece un cambio importante. ¿Estás contento?", "That sounds like a major change. Are you happy?"),
+             ("Mucho. Tengo un horario flexible y puedo viajar más.", "Very. I have flexible hours and can travel more."),
+             ("Yo también he cambiado bastante desde entonces.", "I have also changed quite a lot since then."),
+             ("Cuéntame. ¿Sigues viviendo en el mismo barrio?", "Tell me. Do you still live in the same neighbourhood?"),
+             ("Sí, pero me he mudado a un piso más grande.", "Yes, but I moved to a larger apartment."),
+             ("Además, el año pasado empecé a estudiar fotografía.", "Also, last year I began studying photography."),
+             ("¡Qué interesante! Siempre te había gustado hacer fotos.", "How interesting! You had always liked taking photos."),
+             ("Es verdad. Por fin decidí dedicarle más tiempo.", "That's true. I finally decided to spend more time on it."),
+             ("¿Sigues en contacto con nuestros antiguos compañeros?", "Are you still in touch with our former classmates?"),
+             ("Con algunos sí. De vez en cuando organizamos una cena.", "With some of them, yes. From time to time we organize a dinner."),
+             ("Me encantaría verlos. Hemos perdido el contacto demasiado tiempo.", "I would love to see them. We have been out of touch for too long."),
+             ("Entonces tenemos que quedar y ponernos todos al día.", "Then we have to meet and all catch up."),
+             ("Perfecto. Te escribo mañana y buscamos una fecha.", "Perfect. I'll message you tomorrow and we'll find a date."),
+         ],
          wrong="Desde que nos vimos cambié mucho.", right="Desde que nos vimos he cambiado mucho.", explanation="El perfecto presenta cambios conectados con el presente.", pronunciation="Da énfasis natural a ¡cuánto tiempo!.", vocab=("ponerse al día", "to catch up"), distractors=["to be late", "to make a date"], grammar_prompt="Desde entonces ___ cambiado de trabajo.", grammar_answer="he", task="Escribe a una amistad y resume dos cambios recientes.", model="¡Cuánto tiempo! He cambiado de trabajo y ahora vivo cerca. ¿Quedamos pronto?", listen_prompt="¿Qué ha cambiado?", listen_options=["Su trabajo", "Su nombre", "Su idioma"], listen_answer="Su trabajo", repeat="Tenemos que quedar y ponernos al día."),
     dict(slug="companion-b1-recuerdos", title="B1 · Unidad 2: Recuerdos", level="B1", topics=["infancia", "anécdotas"],
          lines=[("Cuando era pequeño, jugábamos en la calle hasta tarde.", "When I was little, we played outside until late."), ("Un día perdí las llaves mientras volvía a casa.", "One day I lost the keys while returning home."), ("Estaba lloviendo y no llevaba teléfono.", "It was raining and I had no phone."), ("Al final, una vecina llamó a mis padres.", "In the end, a neighbour called my parents." )],

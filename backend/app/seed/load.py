@@ -11,6 +11,7 @@ from the network before reseeding.
 
 import shutil
 import subprocess
+import math
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -111,7 +112,11 @@ def seed_db(db: Session, media: bool = True) -> None:
     wipe(db, remove_media=media)
     for lesson_data in LESSONS:
         _insert_lesson(db, lesson_data, media)
-    db.commit()
+    db.flush()
+    if media:
+        reconcile_media_timings(db)
+    else:
+        db.commit()
 
 
 def sync_missing_lessons(db: Session, media: bool = True) -> int:
@@ -126,6 +131,8 @@ def sync_missing_lessons(db: Session, media: bool = True) -> int:
     db.flush()
     sync_lesson_enrichment(db)
     db.commit()
+    if media:
+        reconcile_media_timings(db)
     return len(missing)
 
 
@@ -178,6 +185,68 @@ def sync_lesson_enrichment(db: Session) -> tuple[int, int]:
             seen.add(key)
             exercises_added += 1
     return phrases_added, exercises_added
+
+
+def refresh_lesson_content(db: Session, title: str, media: bool = True) -> None:
+    """Refresh one lesson's media/transcript without deleting attempts or user progress."""
+    lesson_data = next((item for item in LESSONS if item["title"] == title), None)
+    lesson = db.scalar(select(Lesson).where(Lesson.title == title))
+    if lesson_data is None or lesson is None:
+        raise ValueError(f"Unknown lesson: {title}")
+    if media:
+        generate_media(lesson_data)
+    lesson.source = lesson_data["source"]
+    lesson.duration_seconds = int(lesson_data["segments"][-1]["end"])
+    lesson.grammar_tip = lesson_data["grammar_tip"]
+    existing = {segment.index: segment for segment in lesson.segments}
+    for index, authored in enumerate(lesson_data["segments"]):
+        segment = existing.pop(index, None)
+        if segment is None:
+            segment = Segment(
+                lesson_id=lesson.id, index=index,
+                start_seconds=authored["start"], end_seconds=authored["end"],
+                transcript=authored["transcript"],
+            )
+            db.add(segment)
+            db.flush()
+        segment.start_seconds = authored["start"]
+        segment.end_seconds = authored["end"]
+        segment.transcript = authored["transcript"]
+        for phrase in list(segment.phrases):
+            db.delete(phrase)
+        db.flush()
+        for phrase in authored["phrases"]:
+            db.add(Phrase(segment_id=segment.id, **phrase))
+    for segment in existing.values():
+        for phrase in list(segment.phrases):
+            db.delete(phrase)
+        db.delete(segment)
+    db.commit()
+
+
+def reconcile_media_timings(db: Session) -> tuple[int, list[str]]:
+    """Scale transcript segments to each real video so every caption is reachable."""
+    updated = 0
+    missing: list[str] = []
+    lessons = db.scalars(select(Lesson).where(Lesson.status == "published")).all()
+    for lesson in lessons:
+        path = Path(settings.content_dir) / lesson.video_path
+        if not path.exists():
+            missing.append(lesson.title)
+            continue
+        actual = _media_duration(path)
+        authored_end = max((segment.end_seconds for segment in lesson.segments), default=0.0)
+        if authored_end <= 0:
+            continue
+        scale = actual / authored_end
+        if abs(scale - 1.0) > 0.01:
+            for segment in lesson.segments:
+                segment.start_seconds = round(segment.start_seconds * scale, 2)
+                segment.end_seconds = round(segment.end_seconds * scale, 2)
+            updated += 1
+        lesson.duration_seconds = max(1, math.ceil(actual))
+    db.commit()
+    return updated, missing
 
 
 def _insert_lesson(db: Session, lesson_data: dict, media: bool) -> None:

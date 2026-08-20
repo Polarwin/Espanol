@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type { LessonDetail, PronunciationResult } from '../api/types'
 import { IconCheck, IconMic, IconPlay, IconReplay } from '../components/icons'
@@ -10,6 +10,9 @@ type Phase = 'listen' | 'playing' | 'repeat' | 'checking' | 'result'
 
 export function VideoShadowing() {
   const { lessonId } = useParams()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const fromRoute = searchParams.get('desde') === 'ruta'
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const { state, error: recorderError, blob, seconds, start, stop, reset } = useRecorder()
   const [lesson, setLesson] = useState<LessonDetail | null>(null)
@@ -17,6 +20,7 @@ export function VideoShadowing() {
   const [phase, setPhase] = useState<Phase>('listen')
   const [result, setResult] = useState<PronunciationResult | null>(null)
   const [error, setError] = useState('')
+  const [finishing, setFinishing] = useState(false)
 
   useEffect(() => {
     if (!lessonId) return
@@ -61,7 +65,13 @@ export function VideoShadowing() {
     await start()
   }
 
-  const next = () => {
+  const next = async () => {
+    if (index + 1 >= cues.length && fromRoute) {
+      setFinishing(true); setError('')
+      try { await api.advancePath('habla'); navigate('/ruta') }
+      catch { setError('No se pudo guardar esta práctica. Inténtalo otra vez.'); setFinishing(false) }
+      return
+    }
     if (index + 1 < cues.length) setIndex((value) => value + 1)
     else setIndex(0)
     setResult(null); setError(''); reset(); setPhase('listen')
@@ -98,7 +108,7 @@ export function VideoShadowing() {
       {phase === 'playing' && <><p className="font-display text-2xl font-bold">Escucha con atención…</p><div className="mt-4 flex justify-center"><Waveform bars={48} live activeClass="bg-river" /></div></>}
       {(phase === 'repeat' || recording) && <><p className="text-xs font-extrabold uppercase tracking-wider text-terracotta">Ahora tú</p><p className="mt-2 font-display text-2xl font-bold">«{cue.text}»</p><button onClick={recording ? stop : () => void record()} className={`mx-auto mt-5 flex h-16 w-16 items-center justify-center rounded-full text-paper shadow-card ${recording ? 'animate-pulse bg-terracotta-dark' : 'bg-terracotta'}`} aria-label={recording ? 'Terminar grabación' : 'Grabar repetición'}><IconMic size={27} /></button><p className="mt-2 text-sm font-bold text-ink-soft">{recording ? `Grabando… ${seconds}s — toca para terminar` : 'Toca, repite la frase y vuelve a tocar'}</p></>}
       {phase === 'checking' && <><p className="font-display text-2xl font-bold">Escuchando tu pronunciación…</p><div className="mt-4 flex justify-center"><Waveform bars={48} live activeClass="bg-sun" /></div></>}
-      {phase === 'result' && result && <><div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full text-paper ${result.score >= 75 ? 'bg-leaf' : 'bg-sun'}`}><IconCheck size={28} /></div><p className="mt-3 font-display text-3xl font-bold">{result.score}/100</p><p className="mt-1 font-semibold text-ink-soft">{result.feedback}</p><div className="mt-4 flex flex-wrap justify-center gap-1.5">{result.word_scores.map((word) => <span key={word.word} className={`rounded-full px-2.5 py-1 text-xs font-bold ${word.score >= 75 ? 'bg-leaf-soft text-leaf' : 'bg-sun-soft text-terracotta-dark'}`}>{word.word} · {word.score}</span>)}</div><div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row"><button onClick={() => { reset(); setResult(null); setPhase('repeat') }} className="flex items-center justify-center gap-2 rounded-full border-2 border-terracotta px-5 py-3 font-bold text-terracotta"><IconReplay size={17} />Repetir</button><button onClick={next} className="rounded-full bg-terracotta px-6 py-3 font-bold text-paper">{index + 1 === cues.length ? 'Empezar de nuevo' : 'Siguiente frase'}</button></div></>}
+      {phase === 'result' && result && <><div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full text-paper ${result.score >= 75 ? 'bg-leaf' : 'bg-sun'}`}><IconCheck size={28} /></div><p className="mt-3 font-display text-3xl font-bold">{result.score}/100</p><p className="mt-1 font-semibold text-ink-soft">{result.feedback}</p><div className="mt-4 flex flex-wrap justify-center gap-1.5">{result.word_scores.map((word) => <span key={word.word} className={`rounded-full px-2.5 py-1 text-xs font-bold ${word.score >= 75 ? 'bg-leaf-soft text-leaf' : 'bg-sun-soft text-terracotta-dark'}`}>{word.word} · {word.score}</span>)}</div><div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row"><button onClick={() => { reset(); setResult(null); setPhase('repeat') }} className="flex items-center justify-center gap-2 rounded-full border-2 border-terracotta px-5 py-3 font-bold text-terracotta"><IconReplay size={17} />Repetir</button><button disabled={finishing} onClick={() => void next()} className="rounded-full bg-terracotta px-6 py-3 font-bold text-paper disabled:opacity-50">{finishing ? 'Guardando…' : index + 1 === cues.length ? (fromRoute ? 'Terminar y continuar mi ruta' : 'Empezar de nuevo') : 'Siguiente frase'}</button></div></>}
       {(error || recorderError) && <p className="mt-4 font-bold text-terracotta" role="alert">{error || recorderError}</p>}
       <details className="mt-4"><summary className="cursor-pointer text-sm font-bold text-river">Ver traducción</summary><p className="mt-2 font-semibold text-ink-soft">{cue.translation}</p></details>
     </section>

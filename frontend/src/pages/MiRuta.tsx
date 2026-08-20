@@ -8,7 +8,6 @@ import { ClipQuizCard } from '../components/ClipQuiz'
 import { FeedbackPanel } from '../components/FeedbackPanel'
 import { IconChart, IconFlame, IconSun } from '../components/icons'
 import { LoopStepper } from '../components/LoopStepper'
-import { RepeatPhraseCard } from '../components/RepeatPhraseCard'
 import { VideoPlayer } from '../components/VideoPlayer'
 
 function greeting(): string {
@@ -108,6 +107,8 @@ export function MiRuta() {
                 >
                   {stageCopy[2]}
                 </Link>
+              ) : today.step === 'habla' ? (
+                <Link to={`/leccion/${today.lesson.id}/repetir-video?desde=ruta`} className="shrink-0 rounded-full bg-river px-5 py-3 text-center text-sm font-bold text-paper shadow-soft">Escuchar, repetir y recibir puntuación</Link>
               ) : (
                 <button
                   type="button"
@@ -127,19 +128,12 @@ export function MiRuta() {
           )}
 
           {today.step === 'habla' && (
-            <>
               <section className="rounded-3xl bg-river-soft p-5 shadow-soft">
                 <p className="text-xs font-extrabold uppercase tracking-wide text-river">Pronunciación con vídeo</p>
                 <h3 className="mt-1 font-display text-xl font-bold">Escucha, pausa y repite frase por frase</h3>
                 <p className="mt-2 text-sm font-semibold text-ink-soft">El vídeo se detiene después de cada frase. Repítela y recibe una puntuación general y por palabra.</p>
-                <Link to={`/leccion/${today.lesson.id}/repetir-video`} className="mt-4 inline-flex rounded-full bg-river px-5 py-3 text-sm font-bold text-paper shadow-soft">Practicar pronunciación con el vídeo</Link>
+                <Link to={`/leccion/${today.lesson.id}/repetir-video?desde=ruta`} className="mt-4 inline-flex rounded-full bg-river px-5 py-3 text-sm font-bold text-paper shadow-soft">Empezar: escuchar, repetir y puntuar</Link>
               </section>
-              <RepeatPhraseCard
-                phraseId={`${today.lesson.id}-clip-${today.clip_index}`}
-                phrase={today.pronunciation_tip.phrase || today.subtitle.es}
-                tip={today.pronunciation_tip.tip}
-              />
-            </>
           )}
 
           <div className="mt-1 flex">
