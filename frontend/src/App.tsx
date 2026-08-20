@@ -14,6 +14,7 @@ import { Leccion } from './pages/Leccion'
 import { Perfil } from './pages/Perfil'
 import { Conversacion } from './pages/Conversacion'
 import { Repaso } from './pages/Repaso'
+import { VideoShadowing } from './pages/VideoShadowing'
 
 function RequireAuth() {
   return getToken() ? <Outlet /> : <Navigate to="/entrar" replace />
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="/ruta" element={<MiRuta />} />
             <Route path="/lecciones" element={<Lecciones />} />
             <Route path="/leccion/:lessonId" element={<Leccion />} />
+            <Route path="/leccion/:lessonId/repetir-video" element={<VideoShadowing />} />
             <Route path="/practica" element={<Practica />} />
             <Route path="/repaso" element={<Repaso />} />
             <Route path="/conversacion" element={<Conversacion />} />
