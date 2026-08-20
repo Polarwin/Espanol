@@ -51,6 +51,12 @@ class ClipQuizResult(BaseModel):
     correct_answer: str
 
 
+class CaptionCue(BaseModel):
+    start: float
+    end: float
+    text: str
+
+
 class PathToday(BaseModel):
     lesson: PathLesson
     step: LoopStep
@@ -58,6 +64,9 @@ class PathToday(BaseModel):
     total_clips: int
     video_url: str
     subtitle: TranscriptLine
+    captions: list[CaptionCue]
+    clip_start: float
+    clip_end: float
     quiz: ClipQuiz | None = None
     feedback: LoopFeedback
     pronunciation_tip: PronunciationTip

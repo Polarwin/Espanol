@@ -14,6 +14,7 @@ from .lessons import (
     VocabularyItem,
 )
 from .path import (
+    CaptionCue,
     ClipQuiz,
     ClipQuizResult,
     GrammarTip,
@@ -33,6 +34,7 @@ __all__ = [
     "AuthResponse",
     "ClipQuiz",
     "ClipQuizResult",
+    "CaptionCue",
     "GrammarTip",
     "LessonDetail",
     "LessonListItem",

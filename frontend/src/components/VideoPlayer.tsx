@@ -12,6 +12,9 @@ interface VideoPlayerProps {
   subtitle: string
   /** timed caption lines; when provided, the overlay follows playback time */
   cues?: CaptionCue[]
+  /** Optional absolute bounds when playing one clip from a longer video. */
+  startTime?: number
+  endTime?: number
   /** fallback duration when there is no playable media (mock mode) */
   fallbackDuration?: number
 }
@@ -28,7 +31,7 @@ function formatTime(s: number): string {
  * fullscreen). Without a playable source it shows a warm placeholder scene
  * and simulates playback time.
  */
-export function VideoPlayer({ src, subtitle, cues, fallbackDuration = 42 }: VideoPlayerProps) {
+export function VideoPlayer({ src, subtitle, cues, startTime, endTime, fallbackDuration = 42 }: VideoPlayerProps) {
   const playerRef = useRef<HTMLDivElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [playing, setPlaying] = useState(false)
@@ -62,7 +65,10 @@ export function VideoPlayer({ src, subtitle, cues, fallbackDuration = 42 }: Vide
   const toggle = () => {
     const v = videoRef.current
     if (hasVideo && v) {
-      if (v.paused) void v.play()
+      if (v.paused) {
+        if (endTime !== undefined && v.currentTime >= endTime - 0.05) v.currentTime = startTime ?? 0
+        void v.play()
+      }
       else v.pause()
     } else {
       if (time >= duration) setTime(0)
@@ -88,8 +94,14 @@ export function VideoPlayer({ src, subtitle, cues, fallbackDuration = 42 }: Vide
             poster={poster}
             muted={muted}
             className="absolute inset-0 h-full w-full object-cover"
-            onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
-            onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || fallbackDuration)}
+            onTimeUpdate={(e) => {
+              setTime(e.currentTarget.currentTime)
+              if (endTime !== undefined && e.currentTarget.currentTime >= endTime - 0.04) e.currentTarget.pause()
+            }}
+            onLoadedMetadata={(e) => {
+              setDuration(e.currentTarget.duration || fallbackDuration)
+              if (startTime !== undefined) { e.currentTarget.currentTime = startTime; setTime(startTime) }
+            }}
             onPlay={() => setPlaying(true)}
             onPause={() => setPlaying(false)}
             onEnded={() => setPlaying(false)}

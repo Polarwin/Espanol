@@ -84,6 +84,12 @@ export interface ClipQuizResult {
   correct_answer: string
 }
 
+export interface CaptionCue {
+  start: number
+  end: number
+  text: string
+}
+
 export interface TodayPath {
   lesson: LessonRef
   step: LoopStep
@@ -91,6 +97,9 @@ export interface TodayPath {
   total_clips: number
   video_url: string
   subtitle: TranscriptLine
+  captions: CaptionCue[]
+  clip_start: number
+  clip_end: number
   quiz?: ClipQuiz | null
   feedback: SkillFeedback
   pronunciation_tip: PronunciationTip

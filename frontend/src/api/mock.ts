@@ -51,6 +51,12 @@ export async function mockTodayPath(): Promise<TodayPath> {
       es: '¿Qué planes tienes para el fin de semana?',
       en: 'What plans do you have for the weekend?',
     },
+    captions: [
+      { start: 0, end: 3, text: '¿Qué planes tienes para el fin de semana?' },
+      { start: 3, end: 6, text: 'Voy a comer con mis vecinos.' },
+    ],
+    clip_start: 0,
+    clip_end: 6,
     feedback: { pronunciation: 82, fluidez: 74, gramatica: 90 },
     pronunciation_tip: {
       phrase: 'fin de semana',
