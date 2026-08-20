@@ -10,7 +10,8 @@
     "android:sync": "npm run build && cap sync android",
     "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug",
     "lint": "oxlint src",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:https": "VITE_LAN_HTTPS=true vite preview"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",

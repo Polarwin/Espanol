@@ -37,6 +37,11 @@ leave the site/APK serving a stale bundle.
 npm --prefix frontend run build
 npm --prefix frontend exec cap sync android
 
+# The native app bakes its API origin in at build time from VITE_API_ORIGIN
+# (see frontend/.env.example); it defaults to
+# https://espanol.justinrecipes.duckdns.org, so plain builds need nothing set.
+# Web builds always use relative paths.
+
 # 2. Build the APK with the project-local JDK
 JAVA_HOME=/home/justin/Projects/Espanol/.android-sdk/jdk \
   frontend/android/gradlew -p frontend/android assembleRelease
@@ -57,7 +62,14 @@ systemctl --user restart vamos-api.service vamos-web.service vamos-web-https.ser
 ```
 
 - `vamos-api`: uvicorn on port 8011 (`backend.app.main:app`)
-- `vamos-web` / `vamos-web-https`: Vite dev servers on 5173 / 5174
+- `vamos-web` / `vamos-web-https`: `vite preview` serving the **static build**
+  in `frontend/dist` on 5173 / 5174 — frontend deploys now require
+  `npm --prefix frontend run build` followed by a service restart, and a
+  `systemctl --user daemon-reload` whenever the unit files change.
+  `npm run dev` remains for local development (HMR, no build step).
+- The HTTPS service uses mkcert certs in `/.certs/` (git-ignored local copies,
+  originally issued for LAN IP `192.168.0.9`, so a LAN IP change requires
+  regenerating them); overridable via `VITE_LAN_CERT_DIR`.
 
 Smoke test after restart:
 

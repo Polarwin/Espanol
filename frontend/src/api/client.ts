@@ -26,7 +26,7 @@ import type {
 } from './types'
 
 export const MOCK_FALLBACK_ENABLED = import.meta.env.VITE_ENABLE_MOCKS === 'true'
-const PUBLIC_APP_ORIGIN = 'https://espanol.justinrecipes.duckdns.org'
+const PUBLIC_APP_ORIGIN = import.meta.env.VITE_API_ORIGIN ?? 'https://espanol.justinrecipes.duckdns.org'
 const API_ORIGIN = Capacitor.isNativePlatform() ? PUBLIC_APP_ORIGIN : ''
 
 const TOKEN_KEY = 'vamos.token'

@@ -1,5 +1,5 @@
 [Unit]
-Description=Vamos Spanish learning web application (LAN HTTPS)
+Description=Vamos Spanish learning web application (LAN HTTPS, static build via vite preview)
 After=network-online.target vamos-api.service
 Wants=network-online.target
 Requires=vamos-api.service
@@ -9,10 +9,9 @@ Type=simple
 User=justin
 Group=justin
 WorkingDirectory=/home/justin/Projects/Espanol/frontend
-Environment=NODE_ENV=development
 Environment=VITE_LAN_HTTPS=true
-Environment=VITE_LAN_CERT_DIR=/home/justin/Projects/nextERP/certs
-ExecStart=/usr/bin/npm run dev:https -- --host 0.0.0.0 --port 5174 --strictPort
+Environment=VITE_LAN_CERT_DIR=/home/justin/Projects/Espanol/.certs
+ExecStart=/usr/bin/npm run preview:https -- --host 0.0.0.0 --port 5174 --strictPort
 Restart=on-failure
 RestartSec=3
 TimeoutStopSec=15

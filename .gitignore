@@ -23,6 +23,7 @@ __pycache__/
 .env.*
 !.env.example
 /.secrets/
+/.certs/
 /backups/
 
 # Frontend dependencies and generated output

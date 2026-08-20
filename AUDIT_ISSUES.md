@@ -34,13 +34,15 @@ Audited 2026-08-20. Scope: full backend (`backend/app`, routers/services/seed/mi
 
 ## Medium
 
-### M1. Production web traffic served by Vite dev servers
+### M1. Production web traffic served by Vite dev servers — **fixed 2026-08-20**
 - `deploy/systemd/vamos-web.service:12-13` and `vamos-web-https.service:12-15` run `NODE_ENV=development npm run dev -- --host 0.0.0.0` for the public site: unminified on-the-fly transforms, filesystem watching, HMR websocket, no static caching.
 - Fix: serve `frontend/dist` with a static server/reverse proxy; keep dev servers for development.
+- Fixed: both units now run `vite preview` (a `preview` block mirroring `server` was added to `vite.config.ts`); `npm run dev` remains for local development.
 
-### M2. Public API origin hardcoded into the shipped native app
+### M2. Public API origin hardcoded into the shipped native app — **fixed 2026-08-20**
 - `frontend/src/api/client.ts:29` bakes `https://espanol.justinrecipes.duckdns.org` into every native API/media call (also `vite.config.ts:19`, `capacitor.config.ts:4`). If the hostname lapses or hosting moves, every installed APK is broken until users manually sideload a new build — there is no update channel.
 - Fix: build-time `VITE_API_ORIGIN` env var, plus a graceful "please update the app" failure path.
+- Fixed: `client.ts` reads `import.meta.env.VITE_API_ORIGIN` with the old origin as fallback (documented in `frontend/.env.example`); the graceful-failure path is left as follow-up.
 
 ### M3. `wipe()` deletes media on disk before the DB transaction is safe
 - `backend/app/seed/load.py:100-103`: `shutil.rmtree(content/seed)` is immediate and irreversible, while the DB deletes are only flushed. If `generate_media` fails mid-seed (gTTS/ffmpeg/network, missing `content/sources/`), the rollback restores old lessons whose media files are already gone → every lesson video 404s.
@@ -109,9 +111,10 @@ Audited 2026-08-20. Scope: full backend (`backend/app`, routers/services/seed/mi
 - Fix: guard `start()` with an in-flight flag; disable buttons until state settles.
 - Fixed: `start()` no-ops while a start is in flight (`startingRef`) or already recording; the hook exposes a new `starting` state and all three mic buttons are disabled while it is true.
 
-### M17. HTTPS service depends on another project's cert directory and a hardcoded LAN IP
+### M17. HTTPS service depends on another project's cert directory and a hardcoded LAN IP — **fixed 2026-08-20**
 - `deploy/systemd/vamos-web-https.service:14` reads certs from `/home/justin/Projects/nextERP/certs` (default also in `vite.config.ts:7`); certs are issued for IP `192.168.0.9`. Removing nextERP or a DHCP change silently breaks the service.
 - Fix: project-local cert dir, parameterized IP.
+- Fixed: certs copied into git-ignored `/.certs/`; the unit and the `vite.config.ts` default now point there (`VITE_LAN_CERT_DIR` still overrides; the IP in the filenames is part of the mkcert cert itself, so a LAN IP change means regenerating them).
 
 ## Low
 
