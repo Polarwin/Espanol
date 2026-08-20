@@ -9,13 +9,11 @@ import {
   IconMouth,
   IconPron,
   IconRocket,
-  IconSpeaker,
   IconSuitcase,
   IconX,
   IconCheck,
 } from './icons'
 import { SkillBar } from './SkillBar'
-import { useSpeechExample } from '../hooks/useSpeechExample'
 
 const topicIcons: Record<string, typeof IconSuitcase> = {
   Viajes: IconSuitcase,
@@ -25,7 +23,6 @@ const topicIcons: Record<string, typeof IconSuitcase> = {
 /** Right-hand "Tu feedback" panel of the core-loop screen. */
 export function FeedbackPanel({ data }: { data: TodayPath }) {
   const { feedback, pronunciation_tip: pron, grammar_tip: gram, next } = data
-  const speech = useSpeechExample(pron.phrase)
   return (
     <aside className="flex w-full shrink-0 flex-col gap-4 xl:w-[300px]">
       <section className="rounded-3xl bg-paper p-5 shadow-soft">
@@ -57,7 +54,11 @@ export function FeedbackPanel({ data }: { data: TodayPath }) {
 
       <section className="rounded-3xl bg-paper p-5 shadow-soft">
         <h4 className="text-xs font-bold uppercase tracking-wide text-ink-soft">Pronunciación</h4>
-        <div className="mt-3 flex items-center gap-3 rounded-2xl border border-ink/8 p-3">
+        <Link
+          to={`/leccion/${data.lesson.id}/repetir-video?desde=ruta`}
+          className="group mt-3 flex items-center gap-3 rounded-2xl border border-river/20 bg-river-soft p-3 transition hover:border-river hover:bg-river/15"
+          aria-label="Abrir la práctica completa de pronunciación"
+        >
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blush text-terracotta">
             <IconMouth size={22} />
           </span>
@@ -74,17 +75,10 @@ export function FeedbackPanel({ data }: { data: TodayPath }) {
               )}
             </p>
             <p className="text-[13px] font-semibold text-ink-soft">{pron.tip}</p>
+            <p className="mt-2 text-[13px] font-extrabold text-river">Escuchar · repetir · puntuar todas las frases</p>
           </div>
-          <button
-            aria-label="Escuchar ejemplo"
-            onClick={() => void speech.play()}
-            disabled={speech.loading}
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-river transition hover:bg-river hover:text-paper disabled:cursor-wait disabled:opacity-60 ${speech.playing ? 'animate-pulse bg-river text-paper' : 'bg-river-soft'}`}
-          >
-            <IconSpeaker size={17} />
-          </button>
-        </div>
-        {speech.error && <p className="mt-2 text-xs font-bold text-terracotta">{speech.error}</p>}
+          <IconChevronRight size={20} className="shrink-0 text-river transition-transform group-hover:translate-x-1" />
+        </Link>
 
         <h4 className="mt-5 text-xs font-bold uppercase tracking-wide text-ink-soft">Gramática</h4>
         <div className="mt-3 flex flex-col gap-2">
