@@ -39,6 +39,7 @@ export function Leccion() {
       <p className="mt-1 font-semibold text-ink-soft">{user ? `${preferredName(user)}, escucha el diálogo y activa los subtítulos si los necesitas. Después podrás practicarlo con tu propia voz.` : 'Escucha el diálogo y activa los subtítulos si los necesitas. Después podrás practicarlo con tu propia voz.'}</p>
       <div className="mt-4 grid gap-3 rounded-2xl border border-river/15 bg-river-soft p-4 sm:grid-cols-2"><div><p className="text-xs font-extrabold uppercase tracking-wide text-river">Tu misión de esta visita</p><p className="mt-1 font-semibold">{lesson.personal_welcome}</p><p className="mt-1 text-sm font-semibold text-ink-soft">{lesson.session_mission}</p></div><div className="rounded-xl bg-paper p-3"><p className="text-xs font-extrabold uppercase tracking-wide text-terracotta">Frase especial</p><p className="mt-1 font-display text-lg font-bold">«{lesson.focus_phrase}»</p></div></div>
       <div className="mt-5"><VideoPlayer src={lesson.video_url} subtitle={firstLine} cues={cues} /></div>
+      <Link to={`/leccion/${lesson.id}/repetir-video`} className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-river px-5 py-3 font-bold text-paper shadow-soft sm:w-fit"><IconMic size={19} />Escuchar, repetir y recibir puntuación</Link>
       <details className="mt-6 rounded-3xl bg-paper p-5 shadow-soft" open>
         <summary className="cursor-pointer list-none">
           <div className="flex items-center justify-between gap-3">

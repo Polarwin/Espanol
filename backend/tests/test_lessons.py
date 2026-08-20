@@ -34,8 +34,8 @@ def test_lessons_list_published(client: TestClient) -> None:
     first = lessons[0]
     assert first["cefr_level"] == "A2"
     assert first["topics"] == ["planes", "vida diaria"]
-    assert first["source"] == "local"
-    assert first["duration_seconds"] == 180
+    assert first["source"] == "video-library"
+    assert first["duration_seconds"] == 162
 
 
 def test_sync_missing_lessons_is_non_destructive(db_session) -> None:
@@ -52,8 +52,8 @@ def test_lesson_detail(client: TestClient, auth_headers: dict) -> None:
     segment = detail["segments"][0]
     assert segment["video_url"] == detail["video_url"]
     assert segment["transcript"][0] == {
-        "es": "¿Qué planes tienes para el fin de semana?",
-        "en": "What plans do you have for the weekend?",
+        "es": "La ruta de senderismo del sábado por la mañana.",
+        "en": "The Saturday morning hiking route.",
     }
     assert {phrase["text"] for phrase in segment["phrases"]} >= {"fin de semana"}
     assert "Maya" in detail["personal_welcome"]
@@ -117,7 +117,7 @@ def test_path_today_shape_for_new_user(client: TestClient, auth_headers: dict) -
     assert body["clip_index"] == 0
     assert body["total_clips"] == 4
     assert body["video_url"] == "/media/seed/charla-con-vecinos/video.mp4"
-    assert body["subtitle"]["es"] == "¿Qué planes tienes para el fin de semana?"
+    assert body["subtitle"]["es"] == "La ruta de senderismo del sábado por la mañana."
 
     assert body["feedback"] == {"pronunciation": 82.0, "fluidez": 74.0, "gramatica": 90.0}
     assert body["pronunciation_tip"] == {

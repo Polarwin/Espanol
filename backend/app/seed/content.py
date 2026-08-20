@@ -19,8 +19,13 @@ LESSONS: list[dict[str, Any]] = [
         "title": "Charla con vecinos",
         "cefr_level": "A2",
         "topics": ["planes", "vida diaria"],
-        "source": "local",
+        "source": "video-library",
         "status": "published",
+        "source_video": {
+            "path": "/srv/files/ytwatcher/Espanol/10 Natural Spanish Conversations for Beginners (A1–A2) ｜ Discussing Weekend Plans [NzqskjXnd5E].webm",
+            "start": 0.6,
+            "end": 162.7,
+        },
         "grammar_tip": {
             "wrong": "¿Qué planes tú tienes?",
             "right": "¿Qué planes tienes?",
@@ -29,20 +34,15 @@ LESSONS: list[dict[str, Any]] = [
         "segments": [
             {
                 "start": 0.0,
-                "end": 42.0,
+                "end": 39.4,
                 "transcript": [
-                    {
-                        "es": "¿Qué planes tienes para el fin de semana?",
-                        "en": "What plans do you have for the weekend?",
-                    },
-                    {
-                        "es": "Este sábado voy a visitar Madrid con mi hermana.",
-                        "en": "This Saturday I'm going to visit Madrid with my sister.",
-                    },
-                    {
-                        "es": "¡Qué bien! Yo voy a quedar con unos amigos el domingo.",
-                        "en": "How nice! I'm going to meet up with some friends on Sunday.",
-                    },
+                    {"es": "La ruta de senderismo del sábado por la mañana.", "en": "The Saturday morning hiking route."},
+                    {"es": "Hola, Marta. Me han dicho que estás organizando algo para el fin de semana.", "en": "Hi, Marta. I heard you're organizing something for the weekend."},
+                    {"es": "Así es. El sábado hago una ruta por el bosque. ¿Te apuntas?", "en": "That's right. On Saturday I'm hiking through the forest. Want to join?"},
+                    {"es": "Puede ser. ¿A qué hora empezáis?", "en": "Maybe. What time do you start?"},
+                    {"es": "Quedamos a las ocho en la parada de autobús de la plaza.", "en": "We're meeting at eight at the bus stop in the square."},
+                    {"es": "¿A las ocho? ¡Qué temprano para un sábado!", "en": "At eight? That's early for a Saturday!"},
+                    {"es": "Lo sé, pero a esa hora el bosque está tranquilo y fresquito.", "en": "I know, but at that time the forest is quiet and cool."},
                 ],
                 "phrases": [
                     {
@@ -63,21 +63,17 @@ LESSONS: list[dict[str, Any]] = [
                 ],
             },
             {
-                "start": 42.0,
-                "end": 90.0,
+                "start": 39.4,
+                "end": 82.3,
                 "transcript": [
-                    {
-                        "es": "¿Y tú, Lucía? ¿Qué vas a hacer?",
-                        "en": "And you, Lucía? What are you going to do?",
-                    },
-                    {
-                        "es": "Voy a ir a la playa, si hace buen tiempo.",
-                        "en": "I'm going to go to the beach, if the weather is good.",
-                    },
-                    {
-                        "es": "Yo tengo que trabajar en casa el sábado por la mañana.",
-                        "en": "I have to work at home on Saturday morning.",
-                    },
+                    {"es": "¿Cuánto dura la ruta?", "en": "How long does the route take?"},
+                    {"es": "Unas dos horas, a ritmo tranquilo.", "en": "About two hours, at a relaxed pace."},
+                    {"es": "Dos horas puedo aguantarlas. ¿Es un camino duro?", "en": "I can manage two hours. Is it a difficult path?"},
+                    {"es": "¡Qué va! Es llano y va bordeando el lago.", "en": "Not at all! It's flat and follows the lake."},
+                    {"es": "Menos mal. ¿Tengo que llevar algo?", "en": "That's a relief. Do I need to bring anything?"},
+                    {"es": "Una botella de agua y calzado cómodo. Nada más.", "en": "A bottle of water and comfortable shoes. Nothing else."},
+                    {"es": "Llevo galletas para el descanso, a mitad de camino.", "en": "I'll bring cookies for the break, halfway through."},
+                    {"es": "Perfecto. ¿Cuántos vais a ir?", "en": "Perfect. How many of you are going?"},
                 ],
                 "phrases": [
                     {
@@ -98,21 +94,17 @@ LESSONS: list[dict[str, Any]] = [
                 ],
             },
             {
-                "start": 90.0,
-                "end": 135.0,
+                "start": 82.3,
+                "end": 122.3,
                 "transcript": [
-                    {
-                        "es": "¿Vas a salir el viernes por la noche?",
-                        "en": "Are you going out on Friday night?",
-                    },
-                    {
-                        "es": "No, el viernes prefiero descansar en casa.",
-                        "en": "No, on Friday I prefer to rest at home.",
-                    },
-                    {
-                        "es": "Nosotros vamos a cenar en el restaurante nuevo del barrio el viernes.",
-                        "en": "We're going to have dinner at the new neighborhood restaurant on Friday.",
-                    },
+                    {"es": "De momento somos cinco. Tú serías el sexto.", "en": "So far there are five of us. You would be the sixth."},
+                    {"es": "Buen grupo. ¿Qué autobús cogemos?", "en": "Nice group. Which bus are we taking?"},
+                    {"es": "El doce, que sale a las ocho y cuarto.", "en": "Number twelve, which leaves at a quarter past eight."},
+                    {"es": "¿Y a qué hora volvemos a la ciudad?", "en": "And what time do we return to the city?"},
+                    {"es": "Sobre las doce, justo a tiempo para comer.", "en": "Around twelve, just in time for lunch."},
+                    {"es": "Todo eso suena muy bien. ¿Puedo pensármelo un poco?", "en": "That all sounds very good. Can I think about it?"},
+                    {"es": "Claro, pero dime algo el viernes como muy tarde.", "en": "Of course, but let me know by Friday at the latest."},
+                    {"es": "Ese día compro los billetes de autobús para todo el grupo.", "en": "That day I buy the bus tickets for the whole group."},
                 ],
                 "phrases": [
                     {
@@ -133,21 +125,17 @@ LESSONS: list[dict[str, Any]] = [
                 ],
             },
             {
-                "start": 135.0,
-                "end": 180.0,
+                "start": 122.3,
+                "end": 162.1,
                 "transcript": [
-                    {
-                        "es": "¿Quedamos el lunes para tomar un café?",
-                        "en": "Shall we meet on Monday for a coffee?",
-                    },
-                    {
-                        "es": "¡Perfecto! Que tengas un buen fin de semana.",
-                        "en": "Perfect! Have a good weekend.",
-                    },
-                    {
-                        "es": "Igualmente, ¡hasta el lunes!",
-                        "en": "Same to you, see you Monday!",
-                    },
+                    {"es": "Pues el viernes tienes mi respuesta.", "en": "Then you'll have my answer on Friday."},
+                    {"es": "Estupendo. Dicen que va a hacer un tiempo buenísimo.", "en": "Great. They say the weather is going to be wonderful."},
+                    {"es": "Entonces ya no me quedan excusas.", "en": "Then I have no excuses left."},
+                    {"es": "Cuento un poquito contigo, que lo sepas.", "en": "I'm more or less counting on you, just so you know."},
+                    {"es": "Está bien. Es casi un sí. El viernes te lo confirmo.", "en": "All right. It's almost a yes. I'll confirm on Friday."},
+                    {"es": "Genial. Esta noche te mando el mapa de la ruta.", "en": "Great. Tonight I'll send you the route map."},
+                    {"es": "Perfecto. Así le echo un vistazo. Gracias por invitarme.", "en": "Perfect. Then I can take a look. Thanks for inviting me."},
+                    {"es": "De nada. Espero verte el sábado.", "en": "You're welcome. I hope to see you on Saturday."},
                 ],
                 "phrases": [
                     {
