@@ -14,6 +14,7 @@ Run from the project root:
 """
 
 import argparse
+import hashlib
 import json
 import pprint
 import random
@@ -256,9 +257,27 @@ def load_model(name: str):
     return WhisperModel(name, device="cpu", compute_type="int8", cpu_threads=4)
 
 
-def transcribe(video: Path, cache: Path, model) -> list[dict[str, Any]]:
+def _source_sha256(video: Path) -> str:
+    digest = hashlib.sha256()
+    with video.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _cached_transcript(cache: Path, source_hash: str) -> list[dict[str, Any]] | None:
     if cache.exists():
-        return json.loads(cache.read_text())
+        cached = json.loads(cache.read_text())
+        if isinstance(cached, dict) and cached.get("source_sha256") == source_hash:
+            return cached.get("segments", [])
+    return None
+
+
+def transcribe(video: Path, cache: Path, model) -> list[dict[str, Any]]:
+    source_hash = _source_sha256(video)
+    cached = _cached_transcript(cache, source_hash)
+    if cached is not None:
+        return cached
     wav = video.with_suffix(".audio.wav")
     subprocess.run(
         ["ffmpeg", "-y", "-loglevel", "error", "-i", str(video),
@@ -272,7 +291,9 @@ def transcribe(video: Path, cache: Path, model) -> list[dict[str, Any]]:
         for s in segments
     ]
     wav.unlink(missing_ok=True)
-    cache.write_text(json.dumps(data, ensure_ascii=False, indent=1))
+    cache.write_text(json.dumps(
+        {"source_sha256": source_hash, "segments": data}, ensure_ascii=False, indent=1
+    ))
     return data
 
 
@@ -485,6 +506,7 @@ def process_unit(spec: dict[str, Any], model, deadline: float) -> tuple[dict[str
             if window is None:
                 last_error = f"no clean 40-60s window in {title!r}"
                 video.unlink(missing_ok=True)
+                (SOURCES_DIR / f"{slug}.transcript.json").unlink(missing_ok=True)
                 continue
             window.update({"url": url, "title": title, "file": video.name})
             return window, None

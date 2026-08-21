@@ -8,10 +8,9 @@
     "dev:https": "VITE_LAN_HTTPS=true vite",
     "build": "tsc -b && vite build",
     "android:sync": "npm run build && cap sync android",
-    "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug",
+    "android:apk": "npm run android:sync && cd android && ./gradlew assembleRelease",
     "lint": "oxlint src",
-    "preview": "vite preview",
-    "preview:https": "VITE_LAN_HTTPS=true vite preview"
+    "serve": "node server.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",

@@ -26,6 +26,7 @@ import type {
 } from './types'
 
 export const MOCK_FALLBACK_ENABLED = import.meta.env.VITE_ENABLE_MOCKS === 'true'
+export const API_UNAVAILABLE_EVENT = 'vamos:api-unavailable'
 const PUBLIC_APP_ORIGIN = import.meta.env.VITE_API_ORIGIN ?? 'https://espanol.justinrecipes.duckdns.org'
 const API_ORIGIN = Capacitor.isNativePlatform() ? PUBLIC_APP_ORIGIN : ''
 
@@ -67,7 +68,15 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (init.body && !(init.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json')
   }
-  const res = await fetch(`${API_ORIGIN}${path}`, { ...init, headers })
+  let res: Response
+  try {
+    res = await fetch(`${API_ORIGIN}${path}`, { ...init, headers })
+  } catch (error) {
+    if (Capacitor.isNativePlatform() && error instanceof TypeError) {
+      window.dispatchEvent(new Event(API_UNAVAILABLE_EVENT))
+    }
+    throw error
+  }
   if (!res.ok) {
     if (res.status === 401 && !path.startsWith('/api/auth/')) {
       setToken(null)

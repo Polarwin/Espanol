@@ -37,24 +37,27 @@ Audited 2026-08-20. Scope: full backend (`backend/app`, routers/services/seed/mi
 ### M1. Production web traffic served by Vite dev servers — **fixed 2026-08-20**
 - `deploy/systemd/vamos-web.service:12-13` and `vamos-web-https.service:12-15` run `NODE_ENV=development npm run dev -- --host 0.0.0.0` for the public site: unminified on-the-fly transforms, filesystem watching, HMR websocket, no static caching.
 - Fix: serve `frontend/dist` with a static server/reverse proxy; keep dev servers for development.
-- Fixed: both units now run `vite preview` (a `preview` block mirroring `server` was added to `vite.config.ts`); `npm run dev` remains for local development.
+- Fixed: both deployed units now build once and run `frontend/server.mjs`, which serves `dist/` with SPA fallback, immutable asset caching, and API/media proxying. Live `ExecStart` was verified as Node with no Vite dev/HMR process; `npm run dev` remains local-only.
 
 ### M2. Public API origin hardcoded into the shipped native app — **fixed 2026-08-20**
 - `frontend/src/api/client.ts:29` bakes `https://espanol.justinrecipes.duckdns.org` into every native API/media call (also `vite.config.ts:19`, `capacitor.config.ts:4`). If the hostname lapses or hosting moves, every installed APK is broken until users manually sideload a new build — there is no update channel.
 - Fix: build-time `VITE_API_ORIGIN` env var, plus a graceful "please update the app" failure path.
-- Fixed: `client.ts` reads `import.meta.env.VITE_API_ORIGIN` with the old origin as fallback (documented in `frontend/.env.example`); the graceful-failure path is left as follow-up.
+- Fixed: `client.ts` reads build-time `VITE_API_ORIGIN` (documented in `frontend/.env.example`), and native network failures now show a persistent connection banner linking to the latest public release so an obsolete endpoint has a recovery path.
 
-### M3. `wipe()` deletes media on disk before the DB transaction is safe
+### M3. `wipe()` deletes media on disk before the DB transaction is safe — **fixed 2026-08-21**
 - `backend/app/seed/load.py:100-103`: `shutil.rmtree(content/seed)` is immediate and irreversible, while the DB deletes are only flushed. If `generate_media` fails mid-seed (gTTS/ffmpeg/network, missing `content/sources/`), the rollback restores old lessons whose media files are already gone → every lesson video 404s.
 - Fix: generate into a temp dir and swap only after success.
+- Fixed: all media is generated under a same-filesystem staging directory before DB rows or live media are touched; staged media is atomically swapped and the previous directory is restored if DB commit fails. `wipe()` no longer deletes files. A regression test simulates renderer failure and verifies both DB and live media remain intact.
 
-### M4. Enrichment-added audio exercises reach production with no audio file
+### M4. Enrichment-added audio exercises reach production with no audio file — **fixed 2026-08-21**
 - `backend/app/seed/load.py:174-183`: newly authored exercises added to an existing lesson are inserted with `audio_path=None`; media generation only runs for new lessons. Also, the reconcile branch (`load.py:165-173`) only syncs `options`/`passage` — fixes to `expected_answer`, `instructions`, or `skill_weights` never propagate to existing rows.
 - Fix: generate mp3s for new enrichment exercises; extend reconciliation to the remaining fields.
+- Fixed: enrichment assigns and generates authored audio paths for new or missing files and reconciles instructions, options, passage, expected answer, skill weights, and audio path. Regression coverage verifies all fields and generated media; the live DB has 183/183 audio exercises present.
 
-### M5. video_fetch can transcribe a new video with the previous video's cached transcript
+### M5. video_fetch can transcribe a new video with the previous video's cached transcript — **fixed 2026-08-21**
 - `backend/app/seed/video_fetch.py:259-261,476-488`: transcript cache is keyed only by slug; after a "no clean window" failure the video is deleted but the transcript kept, so the next candidate video is cut at timestamps from the wrong audio — a silently wrong generated lesson.
 - Fix: include the source filename/hash in the cache key, or delete the transcript when the video is replaced.
+- Fixed: transcript caches include the source video's SHA-256 and are reused only for an exact match; rejected-video caches are also deleted. Regression coverage proves a second video cannot consume the first video's transcript.
 
 ### M6. Registration accepts empty passwords and non-emails — **fixed 2026-08-20**
 - `backend/app/schemas/auth.py:8-12`: `RegisterRequest` has no `Field` constraints, no `EmailStr` — 0-length passwords, arbitrary strings as email, unbounded names/interests. (Contrast: `ProfileUpdate` does validate, so a garbage-at-registration name can never be re-set via PATCH.)
@@ -64,7 +67,7 @@ Audited 2026-08-20. Scope: full backend (`backend/app`, routers/services/seed/mi
 ### M7. No rate limiting anywhere, including auth and CPU/disk-expensive endpoints — **fixed 2026-08-20**
 - No limiter middleware in `main.py`. Login is online-brute-forceable; `/api/pronunciation/evaluate` and `/api/conversation/respond` run faster-whisper inference per call; each unique `/api/speech/example` phrase triggers an outbound gTTS request and writes a permanent cache file — unbounded disk growth.
 - Fix: `slowapi` or equivalent on `/api/auth/*` and the speech endpoints; cap the TTS cache.
-- Fixed: new in-memory sliding-window limiter (`backend/app/services/ratelimit.py`, no new deps) applied as a FastAPI dependency — 10/min on register+login, 30/min on pronunciation/conversation/speech-example; tests in `backend/tests/test_ratelimit.py`. (The TTS cache cap remains open.)
+- Fixed: the in-memory sliding-window limiter applies 10/min on register+login and 30/min on pronunciation/conversation/speech-example. The TTS cache now has configurable recency-based file and byte caps (`VAMOS_SPEECH_CACHE_MAX_FILES/BYTES`), with regression coverage.
 
 ### M8. Draft/unpublished lessons readable and completable by ID — **fixed 2026-08-20**
 - `routers/lessons.py:112-121` (`lesson_detail`), `178-186` (`complete_lesson`), `207-211` (assessment) don't check `lesson.status`, while list/select do filter `status == "published"`. Unfinished content is reachable by guessing IDs and inflates completion counts.
@@ -114,7 +117,7 @@ Audited 2026-08-20. Scope: full backend (`backend/app`, routers/services/seed/mi
 ### M17. HTTPS service depends on another project's cert directory and a hardcoded LAN IP — **fixed 2026-08-20**
 - `deploy/systemd/vamos-web-https.service:14` reads certs from `/home/justin/Projects/nextERP/certs` (default also in `vite.config.ts:7`); certs are issued for IP `192.168.0.9`. Removing nextERP or a DHCP change silently breaks the service.
 - Fix: project-local cert dir, parameterized IP.
-- Fixed: certs copied into git-ignored `/.certs/`; the unit and the `vite.config.ts` default now point there (`VITE_LAN_CERT_DIR` still overrides; the IP in the filenames is part of the mkcert cert itself, so a LAN IP change means regenerating them).
+- Fixed: certs live in git-ignored `/.certs/` under IP-neutral names (`lan-cert.pem`, `lan-key.pem`). The deployed HTTPS unit uses explicit `VAMOS_TLS_CERT/KEY` paths and no longer references nextERP or embeds an IP in configuration; an address change still requires regenerating the certificate identity.
 
 ## Low
 

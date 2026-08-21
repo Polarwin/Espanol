@@ -1,5 +1,5 @@
 [Unit]
-Description=Vamos Spanish learning web application (HTTP, static build via vite preview)
+Description=Vamos Spanish learning web application (production static server)
 After=network-online.target vamos-api.service
 Wants=network-online.target
 Requires=vamos-api.service
@@ -9,11 +9,14 @@ Type=simple
 User=justin
 Group=justin
 WorkingDirectory=/home/justin/Projects/Espanol/frontend
-ExecStart=/usr/bin/npm run preview -- --host 0.0.0.0 --port 5173 --strictPort
+Environment=NODE_ENV=production
+ExecStartPre=/usr/bin/npm run build
+ExecStart=/usr/bin/node server.mjs --host 0.0.0.0 --port 5173
 Restart=on-failure
 RestartSec=3
 TimeoutStopSec=15
 NoNewPrivileges=true
+PrivateTmp=true
 
 [Install]
 WantedBy=default.target

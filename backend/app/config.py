@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     whisper_compute_type: str = "int8"
 
     backup_dir: Path = PROJECT_ROOT / "backups"
+    speech_cache_max_files: int = 256
+    speech_cache_max_bytes: int = 128 * 1024 * 1024
 
     cors_origins: list[str] = [
         "http://localhost:5173",

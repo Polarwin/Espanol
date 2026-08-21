@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
-import { getToken, placementComplete } from './api/client'
+import { API_UNAVAILABLE_EVENT, getToken, placementComplete } from './api/client'
 import { AppLayout } from './components/AppLayout'
 import { Assessment } from './pages/Assessment'
 import { Grupos } from './pages/Grupos'
@@ -24,9 +25,28 @@ function RequirePlacement() {
   return placementComplete() ? <Outlet /> : <Navigate to="/nivel" replace />
 }
 
+function ApiUnavailableBanner() {
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const show = () => setVisible(true)
+    const hide = () => setVisible(false)
+    window.addEventListener(API_UNAVAILABLE_EVENT, show)
+    window.addEventListener('online', hide)
+    return () => {
+      window.removeEventListener(API_UNAVAILABLE_EVENT, show)
+      window.removeEventListener('online', hide)
+    }
+  }, [])
+  if (!visible) return null
+  return <div role="alert" className="fixed inset-x-3 top-3 z-[100] rounded-2xl bg-terracotta p-4 text-center font-bold text-paper shadow-card">
+    No podemos conectar con el servicio. Comprueba Internet y, si continúa, <a className="underline" href="https://github.com/Polarwin/Espanol/releases/latest" target="_blank" rel="noreferrer">actualiza la aplicación</a>.
+  </div>
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <ApiUnavailableBanner />
       <Routes>
         <Route path="/entrar" element={<Auth />} />
         <Route element={<RequireAuth />}>

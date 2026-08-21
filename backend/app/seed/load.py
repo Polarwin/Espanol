@@ -14,6 +14,7 @@ import subprocess
 import math
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from uuid import uuid4
 
 from gtts import gTTS
 
@@ -40,9 +41,28 @@ def _media_paths(slug: str, audio_indexes: list[int]) -> tuple[str, dict[int, st
     return video_path, audio_paths
 
 
-def generate_media(lesson_data: dict) -> None:
+def generate_exercise_audio(
+    lesson_data: dict, order_index: int, content_root: Path | None = None
+) -> str | None:
+    """Generate one authored audio exercise and return its relative media path."""
+    exercise = lesson_data["exercises"][order_index]
+    if not exercise.get("audio"):
+        return None
+    root = content_root or Path(settings.content_dir)
+    relative = f"seed/{lesson_data['slug']}/exercise-{order_index}.mp3"
+    destination = root / relative
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    spoken = exercise.get("audio_text") or exercise["expected_answer"]
+    gTTS(spoken, lang="es", tld="es", slow=exercise["type"] == "pronunciation").save(
+        str(destination)
+    )
+    return relative
+
+
+def generate_media(lesson_data: dict, content_root: Path | None = None) -> None:
     """Create spoken Spanish lesson media matching the authored seed content."""
-    base = Path(settings.content_dir) / "seed" / lesson_data["slug"]
+    root = content_root or Path(settings.content_dir)
+    base = root / "seed" / lesson_data["slug"]
     base.mkdir(parents=True, exist_ok=True)
     lines = [line["es"] for segment in lesson_data["segments"] for line in segment["transcript"]]
     source_video = lesson_data.get("source_video")
@@ -71,14 +91,8 @@ def generate_media(lesson_data: dict) -> None:
                 ],
                 base / "video.mp4",
             )
-    for order_index, exercise in enumerate(lesson_data["exercises"]):
-        if exercise.get("audio"):
-            # Listening exercises speak a DELE-style script; pronunciation
-            # exercises speak the phrase to repeat.
-            spoken = exercise.get("audio_text") or exercise["expected_answer"]
-            gTTS(spoken, lang="es", tld="es", slow=exercise["type"] == "pronunciation").save(
-                str(base / f"exercise-{order_index}.mp3")
-            )
+    for order_index in range(len(lesson_data["exercises"])):
+        generate_exercise_audio(lesson_data, order_index, root)
 
 
 def _media_duration(path: Path) -> float:
@@ -90,7 +104,11 @@ def _media_duration(path: Path) -> float:
 
 
 def wipe(db: Session, remove_media: bool = True) -> None:
-    """Remove all lesson content plus rows that reference it."""
+    """Remove lesson rows; media is swapped safely by :func:`seed_db`.
+
+    ``remove_media`` remains for call compatibility but intentionally never
+    performs an irreversible filesystem delete inside a DB transaction.
+    """
     backup_database(db)
     db.execute(update(UserState).values(current_lesson_id=None, current_step="mira", current_clip_index=0))
     db.execute(delete(Attempt))
@@ -100,10 +118,6 @@ def wipe(db: Session, remove_media: bool = True) -> None:
     db.execute(delete(Segment))
     db.execute(delete(Lesson))
     db.flush()
-    if remove_media:
-        seed_dir = Path(settings.content_dir) / "seed"
-        if seed_dir.exists():
-            shutil.rmtree(seed_dir)
 
 
 def seed_db(db: Session, media: bool = True) -> None:
@@ -112,14 +126,45 @@ def seed_db(db: Session, media: bool = True) -> None:
     With media=False, only DB rows are written (media paths are still set);
     used by the test suite to avoid invoking ffmpeg.
     """
-    wipe(db, remove_media=media)
-    for lesson_data in LESSONS:
-        _insert_lesson(db, lesson_data, media)
-    db.flush()
-    if media:
-        reconcile_media_timings(db)
-    else:
+    if not media:
+        wipe(db, remove_media=False)
+        for lesson_data in LESSONS:
+            _insert_lesson(db, lesson_data, media=False)
         db.commit()
+        return
+
+    content_root = Path(settings.content_dir)
+    content_root.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(prefix=".seed-staging-", dir=content_root) as temp_dir:
+        staging_root = Path(temp_dir)
+        # Finish every fallible download/render before touching DB rows or live media.
+        for lesson_data in LESSONS:
+            generate_media(lesson_data, staging_root)
+
+        wipe(db, remove_media=False)
+        for lesson_data in LESSONS:
+            _insert_lesson(db, lesson_data, media=False)
+        db.flush()
+        reconcile_media_timings(db, content_root=staging_root, commit=False)
+
+        live_seed = content_root / "seed"
+        staged_seed = staging_root / "seed"
+        previous_seed = content_root / f".seed-previous-{uuid4().hex}"
+        if live_seed.exists():
+            live_seed.rename(previous_seed)
+        staged_seed.rename(live_seed)
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            if live_seed.exists():
+                shutil.rmtree(live_seed)
+            if previous_seed.exists():
+                previous_seed.rename(live_seed)
+            raise
+        else:
+            if previous_seed.exists():
+                shutil.rmtree(previous_seed)
 
 
 def sync_missing_lessons(db: Session, media: bool = True) -> int:
@@ -132,14 +177,14 @@ def sync_missing_lessons(db: Session, media: bool = True) -> int:
     # so the last inserted segment's phrases are still pending and would
     # otherwise be re-inserted by sync_lesson_enrichment's dedup check.
     db.flush()
-    sync_lesson_enrichment(db)
+    sync_lesson_enrichment(db, media=media)
     db.commit()
     if media:
         reconcile_media_timings(db)
     return len(missing)
 
 
-def sync_lesson_enrichment(db: Session) -> tuple[int, int]:
+def sync_lesson_enrichment(db: Session, media: bool = True) -> tuple[int, int]:
     """Add newly authored phrases/exercises without replacing learner history."""
     phrases_added = 0
     exercises_added = 0
@@ -162,24 +207,33 @@ def sync_lesson_enrichment(db: Session) -> tuple[int, int]:
         existing_by_key = {(exercise.type, exercise.prompt): exercise for exercise in lesson.exercises}
         seen = set(existing_by_key)
         next_order = max((exercise.order_index for exercise in lesson.exercises), default=-1) + 1
-        for authored in lesson_data["exercises"]:
+        for authored_index, authored in enumerate(lesson_data["exercises"]):
             key = (authored["type"], authored["prompt"])
+            relative_audio = (
+                f"seed/{lesson_data['slug']}/exercise-{authored_index}.mp3"
+                if authored.get("audio") else None
+            )
             if key in seen:
-                # Reconcile mutable fields (options, passage) with the source.
+                # Reconcile every authored mutable field with the source.
                 existing_exercise = existing_by_key.get(key)
-                if existing_exercise is not None and (
-                    existing_exercise.options != authored["options"]
-                    or existing_exercise.passage != authored.get("passage")
-                ):
+                if existing_exercise is not None:
+                    existing_exercise.instructions = authored["instructions"]
                     existing_exercise.options = authored["options"]
                     existing_exercise.passage = authored.get("passage")
+                    existing_exercise.expected_answer = authored["expected_answer"]
+                    existing_exercise.skill_weights = authored["skill_weights"]
+                    existing_exercise.audio_path = relative_audio
+                    if media and relative_audio and not (Path(settings.content_dir) / relative_audio).is_file():
+                        generate_exercise_audio(lesson_data, authored_index)
                 continue
+            if media and relative_audio:
+                generate_exercise_audio(lesson_data, authored_index)
             db.add(
                 Exercise(
                     lesson_id=lesson.id,
                     type=authored["type"], instructions=authored["instructions"],
                     prompt=authored["prompt"], passage=authored.get("passage"),
-                    audio_path=None, options=authored["options"],
+                    audio_path=relative_audio, options=authored["options"],
                     expected_answer=authored["expected_answer"],
                     skill_weights=authored["skill_weights"], order_index=next_order,
                 )
@@ -227,13 +281,15 @@ def refresh_lesson_content(db: Session, title: str, media: bool = True) -> None:
     db.commit()
 
 
-def reconcile_media_timings(db: Session) -> tuple[int, list[str]]:
+def reconcile_media_timings(
+    db: Session, content_root: Path | None = None, commit: bool = True
+) -> tuple[int, list[str]]:
     """Scale transcript segments to each real video so every caption is reachable."""
     updated = 0
     missing: list[str] = []
     lessons = db.scalars(select(Lesson).where(Lesson.status == "published")).all()
     for lesson in lessons:
-        path = Path(settings.content_dir) / lesson.video_path
+        path = (content_root or Path(settings.content_dir)) / lesson.video_path
         if not path.exists():
             missing.append(lesson.title)
             continue
@@ -248,7 +304,8 @@ def reconcile_media_timings(db: Session) -> tuple[int, list[str]]:
                 segment.end_seconds = round(segment.end_seconds * scale, 2)
             updated += 1
         lesson.duration_seconds = max(1, math.ceil(actual))
-    db.commit()
+    if commit:
+        db.commit()
     return updated, missing
 
 

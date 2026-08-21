@@ -62,14 +62,15 @@ systemctl --user restart vamos-api.service vamos-web.service vamos-web-https.ser
 ```
 
 - `vamos-api`: uvicorn on port 8011 (`backend.app.main:app`)
-- `vamos-web` / `vamos-web-https`: `vite preview` serving the **static build**
-  in `frontend/dist` on 5173 / 5174 — frontend deploys now require
+- `vamos-web` / `vamos-web-https`: `frontend/server.mjs` serving the static
+  build with API/media proxying on 5173 / 5174 — frontend deploys require
   `npm --prefix frontend run build` followed by a service restart, and a
   `systemctl --user daemon-reload` whenever the unit files change.
   `npm run dev` remains for local development (HMR, no build step).
-- The HTTPS service uses mkcert certs in `/.certs/` (git-ignored local copies,
-  originally issued for LAN IP `192.168.0.9`, so a LAN IP change requires
-  regenerating them); overridable via `VITE_LAN_CERT_DIR`.
+- The HTTPS service uses mkcert certs in `/.certs/` as `lan-cert.pem` and
+  `lan-key.pem` (git-ignored; regenerate the certificate if the address
+  changes). Production paths are configured with `VAMOS_TLS_CERT` and
+  `VAMOS_TLS_KEY` in the unit.
 
 Smoke test after restart:
 
