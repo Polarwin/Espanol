@@ -122,39 +122,39 @@ Audited 2026-08-20. Scope: full backend (`backend/app`, routers/services/seed/mi
 ## Low
 
 Backend:
-- L1. `datetime.utcnow()` throughout models/services (deprecated since 3.12, naive datetimes; project runs Python 3.14). `security.py:31` already uses `datetime.now(UTC)` — inconsistent.
-- L2. Group invite codes uppercased (`routers/social.py:41,48`) — entropy loss; unique-collision has no retry/rollback → 500.
-- L3. Registration race: check-then-insert on email isn't atomic → unhandled `IntegrityError` 500 instead of 409; no rollback in `get_db` (`db.py:19-24`).
-- L4. `GET /api/lessons` and `GET /api/lessons/{id}/assessment` are unauthenticated while sibling endpoints require auth — looks accidental; decide intentionally.
-- L5. Dead code: `routers/exercises.py:49-53` computes `next_lesson` for a transition `advance_state` ignores. `AttemptRequest.answer` has no length bound. `services/recap.py:75` instantiates throwaway ORM objects per attempt.
-- L6. Full reseed permanently loses the 9 RTVE news lessons (they come from `random.sample`, not the import-time catalog) — a routine reseed silently shrinks the catalog from 95 to 86. Persist fetched news dicts for replay.
-- L7. `load.py:282` mutates the module-global `LESSONS` with news lessons (double `load()` in-process accumulates duplicates).
-- L8. Committed `video_lessons_c.py` embeds absolute machine-specific `/home/justin/...` source paths; seeds on another machine fail hard mid-seed (see M3).
-- L9. `reconcile_media_timings` results silently dropped (`load.py:134-135`) — missing media is invisible operationally.
-- L10. news_content: `_grammar_tip` substring matching ("pero" matches "perro"); empty titles → `"Noticias: "`; 60-char truncated title collisions silently drop articles.
+- L1. `datetime.utcnow()` throughout models/services (deprecated since 3.12, naive datetimes; project runs Python 3.14). `security.py:31` already uses `datetime.now(UTC)` — inconsistent. — **fixed 2026-08-21**: all uses replaced with a shared naive-UTC helper (`services/time.py`); zero `utcnow` remain.
+- L2. Group invite codes uppercased (`routers/social.py:41,48`) — entropy loss; unique-collision has no retry/rollback → 500. — **fixed 2026-08-21**: codes no longer uppercased; create retries on collision, join treats it idempotently.
+- L3. Registration race: check-then-insert on email isn't atomic → unhandled `IntegrityError` 500 instead of 409; no rollback in `get_db` (`db.py:19-24`). — **fixed 2026-08-21**: `IntegrityError` on register now rolls back and returns 409.
+- L4. `GET /api/lessons` and `GET /api/lessons/{id}/assessment` are unauthenticated while sibling endpoints require auth — looks accidental; decide intentionally. — **fixed 2026-08-21**: both endpoints now require auth (verified frontend always calls them authenticated).
+- L5. Dead code: `routers/exercises.py:49-53` computes `next_lesson` for a transition `advance_state` ignores. `AttemptRequest.answer` has no length bound. `services/recap.py:75` instantiates throwaway ORM objects per attempt. — **fixed 2026-08-21**: dead code removed earlier (H2); `AttemptRequest.answer` bounded; recap uses one bulk fetch.
+- L6. Full reseed permanently loses the 9 RTVE news lessons (they come from `random.sample`, not the import-time catalog) — a routine reseed silently shrinks the catalog from 95 to 86. Persist fetched news dicts for replay. — **fixed 2026-08-21**: news lessons persist to tracked `content/news-cache.json` and replay without network.
+- L7. `load.py:282` mutates the module-global `LESSONS` with news lessons (double `load()` in-process accumulates duplicates). — **fixed 2026-08-21**: `load()` builds a local combined catalog; the global `LESSONS` is never mutated.
+- L8. Committed `video_lessons_c.py` embeds absolute machine-specific `/home/justin/...` source paths; seeds on another machine fail hard mid-seed (see M3). — **fixed 2026-08-21**: seed media paths are content-root-relative and resolved at use time; committed data migrated.
+- L9. `reconcile_media_timings` results silently dropped (`load.py:134-135`) — missing media is invisible operationally. — **fixed 2026-08-21**: missing media now logged via the `vamos.seed` logger.
+- L10. news_content: `_grammar_tip` substring matching ("pero" matches "perro"); empty titles → `"Noticias: "`; 60-char truncated title collisions silently drop articles. — **fixed 2026-08-21**: word-boundary connector matching; id-based title fallback; article id in titles prevents collisions.
 
 Frontend:
-- L11. API failure rendered inside the success-styled "¡Repaso al día!" card (`Repaso.tsx:36`).
-- L12. Weekly-recap failure leaves a permanent "Cargando…" (`Progreso.tsx:41,103-109` — error swallowed).
-- L13. Scrubbers are `<button>`s with pointer-only seeking (`VideoPlayer.tsx:151-168`, `AudioPlayer.tsx:83-97`) — keyboard activation seeks to ~0; no `role="slider"`/arrow keys.
-- L14. Conversación mic button has no accessible name (`Conversacion.tsx:68`).
-- L15. Conversación setup fetch has no cancellation (`Conversacion.tsx:39-44`) — stale setup can win a route-change race.
-- L16. FeedbackPanel: React keys from words (collide on repeats) and a hardcoded "de" highlight regardless of the actual tip (`FeedbackPanel.tsx:67-75`).
-- L17. `getSpeechExample` bypasses the shared 401 handling (`client.ts:210-221`).
-- L18. VideoPlayer keeps stale time/duration when `src` changes (`VideoPlayer.tsx:37-39,101-104`).
-- L19. Placement keeps a stale error after the level changes (`Placement.tsx:30-35`).
-- L20. Dead placeholder state in Assessment (`Assessment.tsx:52-53`).
-- L21. Groups lets you "Animar" yourself (`Grupos.tsx:56`; no server-side check in `social.py:54-59`).
-- L22. VideoShadowing hangs forever on a segment-less lesson (latent — all 95 current lessons have segments).
-- L23. Mock API uses string IDs vs the real API's ints; TS types declare `string`, masking the mismatch (no live bug — everything stringifies).
+- L11. API failure rendered inside the success-styled "¡Repaso al día!" card (`Repaso.tsx:36`). — **fixed 2026-08-21**: distinct error panel with `role="alert"` on load failure.
+- L12. Weekly-recap failure leaves a permanent "Cargando…" (`Progreso.tsx:41,103-109` — error swallowed). — **fixed 2026-08-21**: recap failure shows "No disponible".
+- L13. Scrubbers are `<button>`s with pointer-only seeking (`VideoPlayer.tsx:151-168`, `AudioPlayer.tsx:83-97`) — keyboard activation seeks to ~0; no `role="slider"`/arrow keys. — **fixed 2026-08-21**: scrubbers are now real `<input type="range">` sliders (keyboard-accessible).
+- L14. Conversación mic button has no accessible name (`Conversacion.tsx:68`). — **fixed 2026-08-21**: mic button has state-appropriate `aria-label`.
+- L15. Conversación setup fetch has no cancellation (`Conversacion.tsx:39-44`) — stale setup can win a route-change race. — **fixed 2026-08-21**: setup fetch effect has cancellation.
+- L16. FeedbackPanel: React keys from words (collide on repeats) and a hardcoded "de" highlight regardless of the actual tip (`FeedbackPanel.tsx:67-75`). — **fixed 2026-08-21**: index-based keys; hardcoded "de" highlight dropped.
+- L17. `getSpeechExample` bypasses the shared 401 handling (`client.ts:210-221`). — **fixed 2026-08-21**: routes through the shared 401 handling.
+- L18. VideoPlayer keeps stale time/duration when `src` changes (`VideoPlayer.tsx:37-39,101-104`). — **fixed 2026-08-21**: time/duration reset in an effect keyed on `src`.
+- L19. Placement keeps a stale error after the level changes (`Placement.tsx:30-35`). — **fixed 2026-08-21**: error cleared on level change.
+- L20. Dead placeholder state in Assessment (`Assessment.tsx:52-53`). — **fixed 2026-08-21**: placeholder defaults removed.
+- L21. Groups lets you "Animar" yourself (`Grupos.tsx:56`; no server-side check in `social.py:54-59`). — **fixed 2026-08-21**: server rejects self-encouragement (400); client hides your own button.
+- L22. VideoShadowing hangs forever on a segment-less lesson (latent — all 95 current lessons have segments). — **fixed 2026-08-21**: segment-less lessons show an empty-state message.
+- L23. Mock API uses string IDs vs the real API's ints; TS types declare `string`, masking the mismatch (no live bug — everything stringifies). — **fixed 2026-08-21**: TS types now use numeric IDs end-to-end; mocks aligned.
 
 Infra:
-- L24. `httpx` is the only unpinned dependency (`requirements.txt:14`).
-- L25. Unrelated project's unit (`deploy/systemd/nexterp.service`) committed in this repo.
-- L26. `.env.example` doesn't document all `VAMOS_*` vars (`VAMOS_JWT_ALGORITHM`, `VAMOS_CONTENT_DIR`, whisper settings, …) and uses a CWD-relative DB path that only works because the unit sets `WorkingDirectory`.
-- L27. `frontend/.gitignore:1-7` contains a false comment about the root `.gitignore` plus a broad `!*` un-ignore.
-- L28. `android:allowBackup="true"` in the shipped APK — WebView localStorage (auth token) extractable via `adb backup`.
-- L29. `passlib==1.7.4` pinned — unmaintained since 2020; works today only because the code deliberately uses `pbkdf2_sha256`. Plan migration (e.g. `pwdlib`).
+- L24. `httpx` is the only unpinned dependency (`requirements.txt:14`). — **fixed 2026-08-21**: `httpx==0.28.1` pinned.
+- L25. Unrelated project's unit (`deploy/systemd/nexterp.service`) committed in this repo. — **fixed 2026-08-21**: file removed from this repo.
+- L26. `.env.example` doesn't document all `VAMOS_*` vars (`VAMOS_JWT_ALGORITHM`, `VAMOS_CONTENT_DIR`, whisper settings, …) and uses a CWD-relative DB path that only works because the unit sets `WorkingDirectory`. — **fixed 2026-08-21**: `.env.example` rewritten with all `VAMOS_*` settings and absolute paths.
+- L27. `frontend/.gitignore:1-7` contains a false comment about the root `.gitignore` plus a broad `!*` un-ignore. — **fixed 2026-08-21**: false comment and `!*` un-ignore removed.
+- L28. `android:allowBackup="true"` in the shipped APK — WebView localStorage (auth token) extractable via `adb backup`. — **fixed 2026-08-21**: fixed earlier with H4 — shipped APK has `allowBackup=false` (verified via aapt).
+- L29. `passlib==1.7.4` pinned — unmaintained since 2020; works today only because the code deliberately uses `pbkdf2_sha256`. Plan migration (e.g. `pwdlib`). — **fixed 2026-08-21**: passlib replaced with stdlib `hashlib.pbkdf2_hmac`; legacy `$pbkdf2-sha256$` hashes still verify.
 
 ## Checked and found sound
 
