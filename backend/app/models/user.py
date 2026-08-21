@@ -6,6 +6,7 @@ from sqlalchemy import JSON, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..db import Base
+from ..services.time import utc_now
 
 
 class User(Base):
@@ -18,7 +19,7 @@ class User(Base):
     nickname: Mapped[str | None] = mapped_column(nullable=True)
     interests: Mapped[list[str]] = mapped_column(JSON, default=list)
     placement_completed: Mapped[bool] = mapped_column(default=False)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=utc_now)
 
 
 class UserState(Base):

@@ -4,6 +4,7 @@ import secrets
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..db import get_db
@@ -38,16 +39,32 @@ def list_groups(user: User = Depends(get_current_user), db: Session = Depends(ge
 
 @router.post("", response_model=GroupOut, status_code=status.HTTP_201_CREATED)
 def create_group(payload: GroupCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
-    group = Group(name=payload.name.strip(), invite_code=secrets.token_urlsafe(6).upper(), created_by=user.id)
-    db.add(group); db.flush(); db.add(GroupMember(group_id=group.id, user_id=user.id, role="owner")); db.commit()
-    return _out(db, group)
+    # Codes keep their mixed case (no .upper() — that would fold entropy);
+    # a unique-collision retries with a fresh code instead of surfacing a 500.
+    for _ in range(3):
+        group = Group(name=payload.name.strip(), invite_code=secrets.token_urlsafe(6), created_by=user.id)
+        db.add(group)
+        try:
+            db.flush()
+        except IntegrityError:
+            db.rollback()
+            continue
+        db.add(GroupMember(group_id=group.id, user_id=user.id, role="owner"))
+        db.commit()
+        return _out(db, group)
+    raise HTTPException(status_code=500, detail="Could not allocate a unique invite code")
 
 
 @router.post("/join", response_model=GroupOut)
 def join_group(payload: GroupJoin, user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
-    group = db.scalar(select(Group).where(Group.invite_code == payload.invite_code.strip().upper()))
+    group = db.scalar(select(Group).where(Group.invite_code == payload.invite_code.strip()))
     if group is None: raise HTTPException(status_code=404, detail="Group not found")
-    if _member(db, group.id, user.id) is None: db.add(GroupMember(group_id=group.id, user_id=user.id)); db.commit()
+    if _member(db, group.id, user.id) is None:
+        db.add(GroupMember(group_id=group.id, user_id=user.id))
+        try:
+            db.commit()
+        except IntegrityError:  # concurrent join of the same group: already a member
+            db.rollback()
     return _out(db, group)
 
 
@@ -55,6 +72,7 @@ def join_group(payload: GroupJoin, user: User = Depends(get_current_user), db: S
 def encourage(group_id: int, payload: EncouragementCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
     group = db.get(Group, group_id)
     if group is None or _member(db, group_id, user.id) is None: raise HTTPException(status_code=404, detail="Group not found")
+    if payload.to_user_id == user.id: raise HTTPException(status_code=400, detail="No puedes animarte a ti mismo")
     if _member(db, group_id, payload.to_user_id) is None: raise HTTPException(status_code=400, detail="Recipient is not a group member")
     db.add(Encouragement(group_id=group_id, from_user_id=user.id, to_user_id=payload.to_user_id, message=payload.message.strip())); db.commit()
     return _out(db, group)

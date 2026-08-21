@@ -64,8 +64,8 @@ def test_choose_next_lesson_respects_interests(db_session: Session) -> None:
 def test_adaptive_note_from_failed_exercises(
     client: TestClient, auth_headers: dict
 ) -> None:
-    lesson_id = client.get("/api/lessons").json()[0]["id"]
-    groups = client.get(f"/api/lessons/{lesson_id}/assessment").json()["groups"]
+    lesson_id = client.get("/api/lessons", headers=auth_headers).json()[0]["id"]
+    groups = client.get(f"/api/lessons/{lesson_id}/assessment", headers=auth_headers).json()["groups"]
     grammar = next(g for g in groups if g["type"] == "grammar")["exercises"][0]
     response = client.post(
         f"/api/exercises/{grammar['id']}/attempt",

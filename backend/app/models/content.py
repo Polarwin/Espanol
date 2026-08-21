@@ -6,6 +6,7 @@ from sqlalchemy import JSON, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..db import Base
+from ..services.time import utc_now
 
 
 class Lesson(Base):
@@ -22,7 +23,7 @@ class Lesson(Base):
     # Default grammar tip for the core loop, e.g.
     # {"wrong": "...", "right": "...", "explanation": "..."}
     grammar_tip: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=utc_now)
 
     segments: Mapped[list["Segment"]] = relationship(
         back_populates="lesson", order_by="Segment.index", cascade="all, delete-orphan"

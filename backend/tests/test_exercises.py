@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from backend.app.models import SkillProgress, Streak
 
 
-def _exercise(client: TestClient, group_type: str, prompt_fragment: str) -> dict:
-    lesson_id = client.get("/api/lessons").json()[0]["id"]  # Charla con vecinos
-    groups = client.get(f"/api/lessons/{lesson_id}/assessment").json()["groups"]
+def _exercise(client: TestClient, headers: dict, group_type: str, prompt_fragment: str) -> dict:
+    lesson_id = client.get("/api/lessons", headers=headers).json()[0]["id"]  # Charla con vecinos
+    groups = client.get(f"/api/lessons/{lesson_id}/assessment", headers=headers).json()["groups"]
     group = next(g for g in groups if g["type"] == group_type)
     return next(ex for ex in group["exercises"] if prompt_fragment in ex["prompt"])
 
@@ -23,7 +23,7 @@ def _attempt(client: TestClient, headers: dict, exercise_id: int, answer: str) -
 
 
 def test_text_answer_normalization(client: TestClient, auth_headers: dict) -> None:
-    exercise = _exercise(client, "grammar", "¿Qué planes tú tienes?")
+    exercise = _exercise(client, auth_headers, "grammar", "¿Qué planes tú tienes?")
     # No accents, no inverted punctuation, lowercase: still correct.
     body = _attempt(client, auth_headers, exercise["id"], "Que planes tienes")
     assert body["correct"] is True
@@ -35,7 +35,7 @@ def test_text_answer_normalization(client: TestClient, auth_headers: dict) -> No
 
 
 def test_wrong_text_answer(client: TestClient, auth_headers: dict) -> None:
-    exercise = _exercise(client, "grammar", "¿Qué planes tú tienes?")
+    exercise = _exercise(client, auth_headers, "grammar", "¿Qué planes tú tienes?")
     body = _attempt(client, auth_headers, exercise["id"], "no lo sé")
     assert body["correct"] is False
     assert body["score"] == 0.0
@@ -59,14 +59,14 @@ def test_wrong_text_answer(client: TestClient, auth_headers: dict) -> None:
 
 
 def test_option_answer_is_exact(client: TestClient, auth_headers: dict) -> None:
-    exercise = _exercise(client, "listening", "Lucía")
+    exercise = _exercise(client, auth_headers, "listening", "Lucía")
     assert _attempt(client, auth_headers, exercise["id"], "Irá a la playa")["correct"] is True
     assert _attempt(client, auth_headers, exercise["id"], "irá a la playa")["correct"] is False
     assert _attempt(client, auth_headers, exercise["id"], "Trabajará en casa")["correct"] is False
 
 
 def test_writing_heuristic(client: TestClient, auth_headers: dict) -> None:
-    exercise = _exercise(client, "writing", "4 frases")
+    exercise = _exercise(client, auth_headers, "writing", "4 frases")
     short = _attempt(client, auth_headers, exercise["id"], "voy")
     assert short["correct"] is False
     long = _attempt(
@@ -82,7 +82,7 @@ def test_writing_heuristic(client: TestClient, auth_headers: dict) -> None:
 def test_skill_score_clamped_at_100(
     client: TestClient, auth_headers: dict, db_session: Session
 ) -> None:
-    exercise = _exercise(client, "grammar", "Este sábado")
+    exercise = _exercise(client, auth_headers, "grammar", "Este sábado")
     user_id = db_session.scalar(select(SkillProgress.user_id).limit(1))
     row = db_session.scalar(
         select(SkillProgress).where(
@@ -100,7 +100,7 @@ def test_skill_score_clamped_at_100(
 def test_skill_score_clamped_at_0(
     client: TestClient, auth_headers: dict, db_session: Session
 ) -> None:
-    exercise = _exercise(client, "listening", "Lucía")
+    exercise = _exercise(client, auth_headers, "listening", "Lucía")
     user_id = db_session.scalar(select(SkillProgress.user_id).limit(1))
     row = db_session.scalar(
         select(SkillProgress).where(
@@ -118,7 +118,7 @@ def test_skill_score_clamped_at_0(
 def test_attempt_does_not_advance_loop_and_records_streak(
     client: TestClient, auth_headers: dict, db_session: Session
 ) -> None:
-    exercise = _exercise(client, "vocabulary", "quedar")
+    exercise = _exercise(client, auth_headers, "vocabulary", "quedar")
 
     def step() -> tuple[str, int]:
         body = client.get("/api/path/today", headers=auth_headers).json()
@@ -133,10 +133,20 @@ def test_attempt_does_not_advance_loop_and_records_streak(
     assert streak.current_days == 1  # same-day activity counts once
 
 
+def test_attempt_answer_length_is_bounded(client: TestClient, auth_headers: dict) -> None:
+    exercise = _exercise(client, auth_headers, "grammar", "¿Qué planes tú tienes?")
+    response = client.post(
+        f"/api/exercises/{exercise['id']}/attempt",
+        json={"answer": "x" * 2001},
+        headers=auth_headers,
+    )
+    assert response.status_code == 422
+
+
 def test_only_first_attempt_updates_skills(
     client: TestClient, auth_headers: dict, db_session: Session
 ) -> None:
-    exercise = _exercise(client, "grammar", "¿Qué planes tú tienes?")
+    exercise = _exercise(client, auth_headers, "grammar", "¿Qué planes tú tienes?")
     first = _attempt(client, auth_headers, exercise["id"], "no lo sé")
     assert first["skill_updates"]
 

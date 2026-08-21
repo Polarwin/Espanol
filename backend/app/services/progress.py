@@ -1,11 +1,10 @@
 """Skill-progress helpers: defaults for new users and clamped updates."""
 
-from datetime import datetime
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..models import SkillProgress, User
+from .time import utc_now
 
 # Fixed starting scores (0-100) so the core-loop feedback panel has sensible
 # values for brand-new users.
@@ -53,7 +52,7 @@ def apply_skill_deltas(db: Session, user: User, deltas: dict[str, float]) -> lis
             db.add(row)
         applied = round(delta, 2)
         row.score = max(MIN_SCORE, min(MAX_SCORE, row.score + applied))
-        row.updated_at = datetime.utcnow()
+        row.updated_at = utc_now()
         updates.append({"skill": skill, "delta": applied})
     db.flush()
     return updates

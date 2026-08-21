@@ -1,6 +1,11 @@
 """Auth flow: register, login, /api/me."""
 
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import select
+
+from backend.app.models import User
+from backend.app.routers import auth
 
 from conftest import USER
 
@@ -20,6 +25,26 @@ def test_register_duplicate_email_conflict(client: TestClient) -> None:
     client.post("/api/auth/register", json=USER)
     response = client.post("/api/auth/register", json=USER)
     assert response.status_code == 409
+
+
+def test_register_race_returns_409_not_500(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    client.post("/api/auth/register", json=USER)
+    # Simulate a lost race: the duplicate-email pre-check misses the existing
+    # row, so the unique constraint fires at flush/commit time.
+    monkeypatch.setattr(
+        auth, "select", lambda *a, **k: select(User).where(User.id == -1)
+    )
+    response = client.post("/api/auth/register", json=USER)
+    assert response.status_code == 409
+    assert response.json()["detail"] == "Email already registered"
+    # The session was rolled back and stays usable.
+    monkeypatch.undo()
+    login = client.post(
+        "/api/auth/login", json={"email": USER["email"], "password": USER["password"]}
+    )
+    assert login.status_code == 200
 
 
 def test_login_success_and_me(client: TestClient) -> None:

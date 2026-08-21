@@ -31,6 +31,7 @@ export function Placement() {
     setQuestions([])
     setIndex(0)
     setBlockAnswers({})
+    setError('')
     api.getPlacement(level).then(setQuestions).catch(() => setError('No se pudo cargar la prueba de nivel.'))
   }, [level])
 

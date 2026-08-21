@@ -38,7 +38,7 @@ export async function mockTodayPath(): Promise<TodayPath> {
   await delay()
   return {
     lesson: {
-      id: 'lesson-charla-vecinos',
+      id: 1,
       title: 'Charla con vecinos',
       cefr_level: 'A2',
       topics: ['vida diaria', 'planes', 'conversación'],
@@ -68,7 +68,7 @@ export async function mockTodayPath(): Promise<TodayPath> {
       explanation: 'El pronombre no es necesario aquí.',
     },
     next: {
-      lesson_id: 'lesson-charla-vecinos',
+      lesson_id: 1,
       label: 'Siguiente: práctica A2+',
       description: 'Subimos el ritmo; repetimos la d suave.',
       topics: ['Viajes', 'Vida diaria'],
@@ -80,7 +80,7 @@ export async function mockLessons(): Promise<LessonSummary[]> {
   await delay()
   return [
     {
-      id: 'lesson-charla-vecinos',
+      id: 1,
       title: 'Charla con vecinos',
       cefr_level: 'A2',
       topics: ['vida diaria', 'planes'],
@@ -88,7 +88,7 @@ export async function mockLessons(): Promise<LessonSummary[]> {
       duration_seconds: 720,
     },
     {
-      id: 'lesson-mercado',
+      id: 2,
       title: 'En el mercado',
       cefr_level: 'A2',
       topics: ['comida', 'compras'],
@@ -96,7 +96,7 @@ export async function mockLessons(): Promise<LessonSummary[]> {
       duration_seconds: 640,
     },
     {
-      id: 'lesson-viaje-tren',
+      id: 3,
       title: 'Un viaje en tren',
       cefr_level: 'A2+',
       topics: ['viajes', 'direcciones'],
@@ -106,10 +106,10 @@ export async function mockLessons(): Promise<LessonSummary[]> {
   ]
 }
 
-export async function mockLesson(id: string): Promise<LessonDetail> {
+export async function mockLesson(id: number): Promise<LessonDetail> {
   await delay()
   const segments = Array.from({ length: 8 }, (_, i) => ({
-    id: `${id}-seg-${i + 1}`,
+    id: id * 100 + i + 1,
     index: i + 1,
     video_url: `/media/lessons/charla-vecinos/clip-${i + 1}.mp4`,
     start_seconds: i * 42,
@@ -119,8 +119,8 @@ export async function mockLesson(id: string): Promise<LessonDetail> {
       { es: 'Este fin de semana voy a visitar a mis vecinos.', en: 'This weekend I am going to visit my neighbors.' },
     ],
     phrases: [
-      { id: `${id}-seg-${i + 1}-ph-1`, text: '¿Qué planes tienes para el fin de semana?', translation: 'What plans do you have for the weekend?' },
-      { id: `${id}-seg-${i + 1}-ph-2`, text: 'Voy a ir a la playa.', translation: 'I am going to go to the beach.' },
+      { id: id * 1000 + (i + 1) * 10 + 1, text: '¿Qué planes tienes para el fin de semana?', translation: 'What plans do you have for the weekend?' },
+      { id: id * 1000 + (i + 1) * 10 + 2, text: 'Voy a ir a la playa.', translation: 'I am going to go to the beach.' },
     ],
   }))
   return {
@@ -154,11 +154,11 @@ export async function mockAssessment(): Promise<LessonAssessment> {
         label: 'Vocabulario',
         instructions: 'Relaciona las palabras.',
         exercises: [
-          { id: 'ex-v1', prompt: 'quedar', options: ['reunirse', 'salir', 'llamar'], expected_answer: 'reunirse' },
-          { id: 'ex-v2', prompt: 'el vecino', options: ['neighbor', 'friend', 'cousin'], expected_answer: 'neighbor' },
-          { id: 'ex-v3', prompt: 'el fin de semana', options: ['the weekend', 'the week', 'the party'], expected_answer: 'the weekend' },
-          { id: 'ex-v4', prompt: 'visitar', options: ['to visit', 'to travel', 'to live'], expected_answer: 'to visit' },
-          { id: 'ex-v5', prompt: 'la playa', options: ['the beach', 'the pool', 'the park'], expected_answer: 'the beach' },
+          { id: 101, prompt: 'quedar', options: ['reunirse', 'salir', 'llamar'], expected_answer: 'reunirse' },
+          { id: 102, prompt: 'el vecino', options: ['neighbor', 'friend', 'cousin'], expected_answer: 'neighbor' },
+          { id: 103, prompt: 'el fin de semana', options: ['the weekend', 'the week', 'the party'], expected_answer: 'the weekend' },
+          { id: 104, prompt: 'visitar', options: ['to visit', 'to travel', 'to live'], expected_answer: 'to visit' },
+          { id: 105, prompt: 'la playa', options: ['the beach', 'the pool', 'the park'], expected_answer: 'the beach' },
         ],
       },
       {
@@ -166,11 +166,11 @@ export async function mockAssessment(): Promise<LessonAssessment> {
         label: 'Gramática',
         instructions: 'Completa la frase.',
         exercises: [
-          { id: 'ex-g1', prompt: 'Este sábado ___ a visitar Madrid.', expected_answer: 'voy' },
-          { id: 'ex-g2', prompt: '¿Qué planes ___ para el domingo?', expected_answer: 'tienes' },
-          { id: 'ex-g3', prompt: 'Lucía ___ a la playa con sus amigos.', expected_answer: 'va' },
-          { id: 'ex-g4', prompt: 'Vamos ___ reunirnos en la plaza.', expected_answer: 'a' },
-          { id: 'ex-g5', prompt: '___ planes tienes para el fin de semana?', expected_answer: 'Qué' },
+          { id: 201, prompt: 'Este sábado ___ a visitar Madrid.', expected_answer: 'voy' },
+          { id: 202, prompt: '¿Qué planes ___ para el domingo?', expected_answer: 'tienes' },
+          { id: 203, prompt: 'Lucía ___ a la playa con sus amigos.', expected_answer: 'va' },
+          { id: 204, prompt: 'Vamos ___ reunirnos en la plaza.', expected_answer: 'a' },
+          { id: 205, prompt: '___ planes tienes para el fin de semana?', expected_answer: 'Qué' },
         ],
       },
       {
@@ -178,10 +178,10 @@ export async function mockAssessment(): Promise<LessonAssessment> {
         label: 'Escritura',
         instructions: 'Escribe 4 frases sobre tus planes.',
         exercises: [
-          { id: 'ex-w1', prompt: 'Este fin de semana voy a…', expected_answer: '' },
-          { id: 'ex-w2', prompt: 'El sábado por la mañana…', expected_answer: '' },
-          { id: 'ex-w3', prompt: 'El domingo voy a quedar con…', expected_answer: '' },
-          { id: 'ex-w4', prompt: 'Después de visitar a mis vecinos…', expected_answer: '' },
+          { id: 301, prompt: 'Este fin de semana voy a…', expected_answer: '' },
+          { id: 302, prompt: 'El sábado por la mañana…', expected_answer: '' },
+          { id: 303, prompt: 'El domingo voy a quedar con…', expected_answer: '' },
+          { id: 304, prompt: 'Después de visitar a mis vecinos…', expected_answer: '' },
         ],
       },
       {
@@ -190,21 +190,21 @@ export async function mockAssessment(): Promise<LessonAssessment> {
         instructions: 'Escucha y responde.',
         exercises: [
           {
-            id: 'ex-l1',
+            id: 401,
             prompt: '¿Qué hará Lucía este fin de semana?',
             audio_url: '/media/lessons/charla-vecinos/audio-1.mp3',
             options: ['Visitará a sus vecinos', 'Irá a la playa', 'Trabajará en casa'],
             expected_answer: 'Irá a la playa',
           },
           {
-            id: 'ex-l2',
+            id: 402,
             prompt: '¿Con quién quedará Lucía el sábado?',
             audio_url: '/media/lessons/charla-vecinos/audio-2.mp3',
             options: ['Con su hermana', 'Con sus vecinos', 'Con sus compañeros de trabajo'],
             expected_answer: 'Con sus vecinos',
           },
           {
-            id: 'ex-l3',
+            id: 403,
             prompt: '¿Cuándo volverá Lucía a casa?',
             audio_url: '/media/lessons/charla-vecinos/audio-3.mp3',
             options: ['El domingo por la tarde', 'El lunes por la mañana', 'El sábado por la noche'],
@@ -216,22 +216,22 @@ export async function mockAssessment(): Promise<LessonAssessment> {
   }
 }
 
-export async function mockAttempt(exerciseId: string, answer: string): Promise<AttemptResult> {
+export async function mockAttempt(exerciseId: number, answer: string): Promise<AttemptResult> {
   await delay()
-  const expected: Record<string, string> = {
-    'ex-l1': 'Irá a la playa',
-    'ex-l2': 'Con sus vecinos',
-    'ex-l3': 'El domingo por la tarde',
-    'ex-g1': 'voy',
-    'ex-g2': 'tienes',
-    'ex-g3': 'va',
-    'ex-g4': 'a',
-    'ex-g5': 'Qué',
-    'ex-v1': 'reunirse',
-    'ex-v2': 'neighbor',
-    'ex-v3': 'the weekend',
-    'ex-v4': 'to visit',
-    'ex-v5': 'the beach',
+  const expected: Record<number, string> = {
+    401: 'Irá a la playa',
+    402: 'Con sus vecinos',
+    403: 'El domingo por la tarde',
+    201: 'voy',
+    202: 'tienes',
+    203: 'va',
+    204: 'a',
+    205: 'Qué',
+    101: 'reunirse',
+    102: 'neighbor',
+    103: 'the weekend',
+    104: 'to visit',
+    105: 'the beach',
   }
   const want = expected[exerciseId] ?? ''
   const correct = answer.trim().toLowerCase() === want.toLowerCase()
@@ -239,7 +239,7 @@ export async function mockAttempt(exerciseId: string, answer: string): Promise<A
     correct,
     score: correct ? 100 : 0,
     feedback: correct ? '¡Muy bien! Respuesta correcta.' : `Casi. La respuesta correcta es «${want}».`,
-    skill_updates: [{ skill: exerciseId.startsWith('ex-l') ? 'listening' : 'grammar', delta: correct ? 2 : -1 }],
+    skill_updates: [{ skill: exerciseId >= 400 ? 'listening' : 'grammar', delta: correct ? 2 : -1 }],
   }
 }
 

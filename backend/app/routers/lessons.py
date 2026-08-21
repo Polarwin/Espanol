@@ -73,7 +73,9 @@ def _spanish_vocabulary_support(lesson: Lesson, text: str) -> tuple[str, str]:
 
 
 @router.get("", response_model=list[LessonListItem])
-def list_lessons(db: Session = Depends(get_db)) -> list[LessonListItem]:
+def list_lessons(
+    user: User = Depends(get_current_user), db: Session = Depends(get_db)
+) -> list[LessonListItem]:
     lessons = db.scalars(
         select(Lesson).where(Lesson.status == "published").order_by(Lesson.id)
     ).all()
@@ -205,7 +207,11 @@ def complete_lesson(
 
 
 @router.get("/{lesson_id}/assessment", response_model=Assessment)
-def lesson_assessment(lesson_id: int, db: Session = Depends(get_db)) -> Assessment:
+def lesson_assessment(
+    lesson_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Assessment:
     lesson = db.get(Lesson, lesson_id)
     if lesson is None or lesson.status != "published":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")

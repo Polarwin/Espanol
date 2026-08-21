@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from '../api/client'
-import type { FriendGroup } from '../api/types'
+import type { FriendGroup, User } from '../api/types'
 import { IconSparkle } from '../components/icons'
 
 export function Grupos() {
   const [groups, setGroups] = useState<FriendGroup[]>([])
+  const [me, setMe] = useState<User | null>(null)
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
@@ -13,6 +14,7 @@ export function Grupos() {
 
   useEffect(() => {
     api.getGroups().then(setGroups).catch(() => setError('No se pudieron cargar tus grupos.'))
+    api.getMe().then(setMe).catch(() => {})
   }, [])
 
   async function create(event: FormEvent) {
@@ -53,7 +55,7 @@ export function Grupos() {
         {groups.map((group) => (
           <section key={group.id} className="rounded-3xl bg-paper p-5 shadow-soft sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between"><div><h2 className="font-display text-xl font-bold">{group.name}</h2><p className="mt-1 text-sm font-semibold text-ink-soft">{group.members.length} miembros</p></div><div className="self-start rounded-xl bg-sun-soft px-4 py-2 text-center"><p className="text-xs font-bold text-ink-soft">Código</p><p className="font-mono font-bold">{group.invite_code}</p></div></div>
-            <div className="mt-4 flex flex-wrap gap-2">{group.members.map((member) => <button key={member.user_id} disabled={busy} onClick={() => void encourage(group, member.user_id)} className="rounded-full bg-leaf-soft px-3 py-1 text-sm font-semibold text-leaf disabled:opacity-50">Animar a {member.display_name}</button>)}</div>
+            <div className="mt-4 flex flex-wrap gap-2">{group.members.filter((member) => member.user_id !== me?.id).map((member) => <button key={member.user_id} disabled={busy} onClick={() => void encourage(group, member.user_id)} className="rounded-full bg-leaf-soft px-3 py-1 text-sm font-semibold text-leaf disabled:opacity-50">Animar a {member.display_name}</button>)}</div>
             {group.encouragements.length > 0 && <div className="mt-4 border-t border-ink/8 pt-3"><p className="text-sm font-bold">Ánimos recientes</p>{group.encouragements.slice(0, 3).map((note) => <p key={note.id} className="mt-1 text-sm font-semibold text-ink-soft"><span className="font-bold text-ink">{note.from_display_name}:</span> {note.message}</p>)}</div>}
           </section>
         ))}

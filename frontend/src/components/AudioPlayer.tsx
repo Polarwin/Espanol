@@ -80,21 +80,24 @@ export function AudioPlayer({ src, durationSeconds = 18, compact = false }: Audi
       >
         <IconReplay size={17} />
       </button>
-      <button
-        className="flex flex-1 cursor-pointer items-center"
-        aria-label="Barra de audio"
-        onClick={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect()
-          seek((e.clientX - rect.left) / rect.width)
-        }}
-      >
+      <div className="relative flex flex-1 items-center">
         <Waveform
           bars={compact ? 36 : 72}
           progress={duration > 0 ? time / duration : 0}
           height={compact ? 26 : 40}
           className="w-full"
         />
-      </button>
+        <input
+          type="range"
+          min={0}
+          max={Math.max(duration, 1)}
+          step={0.1}
+          value={time}
+          onChange={(e) => seek(Number(e.target.value) / Math.max(duration, 1))}
+          aria-label="Barra de audio"
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        />
+      </div>
       <span className="shrink-0 text-xs font-semibold tabular-nums text-ink-soft">
         {format(time)} / {format(duration)}
       </span>

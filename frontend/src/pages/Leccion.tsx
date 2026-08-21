@@ -20,8 +20,8 @@ export function Leccion() {
     if (!lessonId) return
     // Viewing a lesson must not change the user's route; only detect whether
     // this lesson already is the current unit.
-    api.getTodayPath().then((path) => setIsCurrentUnit(path.lesson.id === lessonId)).catch(() => {})
-    api.getLesson(lessonId, Date.now() % 1_000_000).then(setLesson).catch(() => setError('No se pudo cargar la lección.'))
+    api.getTodayPath().then((path) => setIsCurrentUnit(path.lesson.id === Number(lessonId))).catch(() => {})
+    api.getLesson(Number(lessonId), Date.now() % 1_000_000).then(setLesson).catch(() => setError('No se pudo cargar la lección.'))
     api.getMe().then(setUser).catch(() => {})
   }, [lessonId])
 
@@ -30,7 +30,7 @@ export function Leccion() {
     setSelecting(true)
     setSelectError('')
     try {
-      await api.selectLesson(lessonId)
+      await api.selectLesson(Number(lessonId))
       setIsCurrentUnit(true)
     } catch {
       setSelectError('No se pudo cambiar de unidad. Inténtalo de nuevo.')

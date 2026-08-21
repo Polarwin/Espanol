@@ -1,11 +1,3 @@
-# The repository-root .gitignore (a Python venv artifact) contains `*`,
-# which ignores every file in the project. Un-ignore this app first so
-# Tailwind's git-aware source detection (and git itself) can see our sources,
-# then re-ignore generated/dependency folders below.
-
-!*
-!**/*
-
 # Logs
 logs
 *.log

@@ -188,7 +188,7 @@ def test_group_join_and_encouragement_journey(
     friend_headers = {"Authorization": f"Bearer {friend_auth['token']}"}
     joined = client.post(
         "/api/groups/join",
-        json={"invite_code": group["invite_code"].lower()},
+        json={"invite_code": group["invite_code"]},
         headers=friend_headers,
     )
     assert joined.status_code == 200

@@ -1,10 +1,10 @@
 """Exercise attempt schemas."""
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AttemptRequest(BaseModel):
-    answer: str
+    answer: str = Field(max_length=2000)
 
 
 class SkillUpdate(BaseModel):

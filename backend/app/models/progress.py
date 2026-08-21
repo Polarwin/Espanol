@@ -6,6 +6,7 @@ from sqlalchemy import JSON, ForeignKey, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..db import Base
+from ..services.time import utc_now
 
 SKILLS = ("pronunciation", "vocabulary", "grammar", "writing", "listening", "reading", "fluency")
 
@@ -19,7 +20,7 @@ class SkillProgress(Base):
     skill: Mapped[str]  # one of SKILLS
     score: Mapped[float] = mapped_column(default=0.0)  # 0-100
     level: Mapped[str] = mapped_column(default="A1")  # e.g. "A1", "A2"
-    updated_at: Mapped[datetime] = mapped_column(default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(default=utc_now, onupdate=utc_now)
 
 
 class Attempt(Base):
@@ -32,7 +33,7 @@ class Attempt(Base):
     correct: Mapped[bool]
     score: Mapped[float]  # 0-1
     feedback: Mapped[str] = mapped_column(Text, default="")
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=utc_now)
 
 
 class LessonCompletion(Base):
@@ -42,7 +43,7 @@ class LessonCompletion(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id"), index=True)
-    completed_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    completed_at: Mapped[datetime] = mapped_column(default=utc_now)
 
 
 class ReviewItem(Base):
@@ -93,4 +94,4 @@ class WeeklyRecap(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     week_start: Mapped[date]
     data: Mapped[dict] = mapped_column(JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=utc_now)

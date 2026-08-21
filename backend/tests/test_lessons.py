@@ -7,8 +7,8 @@ from backend.app.models import Lesson
 from backend.app.seed.load import sync_missing_lessons
 
 
-def test_lessons_list_published(client: TestClient) -> None:
-    response = client.get("/api/lessons")
+def test_lessons_list_published(client: TestClient, auth_headers: dict) -> None:
+    response = client.get("/api/lessons", headers=auth_headers)
     assert response.status_code == 200
     lessons = response.json()
     titles = [lesson["title"] for lesson in lessons]
@@ -46,7 +46,7 @@ def test_sync_missing_lessons_is_non_destructive(db_session) -> None:
 
 
 def test_lesson_detail(client: TestClient, auth_headers: dict) -> None:
-    lesson_id = client.get("/api/lessons").json()[0]["id"]
+    lesson_id = client.get("/api/lessons", headers=auth_headers).json()[0]["id"]
     response = client.get(f"/api/lessons/{lesson_id}", headers=auth_headers)
     assert response.status_code == 200
     detail = response.json()
@@ -70,7 +70,7 @@ def test_lesson_detail(client: TestClient, auth_headers: dict) -> None:
 
 
 def test_select_lesson_remembers_catalog_choice(client: TestClient, auth_headers: dict) -> None:
-    lessons = client.get("/api/lessons").json()
+    lessons = client.get("/api/lessons", headers=auth_headers).json()
     selected = lessons[-1]
     response = client.post(f"/api/lessons/{selected['id']}/select", headers=auth_headers)
     assert response.status_code == 200
@@ -81,9 +81,9 @@ def test_select_lesson_remembers_catalog_choice(client: TestClient, auth_headers
     assert today["clip_index"] == 0
 
 
-def test_lesson_assessment_groups(client: TestClient) -> None:
-    lesson_id = client.get("/api/lessons").json()[0]["id"]
-    response = client.get(f"/api/lessons/{lesson_id}/assessment")
+def test_lesson_assessment_groups(client: TestClient, auth_headers: dict) -> None:
+    lesson_id = client.get("/api/lessons", headers=auth_headers).json()[0]["id"]
+    response = client.get(f"/api/lessons/{lesson_id}/assessment", headers=auth_headers)
     assert response.status_code == 200
     assessment = response.json()
     assert [group["type"] for group in assessment["groups"]] == [
@@ -139,7 +139,7 @@ def test_path_today_shape_for_new_user(client: TestClient, auth_headers: dict) -
 
 
 def test_lesson_completion_is_saved_once(client: TestClient, auth_headers: dict) -> None:
-    lesson_id = client.get("/api/lessons").json()[0]["id"]
+    lesson_id = client.get("/api/lessons", headers=auth_headers).json()[0]["id"]
 
     first = client.post(f"/api/lessons/{lesson_id}/complete", headers=auth_headers)
     second = client.post(f"/api/lessons/{lesson_id}/complete", headers=auth_headers)
@@ -167,5 +167,13 @@ def test_draft_lesson_not_reachable_by_id(
         client.post(f"/api/lessons/{draft.id}/complete", headers=auth_headers).status_code
         == 404
     )
-    assert client.get(f"/api/lessons/{draft.id}/assessment").status_code == 404
-    assert draft.id not in [lesson["id"] for lesson in client.get("/api/lessons").json()]
+    assert client.get(f"/api/lessons/{draft.id}/assessment", headers=auth_headers).status_code == 404
+    assert draft.id not in [
+        lesson["id"] for lesson in client.get("/api/lessons", headers=auth_headers).json()
+    ]
+
+
+def test_lessons_list_and_assessment_require_auth(client: TestClient, auth_headers: dict) -> None:
+    assert client.get("/api/lessons").status_code == 401
+    lesson_id = client.get("/api/lessons", headers=auth_headers).json()[0]["id"]
+    assert client.get(f"/api/lessons/{lesson_id}/assessment").status_code == 401

@@ -1,6 +1,7 @@
 """Unit tests for RTVE news lesson generation (requests.get is mocked)."""
 
 import re
+from pathlib import Path
 
 import pytest
 
@@ -10,6 +11,9 @@ THEMES = {
     "17100001": ["gobierno", "mercado", "ciudad", "vecinos", "puente", "alcalde"],
     "17100002": ["museo", "pintura", "artista", "galería", "cuadro", "exposición"],
     "17100003": ["volcán", "isla", "erupción", "ceniza", "científicos", "registro"],
+    "17100010": ["gobierno", "mercado", "ciudad", "vecinos", "puente", "alcalde"],
+    "17100020": ["gobierno", "mercado", "ciudad", "vecinos", "puente", "alcalde"],
+    "17100021": ["museo", "pintura", "artista", "galería", "cuadro", "exposición"],
 }
 
 
@@ -197,3 +201,102 @@ def test_non_spanish_articles_are_rejected(monkeypatch: pytest.MonkeyPatch) -> N
     lessons = news_content.fetch_news_lessons(count=10)
     assert len(lessons) == 3
     assert all(lesson["slug"] != "news-17100099" for lesson in lessons)
+
+
+def test_grammar_tip_matches_whole_words_only() -> None:
+    # "perro" must not trigger the «pero» connector.
+    tip = news_content._grammar_tip("El perro corre por el parque con energía.")
+    assert "«pero»" not in tip["right"]
+    # A real standalone connector is still found.
+    tip = news_content._grammar_tip("La medida es útil, pero genera debate.")
+    assert "«pero»" in tip["right"]
+
+
+def _lesson_from_items(monkeypatch: pytest.MonkeyPatch, items: list[dict]) -> list[dict]:
+    monkeypatch.setattr(
+        news_content.requests, "get", lambda *a, **k: _FakeResponse(items)
+    )
+    return news_content.fetch_news_lessons(count=10)
+
+
+def test_empty_title_falls_back_to_article_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item = _fake_item("17100010", "", "Noticias/España", 16)
+    lessons = _lesson_from_items(monkeypatch, [*FIXTURE_ITEMS, item])
+    lesson = next(lesson for lesson in lessons if lesson["slug"] == "news-17100010")
+    assert lesson["title"] == "Noticias: Artículo 17100010 · 17100010"
+
+
+def test_truncated_identical_titles_do_not_collide(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    long_title = (
+        "El puente de la ciudad reabre al tráfico tras meses de obras y muchas "
+        "celebraciones vecinales"
+    )
+    first = _fake_item("17100020", long_title, "Noticias/España", 16)
+    second = _fake_item("17100021", long_title, "Noticias/España", 16)
+    lessons = _lesson_from_items(monkeypatch, [first, second, FIXTURE_ITEMS[1]])
+    news = [lesson for lesson in lessons if lesson["slug"].startswith("news-1710002")]
+    assert len(news) == 2
+    titles = [lesson["title"] for lesson in news]
+    assert len(set(titles)) == 2
+    assert all(title.startswith("Noticias: ") for title in titles)
+    assert {lesson["slug"].removeprefix("news-") for lesson in news} == {
+        "17100020",
+        "17100021",
+    }
+    for lesson in news:
+        assert lesson["slug"].removeprefix("news-") in lesson["title"]
+
+
+def test_cached_news_lessons_replay_without_network(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    cache = tmp_path / "news-cache.json"
+    monkeypatch.setattr(
+        news_content.requests, "get", lambda *a, **k: _FakeResponse(FIXTURE_ITEMS)
+    )
+    fetched = news_content.get_news_lessons(count=3, cache_path=cache)
+    assert len(fetched) == 3
+    assert news_content.load_cached_news_lessons(cache) == fetched
+
+    def _no_fetch(count: int = 10) -> list[dict]:
+        raise AssertionError("the network must not be touched when the cache suffices")
+
+    monkeypatch.setattr(news_content, "fetch_news_lessons", _no_fetch)
+    assert news_content.get_news_lessons(count=3, cache_path=cache) == fetched
+    assert news_content.get_news_lessons(count=0, cache_path=cache) == fetched
+
+
+def test_short_cache_is_topped_up_and_merged_without_duplicates(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    cache = tmp_path / "news-cache.json"
+    monkeypatch.setattr(
+        news_content.requests, "get", lambda *a, **k: _FakeResponse(FIXTURE_ITEMS)
+    )
+    first = news_content.get_news_lessons(count=2, cache_path=cache)
+    assert len(first) == 2
+    second = news_content.get_news_lessons(count=3, cache_path=cache)
+    assert len(second) == 3
+    slugs = [lesson["slug"] for lesson in news_content.load_cached_news_lessons(cache)]
+    assert len(slugs) == len(set(slugs))
+
+
+def test_fetch_failure_keeps_existing_cache(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    cache = tmp_path / "news-cache.json"
+    monkeypatch.setattr(
+        news_content.requests, "get", lambda *a, **k: _FakeResponse(FIXTURE_ITEMS[:1])
+    )
+    cached = news_content.get_news_lessons(count=1, cache_path=cache)
+    assert len(cached) == 1
+
+    def _boom(*a: object, **k: object) -> object:
+        raise news_content.requests.ConnectionError("offline")
+
+    monkeypatch.setattr(news_content.requests, "get", _boom)
+    assert news_content.get_news_lessons(count=5, cache_path=cache) == cached

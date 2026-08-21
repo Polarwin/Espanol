@@ -64,15 +64,9 @@ export function FeedbackPanel({ data }: { data: TodayPath }) {
           </span>
           <div className="min-w-0 flex-1">
             <p className="font-display text-[17px] font-bold">
-              {pron.phrase.split(' ').map((w) =>
-                w === 'de' ? (
-                  <mark key={w} className="rounded bg-sun-soft px-1 text-terracotta-dark">
-                    {w}
-                  </mark>
-                ) : (
-                  <span key={w}> {w} </span>
-                ),
-              )}
+              {pron.phrase.split(' ').map((w, i) => (
+                <span key={i}> {w} </span>
+              ))}
             </p>
             <p className="text-[13px] font-semibold text-ink-soft">{pron.tip}</p>
             <p className="mt-2 text-[13px] font-extrabold text-river">Escuchar · repetir · puntuar todas las frases</p>

@@ -61,6 +61,13 @@ export class ApiError extends Error {
   }
 }
 
+function handleUnauthorized(path: string, status: number) {
+  if (status === 401 && !path.startsWith('/api/auth/')) {
+    setToken(null)
+    if (window.location.pathname !== '/entrar') window.location.assign('/entrar')
+  }
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   const token = getToken()
@@ -78,10 +85,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     throw error
   }
   if (!res.ok) {
-    if (res.status === 401 && !path.startsWith('/api/auth/')) {
-      setToken(null)
-      if (window.location.pathname !== '/entrar') window.location.assign('/entrar')
-    }
+    handleUnauthorized(path, res.status)
     throw new ApiError(res.status, `Request failed: ${res.status} ${path}`)
   }
   return absoluteMediaUrls(await res.json()) as T
@@ -173,26 +177,26 @@ export const api = {
     return withMock(() => request<LessonSummary[]>('/api/lessons'), () => mock.mockLessons())
   },
 
-  getLesson(id: string, variation = 0): Promise<LessonDetail> {
+  getLesson(id: number, variation = 0): Promise<LessonDetail> {
     return withMock(() => request<LessonDetail>(`/api/lessons/${id}?variation=${variation}`), () => mock.mockLesson(id))
   },
 
-  selectLesson(id: string): Promise<{ selected: boolean; lesson_id: number }> {
+  selectLesson(id: number): Promise<{ selected: boolean; lesson_id: number }> {
     return request(`/api/lessons/${id}/select`, { method: 'POST' })
   },
 
-  getAssessment(lessonId: string): Promise<LessonAssessment> {
+  getAssessment(lessonId: number): Promise<LessonAssessment> {
     return withMock(
       () => request<LessonAssessment>(`/api/lessons/${lessonId}/assessment`),
       () => mock.mockAssessment(),
     )
   },
 
-  completeLesson(lessonId: string): Promise<{ saved: boolean; new_completion: boolean; lessons_completed_total: number }> {
+  completeLesson(lessonId: number): Promise<{ saved: boolean; new_completion: boolean; lessons_completed_total: number }> {
     return request(`/api/lessons/${lessonId}/complete`, { method: 'POST' })
   },
 
-  submitAttempt(exerciseId: string, answer: string): Promise<AttemptResult> {
+  submitAttempt(exerciseId: number, answer: string): Promise<AttemptResult> {
     return withMock(
       () =>
         request<AttemptResult>(`/api/exercises/${exerciseId}/attempt`, {
@@ -228,7 +232,10 @@ export const api = {
       headers,
       body: JSON.stringify({ phrase }),
     })
-    if (!response.ok) throw new ApiError(response.status, 'No se pudo cargar el ejemplo de audio')
+    if (!response.ok) {
+      handleUnauthorized('/api/speech/example', response.status)
+      throw new ApiError(response.status, 'No se pudo cargar el ejemplo de audio')
+    }
     return response.blob()
   },
 

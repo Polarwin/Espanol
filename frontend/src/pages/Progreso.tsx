@@ -34,11 +34,12 @@ const FALLBACK_STYLE = { icon: IconPuzzle, bar: 'bg-sun', chip: 'bg-sun-soft tex
 export function Progreso() {
   const [progress, setProgress] = useState<Progress | null>(null)
   const [recap, setRecap] = useState<WeeklyRecap | null>(null)
+  const [recapFailed, setRecapFailed] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
     api.getProgress().then(setProgress).catch(() => setError('No se pudo cargar tu progreso.'))
-    api.getWeeklyRecap().then(setRecap).catch(() => {})
+    api.getWeeklyRecap().then(setRecap).catch(() => setRecapFailed(true))
   }, [])
 
   if (!progress) {
@@ -105,7 +106,7 @@ export function Progreso() {
             </div>
           </div>
           <p className="mt-3 text-[13px] font-semibold text-ink-soft">
-            {recap ? `${recap.lessons_completed} lecciones · ${recap.words_learned} palabras nuevas` : 'Cargando…'}
+            {recap ? `${recap.lessons_completed} lecciones · ${recap.words_learned} palabras nuevas` : recapFailed ? 'No disponible' : 'Cargando…'}
           </p>
         </section>
       </div>

@@ -25,12 +25,16 @@ questions use verbatim sentences as correct options with sentences from
 OTHER articles fetched in the same run as distractors. Nothing is invented.
 """
 
+import json
 import random
 import re
 from html.parser import HTMLParser
+from pathlib import Path
 from typing import Any
 
 import requests
+
+from ..config import settings
 
 LISTING_URL = "https://www.rtve.es/api/noticias.json"
 PAGE_SIZE = 60
@@ -175,7 +179,10 @@ def _cefr_level(article: dict[str, Any]) -> str:
 
 def _grammar_tip(text: str) -> dict[str, str]:
     lower = text.lower()
-    connector = next((c for c in CONNECTORS if c in lower), "que")
+    # Word boundaries: «pero» must not match inside «perro».
+    connector = next(
+        (c for c in CONNECTORS if re.search(rf"\b{re.escape(c)}\b", lower)), "que"
+    )
     return {
         "wrong": "En las noticias en español no se usan conectores.",
         "right": f"Esta noticia usa el conector «{connector}».",
@@ -331,9 +338,13 @@ def _build_lesson(
             }
         )
 
+    # Empty titles fall back to the article id; the id suffix keeps titles
+    # unique even when two articles share a 60-char truncated title (lesson
+    # dedup keys on title).
+    title = article["title"] or f"Artículo {article['id']}"
     return {
         "slug": f"news-{article['id']}",
-        "title": f"Noticias: {_short_title(article['title'])}",
+        "title": f"Noticias: {_short_title(title)} · {article['id']}",
         "cefr_level": _cefr_level(article),
         "topics": ["noticias", _category_tail(article["category"])],
         "source": "rtve",
@@ -363,3 +374,51 @@ def fetch_news_lessons(count: int = 10) -> list[dict[str, Any]]:
         if lesson is not None:
             lessons.append(lesson)
     return lessons
+
+
+# Fetched news lessons are persisted to ``content/news-cache.json`` (tracked
+# in git) so a plain reseed replays them instead of silently shrinking the
+# catalog; the network is only touched when the cache is missing or short.
+
+
+def news_cache_path() -> Path:
+    return Path(settings.content_dir) / "news-cache.json"
+
+
+def load_cached_news_lessons(cache_path: Path | None = None) -> list[dict[str, Any]]:
+    """Read the persisted news lessons; empty list when absent or unreadable."""
+    path = cache_path or news_cache_path()
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    return data if isinstance(data, list) else []
+
+
+def save_news_cache(
+    lessons: list[dict[str, Any]], cache_path: Path | None = None
+) -> None:
+    path = cache_path or news_cache_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(lessons, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def get_news_lessons(
+    count: int = 0, cache_path: Path | None = None
+) -> list[dict[str, Any]]:
+    """Cache-first news lessons for seeding.
+
+    Replays the cache when it holds at least ``count`` lessons (or when
+    ``count`` is 0 — a plain reseed never touches the network); otherwise
+    fetches from RTVE and merges new articles into the cache.
+    """
+    cached = load_cached_news_lessons(cache_path)
+    if len(cached) >= count or count <= 0:
+        return cached
+    fetched = fetch_news_lessons(count)
+    if not fetched:
+        return cached
+    known = {lesson["slug"] for lesson in cached}
+    merged = cached + [lesson for lesson in fetched if lesson["slug"] not in known]
+    save_news_cache(merged, cache_path)
+    return merged

@@ -5,10 +5,12 @@ re-seeds. Run from the project root:
 
     ./bin/python -m backend.app.seed.load
 
-Pass ``--news N`` to additionally fetch N random RTVE news lessons (C1/C2)
-from the network before reseeding.
+Previously fetched RTVE news lessons are replayed from
+``content/news-cache.json``; pass ``--news N`` to top the cache up to N
+lessons from the network before reseeding.
 """
 
+import logging
 import shutil
 import subprocess
 import math
@@ -26,6 +28,8 @@ from ..db import SessionLocal
 from ..models import Attempt, Exercise, Lesson, LessonCompletion, Phrase, Segment, UserState
 from ..services.backup import backup_database
 from .content import LESSONS
+
+logger = logging.getLogger("vamos.seed")
 
 def _run_ffmpeg(args: list[str], out: Path) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -67,10 +71,15 @@ def generate_media(lesson_data: dict, content_root: Path | None = None) -> None:
     lines = [line["es"] for segment in lesson_data["segments"] for line in segment["transcript"]]
     source_video = lesson_data.get("source_video")
     if source_video:
+        # Seed data stores source paths relative to the content dir (portable
+        # across machines); resolve them against the media root at use time.
+        source_path = Path(source_video["path"])
+        if not source_path.is_absolute():
+            source_path = root / source_path
         _run_ffmpeg(
             [
                 "-ss", str(source_video["start"]), "-t", str(source_video["end"] - source_video["start"]),
-                "-i", source_video["path"], "-map", "0:v:0", "-map", "0:a:0",
+                "-i", str(source_path), "-map", "0:v:0", "-map", "0:a:0",
                 "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
                 "-c:a", "aac", "-b:a", "128k", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
             ],
@@ -120,15 +129,20 @@ def wipe(db: Session, remove_media: bool = True) -> None:
     db.flush()
 
 
-def seed_db(db: Session, media: bool = True) -> None:
+def seed_db(db: Session, media: bool = True, lessons: list[dict] | None = None) -> None:
     """Wipe and re-seed all lesson content into the given session.
+
+    ``lessons`` defaults to the import-time LESSONS catalog; callers (e.g.
+    load() adding cached news lessons) pass a combined list instead of
+    mutating the global.
 
     With media=False, only DB rows are written (media paths are still set);
     used by the test suite to avoid invoking ffmpeg.
     """
+    catalog = LESSONS if lessons is None else lessons
     if not media:
         wipe(db, remove_media=False)
-        for lesson_data in LESSONS:
+        for lesson_data in catalog:
             _insert_lesson(db, lesson_data, media=False)
         db.commit()
         return
@@ -138,11 +152,11 @@ def seed_db(db: Session, media: bool = True) -> None:
     with TemporaryDirectory(prefix=".seed-staging-", dir=content_root) as temp_dir:
         staging_root = Path(temp_dir)
         # Finish every fallible download/render before touching DB rows or live media.
-        for lesson_data in LESSONS:
+        for lesson_data in catalog:
             generate_media(lesson_data, staging_root)
 
         wipe(db, remove_media=False)
-        for lesson_data in LESSONS:
+        for lesson_data in catalog:
             _insert_lesson(db, lesson_data, media=False)
         db.flush()
         reconcile_media_timings(db, content_root=staging_root, commit=False)
@@ -180,7 +194,11 @@ def sync_missing_lessons(db: Session, media: bool = True) -> int:
     sync_lesson_enrichment(db, media=media)
     db.commit()
     if media:
-        reconcile_media_timings(db)
+        updated, missing_media = reconcile_media_timings(db)
+        if updated:
+            logger.info("Reconciled media timings for %d lessons", updated)
+        if missing_media:
+            logger.warning("Lessons missing media files: %s", ", ".join(missing_media))
     return len(missing)
 
 
@@ -333,17 +351,18 @@ def _insert_lesson(db: Session, lesson_data: dict, media: bool) -> None:
 
 
 def load(news: int = 0) -> None:
-    if news > 0:
-        from .news_content import fetch_news_lessons
+    from .news_content import get_news_lessons
 
-        news_lessons = fetch_news_lessons(news)
-        # LESSONS is the single catalog both seed_db and sync_missing_lessons
-        # iterate, so the news lessons get the standard insert + media path.
-        LESSONS.extend(news_lessons)
-        print(f"Fetched {len(news_lessons)} news lessons from RTVE")
+    # Cache-first: a plain reseed replays previously fetched news lessons and
+    # never touches the network; --news N tops the cache up to N lessons.
+    news_lessons = get_news_lessons(news)
+    if news_lessons:
+        print(f"Including {len(news_lessons)} RTVE news lessons (content/news-cache.json)")
+    # Seed from a local combined catalog; the module-global LESSONS is never mutated.
+    lessons = [*LESSONS, *news_lessons]
     db = SessionLocal()
     try:
-        seed_db(db, media=True)
+        seed_db(db, media=True, lessons=lessons)
         counts = db.query(Lesson).count(), db.query(Exercise).count()
         print(f"Seeded {counts[0]} lessons and {counts[1]} exercises into {settings.database_url}")
     finally:

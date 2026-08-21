@@ -1,0 +1,1372 @@
+[
+ {
+  "slug": "news-17196070",
+  "title": "Noticias: El tiempo hoy jueves 20 de agosto en España: inestabilidad… · 17196070",
+  "cefr_level": "C2",
+  "topics": [
+   "noticias",
+   "el-tiempo"
+  ],
+  "source": "rtve",
+  "status": "published",
+  "grammar_tip": {
+   "wrong": "En las noticias en español no se usan conectores.",
+   "right": "Esta noticia usa el conector «mientras».",
+   "explanation": "Localiza «mientras» en el texto: los conectores organizan las ideas en la prosa periodística."
+  },
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 113.19,
+    "transcript": [
+     {
+      "es": "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+      "en": ""
+     },
+     {
+      "es": "Cielos muy nubosos predominarán especialmente en el tercio norte, donde se registrarán chubascos localmente fuertes, mientras que en el este del país y el archipiélago balear las precipitaciones irán acompañadas de tormentas de especial intensidad que podrían venir en forma de granizo.",
+      "en": ""
+     },
+     {
+      "es": "En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+      "en": ""
+     },
+     {
+      "es": "Descenso generalizado de las temperaturas y bochorno en la costa .",
+      "en": ""
+     },
+     {
+      "es": "Los valores térmicos experimentarán un descenso generalizado en prácticamente toda la península , una bajada que se notará de forma acusada en las máximas del interior.",
+      "en": ""
+     },
+     {
+      "es": "La excepción a esta caída de los termómetros se localizará en el litoral mediterráneo y Baleares, donde las mínimas seguirán en ascenso para dar paso a noches tropicales por encima de los 20 grados y a máximas diurnas que rebasarán de nuevo los 35 grados.",
+      "en": ""
+     },
+     {
+      "es": "Por su parte, el archipiélago canario mantendrá un escenario más estable , con cielos cubiertos en la vertiente norte de las islas, ambiente despejado en el sur, temperaturas sin cambios significativos y viento alisio moderado.",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "La entrada de un frente de aire frío…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   },
+   {
+    "start": 113.19,
+    "end": 177.38,
+    "transcript": [
+     {
+      "es": "El esperado descenso de las temperaturas puede ayudar a combatir el incendio en la comarca cacereña de Las Hurdes.",
+      "en": ""
+     },
+     {
+      "es": "Este fuego forestal ha obligado a desalojar a unos 700 vecinos de once núcleos de población, y ha quemado al menos 2.200 hectáreas de pinar.",
+      "en": ""
+     },
+     {
+      "es": "El de Las Hurdes es un tipo de incendio que los expertos califican de \"convectivo\".",
+      "en": ""
+     },
+     {
+      "es": "Según ha explicado el vicepresidente extremeño, Abel Bautista, el fuego ha mostrado una virulencia tal que \"ha generado su propia meteorología, su propio viento y su propia temperatura\".",
+      "en": ""
+     },
+     {
+      "es": "Esta liberación masiva de calor ha impedido cualquier ataque directo durante las primeras horas, dejando a los brigadistas a merced de una columna de aire caliente que alimentaba su propio avance.",
+      "en": ""
+     },
+     {
+      "es": "*Sigue las últimas noticias sobre El tiempo y la previsión meteorológica en RTVE.es",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "El esperado descenso de las temperaturas puede ayudar…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "type": "vocabulary",
+    "instructions": "Completa la frase de la noticia con la palabra correcta.",
+    "prompt": "___ muy nubosos predominarán especialmente en el tercio norte, donde se registrarán chubascos localmente fuertes, mientras que en el este del país y el archipiélago balear las precipitaciones irán acompañadas de tormentas de especial intensidad que podrían venir en forma de granizo.",
+    "options": [
+     "cielos",
+     "entrada",
+     "frente"
+    ],
+    "expected_answer": "cielos",
+    "skill_weights": {
+     "vocabulary": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Qué frase aparece en el texto?",
+    "passage": "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares . Cielos muy nubosos predominarán especialmente en el tercio norte, donde se registrarán chubascos localmente fuertes, mientras que en el este del país y el archipiélago balear las precipitaciones irán acompañadas de tormentas de especial intensidad que podrían venir en forma de granizo. En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+    "options": [
+     "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+     "La inflación española es la cuarta más elevada de la zona euro, donde la tasa media ha subido una décima en julio, hasta el 2,9%, por el encarecimiento de la energía, según los últimos datos de Eurostat publicados este miércoles.",
+     "España, con una tasa del 3,9%, se coloca por detrás de Lituania (5,4%), Chipre (4,4%) y Bulgaria (4,4%) y también de Rumanía , si se tiene en cuenta a toda la Unión Europea."
+    ],
+    "expected_answer": "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Cuál de estas afirmaciones es correcta según el texto?",
+    "passage": "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares . Cielos muy nubosos predominarán especialmente en el tercio norte, donde se registrarán chubascos localmente fuertes, mientras que en el este del país y el archipiélago balear las precipitaciones irán acompañadas de tormentas de especial intensidad que podrían venir en forma de granizo. En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+    "options": [
+     "En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+     "Y es que este último es el país donde los precios se están incrementando a un mayor ritmo, del 8,2%.",
+     "El dato rumano triplica la media de los Veintisiete, en el 3%, que también ha sumado una décima de junio a julio."
+    ],
+    "expected_answer": "En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "listening",
+    "instructions": "Escucha el audio y completa la frase.",
+    "prompt": "La ___ de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+    "options": [
+     "entrada",
+     "cielos",
+     "nubosos"
+    ],
+    "expected_answer": "entrada",
+    "audio": true,
+    "audio_text": "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+    "skill_weights": {
+     "listening": 1.0
+    }
+   }
+  ]
+ },
+ {
+  "slug": "news-17195518",
+  "title": "Noticias: La inflación española es la cuarta más elevada de la zona… · 17195518",
+  "cefr_level": "C2",
+  "topics": [
+   "noticias",
+   "economía"
+  ],
+  "source": "rtve",
+  "status": "published",
+  "grammar_tip": {
+   "wrong": "En las noticias en español no se usan conectores.",
+   "right": "Esta noticia usa el conector «no obstante».",
+   "explanation": "Localiza «no obstante» en el texto: los conectores organizan las ideas en la prosa periodística."
+  },
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 79.87,
+    "transcript": [
+     {
+      "es": "La inflación española es la cuarta más elevada de la zona euro, donde la tasa media ha subido una décima en julio, hasta el 2,9%, por el encarecimiento de la energía, según los últimos datos de Eurostat publicados este miércoles.",
+      "en": ""
+     },
+     {
+      "es": "España, con una tasa del 3,9%, se coloca por detrás de Lituania (5,4%), Chipre (4,4%) y Bulgaria (4,4%) y también de Rumanía , si se tiene en cuenta a toda la Unión Europea.",
+      "en": ""
+     },
+     {
+      "es": "Y es que este último es el país donde los precios se están incrementando a un mayor ritmo, del 8,2%.",
+      "en": ""
+     },
+     {
+      "es": "El dato rumano triplica la media de los Veintisiete, en el 3%, que también ha sumado una décima de junio a julio.",
+      "en": ""
+     },
+     {
+      "es": "Por su parte, la tasa española sobresale un punto respecto a la media de la zona euro y nueve décimas de la de la Unión Europea.",
+      "en": ""
+     },
+     {
+      "es": "La inflación más baja registrada en la UE corresponde a Suecia (0,3 %), República Checa (1,3 %), Dinamarca y Hungría (1,6 %).",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "La inflación española es la cuarta más elevada…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   },
+   {
+    "start": 79.87,
+    "end": 147.98000000000002,
+    "transcript": [
+     {
+      "es": "La energía sube el 10% .",
+      "en": ""
+     },
+     {
+      "es": "La inflación en la zona euro ha sumado nueve décimas respecto al mismo mes de 2025, mientras que en la Unión Europea se ha incrementado en seis décimas en el mismo periodo.",
+      "en": ""
+     },
+     {
+      "es": "Como avanzábamos, el encarecimiento de la energía por la crisis en Oriente Medio está detrás del avance generalizado.",
+      "en": ""
+     },
+     {
+      "es": "En concreto, la tasa de inflación de la energía anota un 10,3%, una cifra superior a la de junio, pero ligeramente por debajo del máximo que se alcanzó en abril y mayo, después de que Estados Unidos e Israel lanzaran una guerra contra Irán y este cerrara el estrecho de Ormuz, el 28 de febrero.",
+      "en": ""
+     },
+     {
+      "es": "No obstante, en julio de 2026, los servicios han contribuido especialmente al alza de la inflación general de la zona euro.",
+      "en": ""
+     },
+     {
+      "es": "Su tasa se sitúa en el 3,3%",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "La energía sube el 10% .…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "type": "vocabulary",
+    "instructions": "Completa la frase de la noticia con la palabra correcta.",
+    "prompt": "___, con una tasa del 3,9%, se coloca por detrás de Lituania (5,4%), Chipre (4,4%) y Bulgaria (4,4%) y también de Rumanía , si se tiene en cuenta a toda la Unión Europea.",
+    "options": [
+     "españa",
+     "inflación",
+     "española"
+    ],
+    "expected_answer": "españa",
+    "skill_weights": {
+     "vocabulary": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Qué frase aparece en el texto?",
+    "passage": "La inflación española es la cuarta más elevada de la zona euro, donde la tasa media ha subido una décima en julio, hasta el 2,9%, por el encarecimiento de la energía, según los últimos datos de Eurostat publicados este miércoles. España, con una tasa del 3,9%, se coloca por detrás de Lituania (5,4%), Chipre (4,4%) y Bulgaria (4,4%) y también de Rumanía , si se tiene en cuenta a toda la Unión Europea. Y es que este último es el país donde los precios se están incrementando a un mayor ritmo, del 8,2%.",
+    "options": [
+     "La inflación española es la cuarta más elevada de la zona euro, donde la tasa media ha subido una décima en julio, hasta el 2,9%, por el encarecimiento de la energía, según los últimos datos de Eurostat publicados este miércoles.",
+     "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+     "Cielos muy nubosos predominarán especialmente en el tercio norte, donde se registrarán chubascos localmente fuertes, mientras que en el este del país y el archipiélago balear las precipitaciones irán acompañadas de tormentas de especial intensidad que podrían venir en forma de granizo."
+    ],
+    "expected_answer": "La inflación española es la cuarta más elevada de la zona euro, donde la tasa media ha subido una décima en julio, hasta el 2,9%, por el encarecimiento de la energía, según los últimos datos de Eurostat publicados este miércoles.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Cuál de estas afirmaciones es correcta según el texto?",
+    "passage": "La inflación española es la cuarta más elevada de la zona euro, donde la tasa media ha subido una décima en julio, hasta el 2,9%, por el encarecimiento de la energía, según los últimos datos de Eurostat publicados este miércoles. España, con una tasa del 3,9%, se coloca por detrás de Lituania (5,4%), Chipre (4,4%) y Bulgaria (4,4%) y también de Rumanía , si se tiene en cuenta a toda la Unión Europea. Y es que este último es el país donde los precios se están incrementando a un mayor ritmo, del 8,2%.",
+    "options": [
+     "Y es que este último es el país donde los precios se están incrementando a un mayor ritmo, del 8,2%.",
+     "En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+     "Descenso generalizado de las temperaturas y bochorno en la costa ."
+    ],
+    "expected_answer": "Y es que este último es el país donde los precios se están incrementando a un mayor ritmo, del 8,2%.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "listening",
+    "instructions": "Escucha el audio y completa la frase.",
+    "prompt": "La ___ española es la cuarta más elevada de la zona euro, donde la tasa media ha subido una décima en julio, hasta el 2,9%, por el encarecimiento de la energía, según los últimos datos de Eurostat publicados este miércoles.",
+    "options": [
+     "inflación",
+     "españa",
+     "coloca"
+    ],
+    "expected_answer": "inflación",
+    "audio": true,
+    "audio_text": "La inflación española es la cuarta más elevada de la zona euro, donde la tasa media ha subido una décima en julio, hasta el 2,9%, por el encarecimiento de la energía, según los últimos datos de Eurostat publicados este miércoles.",
+    "skill_weights": {
+     "listening": 1.0
+    }
+   }
+  ]
+ },
+ {
+  "slug": "news-17197209",
+  "title": "Noticias: Hallan en el Archivo Militar de Ávila el que podría ser el… · 17197209",
+  "cefr_level": "C1",
+  "topics": [
+   "noticias",
+   "ávila"
+  ],
+  "source": "rtve",
+  "status": "published",
+  "grammar_tip": {
+   "wrong": "En las noticias en español no se usan conectores.",
+   "right": "Esta noticia usa el conector «según».",
+   "explanation": "Localiza «según» en el texto: los conectores organizan las ideas en la prosa periodística."
+  },
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 62.23,
+    "transcript": [
+     {
+      "es": "Un historiador ha localizado en el Archivo General Militar de Ávila un documento mecanografiado de la Guerra Civil que podría ser el primer proyecto de Estatuto de Autonomía de Asturias .",
+      "en": ""
+     },
+     {
+      "es": "El hallazgo lo ha realizado el historiador y profesor Pablo Martínez Corral , que llevaba años investigando los fondos incautados al Consejo Regional de Asturias y León durante la Guerra Civil.",
+      "en": ""
+     },
+     {
+      "es": "El documento fue encontrado en una caja del archivo y, según el investigador, su importancia se hizo evidente desde el primer momento.",
+      "en": ""
+     },
+     {
+      "es": "El texto está compuesto por 18 artículos y varias disposiciones transitorias .",
+      "en": ""
+     },
+     {
+      "es": "Plantea un territorio autónomo integrado por Asturias, León, Zamora y Salamanca , con instituciones propias, capacidad legislativa, hacienda regional y competencias en materias como sanidad, enseñanza, obras públicas o minería .",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "Un historiador ha localizado en el Archivo General…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   },
+   {
+    "start": 62.23,
+    "end": 108.78,
+    "transcript": [
+     {
+      "es": "El historiador destaca que el proyecto supone una propuesta de autogobierno que iba más allá de lo planteado hasta entonces y que preveía la unión de cuatro provincias .",
+      "en": ""
+     },
+     {
+      "es": "Asturias reclama el documento .",
+      "en": ""
+     },
+     {
+      "es": "El Gobierno del Principado de Asturias ha anunciado que pedirá al Archivo General Militar de Ávila la devolución de los documentos o, al menos, copias de calidad para ponerlas a disposición de historiadores y ciudadanos.",
+      "en": ""
+     },
+     {
+      "es": "El proyecto de autogobierno permaneció durante décadas oculto entre los fondos relacionados con la Guerra Civil y ahora vuelve a salir a la luz en Ávila",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "El historiador destaca que el proyecto supone una…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "type": "vocabulary",
+    "instructions": "Completa la frase de la noticia con la palabra correcta.",
+    "prompt": "El hallazgo lo ha realizado el ___ y profesor Pablo Martínez Corral , que llevaba años investigando los fondos incautados al Consejo Regional de Asturias y León durante la Guerra Civil.",
+    "options": [
+     "historiador",
+     "localizado",
+     "archivo"
+    ],
+    "expected_answer": "historiador",
+    "skill_weights": {
+     "vocabulary": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Qué frase aparece en el texto?",
+    "passage": "Un historiador ha localizado en el Archivo General Militar de Ávila un documento mecanografiado de la Guerra Civil que podría ser el primer proyecto de Estatuto de Autonomía de Asturias . El hallazgo lo ha realizado el historiador y profesor Pablo Martínez Corral , que llevaba años investigando los fondos incautados al Consejo Regional de Asturias y León durante la Guerra Civil. El documento fue encontrado en una caja del archivo y, según el investigador, su importancia se hizo evidente desde el primer momento.",
+    "options": [
+     "Un historiador ha localizado en el Archivo General Militar de Ávila un documento mecanografiado de la Guerra Civil que podría ser el primer proyecto de Estatuto de Autonomía de Asturias .",
+     "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+     "Cielos muy nubosos predominarán especialmente en el tercio norte, donde se registrarán chubascos localmente fuertes, mientras que en el este del país y el archipiélago balear las precipitaciones irán acompañadas de tormentas de especial intensidad que podrían venir en forma de granizo."
+    ],
+    "expected_answer": "Un historiador ha localizado en el Archivo General Militar de Ávila un documento mecanografiado de la Guerra Civil que podría ser el primer proyecto de Estatuto de Autonomía de Asturias .",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Cuál de estas afirmaciones es correcta según el texto?",
+    "passage": "Un historiador ha localizado en el Archivo General Militar de Ávila un documento mecanografiado de la Guerra Civil que podría ser el primer proyecto de Estatuto de Autonomía de Asturias . El hallazgo lo ha realizado el historiador y profesor Pablo Martínez Corral , que llevaba años investigando los fondos incautados al Consejo Regional de Asturias y León durante la Guerra Civil. El documento fue encontrado en una caja del archivo y, según el investigador, su importancia se hizo evidente desde el primer momento.",
+    "options": [
+     "El documento fue encontrado en una caja del archivo y, según el investigador, su importancia se hizo evidente desde el primer momento.",
+     "En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+     "Descenso generalizado de las temperaturas y bochorno en la costa ."
+    ],
+    "expected_answer": "El documento fue encontrado en una caja del archivo y, según el investigador, su importancia se hizo evidente desde el primer momento.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "listening",
+    "instructions": "Escucha el audio y completa la frase.",
+    "prompt": "Un ___ ha localizado en el Archivo General Militar de Ávila un documento mecanografiado de la Guerra Civil que podría ser el primer proyecto de Estatuto de Autonomía de Asturias .",
+    "options": [
+     "historiador",
+     "hallazgo",
+     "realizado"
+    ],
+    "expected_answer": "historiador",
+    "audio": true,
+    "audio_text": "Un historiador ha localizado en el Archivo General Militar de Ávila un documento mecanografiado de la Guerra Civil que podría ser el primer proyecto de Estatuto de Autonomía de Asturias .",
+    "skill_weights": {
+     "listening": 1.0
+    }
+   }
+  ]
+ },
+ {
+  "slug": "news-17197292",
+  "title": "Noticias: La Ertzaintza investiga 14 denuncias de agresión sexual en… · 17197292",
+  "cefr_level": "C1",
+  "topics": [
+   "noticias",
+   "guipúzcoa"
+  ],
+  "source": "rtve",
+  "status": "published",
+  "grammar_tip": {
+   "wrong": "En las noticias en español no se usan conectores.",
+   "right": "Esta noticia usa el conector «según».",
+   "explanation": "Localiza «según» en el texto: los conectores organizan las ideas en la prosa periodística."
+  },
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 74.48,
+    "transcript": [
+     {
+      "es": "La Ertzaintza investiga 14 denuncias por agresiones sexuales ocurridas en una tienda de golosinas de San Sebastián.",
+      "en": ""
+     },
+     {
+      "es": "La cifra de víctimas se ha elevado después de que detuvieran en junio al joven que regentaba el establecimiento como presunto autor de dos delitos de este tipo contra una menor de edad.",
+      "en": ""
+     },
+     {
+      "es": "Las pesquisas comenzaron el 30 de junio, cuando la policía autonómica vasca tuvo conocimiento de dos agresiones sexuales cometidas presuntamente unos días antes (el 25 y 26 de junio).",
+      "en": ""
+     },
+     {
+      "es": "Desde entonces, han prestado declaración un total de 14 personas, que tenían entre 10 y 18 años cuando se produjeron los hechos investigados, según informan las autoridades vascas.",
+      "en": ""
+     },
+     {
+      "es": "El investigado, un español de 22 años, permanece en prisión provisional desde su detención en junio.",
+      "en": ""
+     },
+     {
+      "es": "Algunos de los hechos por los que se le investiga se remontan al 2020, por lo que él mismo sería menor de edad en el momento del presunto delito.",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "La Ertzaintza investiga 14 denuncias por agresiones sexuales…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   },
+   {
+    "start": 74.48,
+    "end": 143.07999999999998,
+    "transcript": [
+     {
+      "es": "La Ertzaintza pide colaboración ciudadana .",
+      "en": ""
+     },
+     {
+      "es": "La Ertzaintza ha pedido colaboración ciudadana ante la posibilidad de que haya más personas afectadas.",
+      "en": ""
+     },
+     {
+      "es": "Las pruebas recabadas hasta ahora, las denuncias recibidas, la declaración de los testigos y otra información aportada relatan hechos de \"especial gravedad\", con naturaleza y modus operandi similar, según ha informado el cuerpo de la policía autonómica.",
+      "en": ""
+     },
+     {
+      "es": "La tienda de golosinas se encuentra en el barrio de Amara , de acuerdo con Efe.",
+      "en": ""
+     },
+     {
+      "es": "\"Aquellas personas que pudieran haber sufrido hechos de naturaleza similar, presuntamente relacionados con el investigado, incluidos aquellos que pudieran haberse producido en años anteriores y que no hubieran sido denunciados en su momento, pueden ponerse en contacto con la Ertzaintza a través de los canales habituales: el teléfono 112 o presencialmente en cualquier Ertzain-etxea\", indica la nota de prensa, que subraya que la investigación sigue abierta",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "La Ertzaintza pide colaboración ciudadana .…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "type": "vocabulary",
+    "instructions": "Completa la frase de la noticia con la palabra correcta.",
+    "prompt": "La cifra de ___ se ha elevado después de que detuvieran en junio al joven que regentaba el establecimiento como presunto autor de dos delitos de este tipo contra una menor de edad.",
+    "options": [
+     "víctimas",
+     "ertzaintza",
+     "investiga"
+    ],
+    "expected_answer": "víctimas",
+    "skill_weights": {
+     "vocabulary": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Qué frase aparece en el texto?",
+    "passage": "La Ertzaintza investiga 14 denuncias por agresiones sexuales ocurridas en una tienda de golosinas de San Sebastián. La cifra de víctimas se ha elevado después de que detuvieran en junio al joven que regentaba el establecimiento como presunto autor de dos delitos de este tipo contra una menor de edad. Las pesquisas comenzaron el 30 de junio, cuando la policía autonómica vasca tuvo conocimiento de dos agresiones sexuales cometidas presuntamente unos días antes (el 25 y 26 de junio).",
+    "options": [
+     "La Ertzaintza investiga 14 denuncias por agresiones sexuales ocurridas en una tienda de golosinas de San Sebastián.",
+     "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+     "Cielos muy nubosos predominarán especialmente en el tercio norte, donde se registrarán chubascos localmente fuertes, mientras que en el este del país y el archipiélago balear las precipitaciones irán acompañadas de tormentas de especial intensidad que podrían venir en forma de granizo."
+    ],
+    "expected_answer": "La Ertzaintza investiga 14 denuncias por agresiones sexuales ocurridas en una tienda de golosinas de San Sebastián.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Cuál de estas afirmaciones es correcta según el texto?",
+    "passage": "La Ertzaintza investiga 14 denuncias por agresiones sexuales ocurridas en una tienda de golosinas de San Sebastián. La cifra de víctimas se ha elevado después de que detuvieran en junio al joven que regentaba el establecimiento como presunto autor de dos delitos de este tipo contra una menor de edad. Las pesquisas comenzaron el 30 de junio, cuando la policía autonómica vasca tuvo conocimiento de dos agresiones sexuales cometidas presuntamente unos días antes (el 25 y 26 de junio).",
+    "options": [
+     "Las pesquisas comenzaron el 30 de junio, cuando la policía autonómica vasca tuvo conocimiento de dos agresiones sexuales cometidas presuntamente unos días antes (el 25 y 26 de junio).",
+     "En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+     "Descenso generalizado de las temperaturas y bochorno en la costa ."
+    ],
+    "expected_answer": "Las pesquisas comenzaron el 30 de junio, cuando la policía autonómica vasca tuvo conocimiento de dos agresiones sexuales cometidas presuntamente unos días antes (el 25 y 26 de junio).",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "listening",
+    "instructions": "Escucha el audio y completa la frase.",
+    "prompt": "La ___ investiga 14 denuncias por agresiones sexuales ocurridas en una tienda de golosinas de San Sebastián.",
+    "options": [
+     "ertzaintza",
+     "víctimas",
+     "elevado"
+    ],
+    "expected_answer": "ertzaintza",
+    "audio": true,
+    "audio_text": "La Ertzaintza investiga 14 denuncias por agresiones sexuales ocurridas en una tienda de golosinas de San Sebastián.",
+    "skill_weights": {
+     "listening": 1.0
+    }
+   }
+  ]
+ },
+ {
+  "slug": "news-17197128",
+  "title": "Noticias: Continúan las labores de extinción del incendio de… · 17197128",
+  "cefr_level": "C2",
+  "topics": [
+   "noticias",
+   "navarra"
+  ],
+  "source": "rtve",
+  "status": "published",
+  "grammar_tip": {
+   "wrong": "En las noticias en español no se usan conectores.",
+   "right": "Esta noticia usa el conector «aunque».",
+   "explanation": "Localiza «aunque» en el texto: los conectores organizan las ideas en la prosa periodística."
+  },
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 76.92999999999999,
+    "transcript": [
+     {
+      "es": "El Servicio de Bomberos de Navarra / Nafarroako Suhiltzaileak ha desplegado un dispositivo que incluye ocho medios aéreos, tanto propios como del estado y varias brigadas que trabajan por tierra.",
+      "en": ""
+     },
+     {
+      "es": "La presidenta Chivite ha visitado este mediodía el puesto de mando avanzado, ubicado en el parque de los bomberos voluntarios de Isaba , donde se ha reunido con representantes municipales y les ha trasmitido un mensaje de tranquilidad respecto a la seguridad de los cascos urbanos.",
+      "en": ""
+     },
+     {
+      "es": "Dispositivo terrestre y 8 medio aéreos .",
+      "en": ""
+     },
+     {
+      "es": "Trabajan en el lugar brigadas de los parques de Cordovilla, Sangüesa y Tafalla , dos BHIF y bomberos voluntarios de Isaba.",
+      "en": ""
+     },
+     {
+      "es": "Asimismo, se ha incorporado al dispositivo una brigada helitransportada y otra terrestre de Aragón, ambas muy experimentadas en el uso de herramientas manuales.",
+      "en": ""
+     },
+     {
+      "es": "En apoyo de los efectivos terrestres se han movilizado 8 medios aéreos.",
+      "en": ""
+     },
+     {
+      "es": "Se trata de tres helicópteros del Gobierno de Navarra y cinco aeronaves del Ministerio para la Transición Ecológica.",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "El Servicio de Bomberos de Navarra / Nafarroako…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   },
+   {
+    "start": 76.92999999999999,
+    "end": 164.14999999999998,
+    "transcript": [
+     {
+      "es": "El incendio está ubicado en una zona forestal densa , situada en una zona de fuerte pendiente ubicada en el entorno de la peña Gazpar.",
+      "en": ""
+     },
+     {
+      "es": "El fuego es de propagación lenta y no comporta riesgo para los cascos urbano, aunque la difícil orografía dificulta las labores del dispositivo de extinción.",
+      "en": ""
+     },
+     {
+      "es": "Por un lado, la fuerte pendiente y la densidad de la vegetación hacen que sea imposible en muchas zonas el acceso con autobombas y líneas de agua, por lo que las labores se ven limitadas a las descargas de agua de los helicópteros y al trabajo con herramienta manual desde el suelo.",
+      "en": ""
+     },
+     {
+      "es": "A lo largo de la tarde de ayer se produjeron en la zona algunas precipitaciones que trajeron una ligera mejora en las condiciones meteorológicas y durante la noche la recuperación de la humedad ha sido buena.",
+      "en": ""
+     },
+     {
+      "es": "El avance del incendio sigue siendo lento , pero su evolución dependerá, en gran medida, de la meteorología.",
+      "en": ""
+     },
+     {
+      "es": "En este sentido, las previsiones para el día de hoy en la zona señalan viento norte en su mayoría y precipitación escasa",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "El incendio está ubicado en una zona forestal…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "type": "vocabulary",
+    "instructions": "Completa la frase de la noticia con la palabra correcta.",
+    "prompt": "La presidenta Chivite ha visitado este mediodía el puesto de mando avanzado, ubicado en el parque de los ___ voluntarios de Isaba , donde se ha reunido con representantes municipales y les ha trasmitido un mensaje de tranquilidad respecto a la seguridad de los cascos urbanos.",
+    "options": [
+     "bomberos",
+     "servicio",
+     "navarra"
+    ],
+    "expected_answer": "bomberos",
+    "skill_weights": {
+     "vocabulary": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Qué frase aparece en el texto?",
+    "passage": "El Servicio de Bomberos de Navarra / Nafarroako Suhiltzaileak ha desplegado un dispositivo que incluye ocho medios aéreos, tanto propios como del estado y varias brigadas que trabajan por tierra. La presidenta Chivite ha visitado este mediodía el puesto de mando avanzado, ubicado en el parque de los bomberos voluntarios de Isaba , donde se ha reunido con representantes municipales y les ha trasmitido un mensaje de tranquilidad respecto a la seguridad de los cascos urbanos. Dispositivo terrestre y 8 medio aéreos .",
+    "options": [
+     "El Servicio de Bomberos de Navarra / Nafarroako Suhiltzaileak ha desplegado un dispositivo que incluye ocho medios aéreos, tanto propios como del estado y varias brigadas que trabajan por tierra.",
+     "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+     "Cielos muy nubosos predominarán especialmente en el tercio norte, donde se registrarán chubascos localmente fuertes, mientras que en el este del país y el archipiélago balear las precipitaciones irán acompañadas de tormentas de especial intensidad que podrían venir en forma de granizo."
+    ],
+    "expected_answer": "El Servicio de Bomberos de Navarra / Nafarroako Suhiltzaileak ha desplegado un dispositivo que incluye ocho medios aéreos, tanto propios como del estado y varias brigadas que trabajan por tierra.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Cuál de estas afirmaciones es correcta según el texto?",
+    "passage": "El Servicio de Bomberos de Navarra / Nafarroako Suhiltzaileak ha desplegado un dispositivo que incluye ocho medios aéreos, tanto propios como del estado y varias brigadas que trabajan por tierra. La presidenta Chivite ha visitado este mediodía el puesto de mando avanzado, ubicado en el parque de los bomberos voluntarios de Isaba , donde se ha reunido con representantes municipales y les ha trasmitido un mensaje de tranquilidad respecto a la seguridad de los cascos urbanos. Dispositivo terrestre y 8 medio aéreos .",
+    "options": [
+     "Dispositivo terrestre y 8 medio aéreos .",
+     "En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+     "Descenso generalizado de las temperaturas y bochorno en la costa ."
+    ],
+    "expected_answer": "Dispositivo terrestre y 8 medio aéreos .",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "listening",
+    "instructions": "Escucha el audio y completa la frase.",
+    "prompt": "El ___ de Bomberos de Navarra / Nafarroako Suhiltzaileak ha desplegado un dispositivo que incluye ocho medios aéreos, tanto propios como del estado y varias brigadas que trabajan por tierra.",
+    "options": [
+     "servicio",
+     "presidenta",
+     "chivite"
+    ],
+    "expected_answer": "servicio",
+    "audio": true,
+    "audio_text": "El Servicio de Bomberos de Navarra / Nafarroako Suhiltzaileak ha desplegado un dispositivo que incluye ocho medios aéreos, tanto propios como del estado y varias brigadas que trabajan por tierra.",
+    "skill_weights": {
+     "listening": 1.0
+    }
+   }
+  ]
+ },
+ {
+  "slug": "news-17197171",
+  "title": "Noticias: El incendio de Pinofranqueado mantiene en alerta al sur de… · 17197171",
+  "cefr_level": "C1",
+  "topics": [
+   "noticias",
+   "salamanca"
+  ],
+  "source": "rtve",
+  "status": "published",
+  "grammar_tip": {
+   "wrong": "En las noticias en español no se usan conectores.",
+   "right": "Esta noticia usa el conector «además».",
+   "explanation": "Localiza «además» en el texto: los conectores organizan las ideas en la prosa periodística."
+  },
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 55.86,
+    "transcript": [
+     {
+      "es": "El incendio declarado en Pinofranqueado, en la comarca cacereña de Las Hurdes, mantiene en alerta al sur de la provincia de Salamanca.",
+      "en": ""
+     },
+     {
+      "es": "Las llamas, que se encuentran a menos de tres kilómetros de Castilla y León, presentan dos frentes que amenazan a las localidades salmantinas de Agallas y Monsagro.",
+      "en": ""
+     },
+     {
+      "es": "El fuego se declaró este martes alrededor de las tres de la tarde y ya ha calcinado unas 1.600 hectáreas.",
+      "en": ""
+     },
+     {
+      "es": "La evolución del incendio ha obligado a evacuar a unas 700 personas de diez núcleos urbanos.",
+      "en": ""
+     },
+     {
+      "es": "Las llamas han avanzado con gran virulencia y, en algunos momentos, han llegado a quedar fuera de capacidad de extinción.",
+      "en": ""
+     },
+     {
+      "es": "Además, se investiga un posible origen intencionado del incendio.",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "El incendio declarado en Pinofranqueado, en la comarca…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   },
+   {
+    "start": 55.86,
+    "end": 113.68,
+    "transcript": [
+     {
+      "es": "Desde Castilla y León se han movilizado medios de extinción para reforzar el operativo y se mantiene la vigilancia especialmente por la proximidad del frente a la provincia de Salamanca y por unas condiciones meteorológicas que siguen siendo adversas para la lucha contra el fuego.",
+      "en": ""
+     },
+     {
+      "es": "La comunidad mantiene así la alerta ante un riesgo de incendios que continúa siendo muy elevado.",
+      "en": ""
+     },
+     {
+      "es": "Movilización para reclamar más medios .",
+      "en": ""
+     },
+     {
+      "es": "Más de 60 colectivos de Castilla y León se movilizarán este viernes para reclamar un cambio en las políticas de prevención y gestión de los incendios forestales.",
+      "en": ""
+     },
+     {
+      "es": "Las organizaciones reivindican una plantilla más estable de bomberos forestales durante todo el año y medidas destinadas a proteger y recuperar el medio rural",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "Desde Castilla y León se han movilizado medios…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "type": "vocabulary",
+    "instructions": "Completa la frase de la noticia con la palabra correcta.",
+    "prompt": "Las ___, que se encuentran a menos de tres kilómetros de Castilla y León, presentan dos frentes que amenazan a las localidades salmantinas de Agallas y Monsagro.",
+    "options": [
+     "llamas",
+     "incendio",
+     "declarado"
+    ],
+    "expected_answer": "llamas",
+    "skill_weights": {
+     "vocabulary": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Qué frase aparece en el texto?",
+    "passage": "El incendio declarado en Pinofranqueado, en la comarca cacereña de Las Hurdes, mantiene en alerta al sur de la provincia de Salamanca. Las llamas, que se encuentran a menos de tres kilómetros de Castilla y León, presentan dos frentes que amenazan a las localidades salmantinas de Agallas y Monsagro. El fuego se declaró este martes alrededor de las tres de la tarde y ya ha calcinado unas 1.600 hectáreas.",
+    "options": [
+     "El incendio declarado en Pinofranqueado, en la comarca cacereña de Las Hurdes, mantiene en alerta al sur de la provincia de Salamanca.",
+     "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+     "Cielos muy nubosos predominarán especialmente en el tercio norte, donde se registrarán chubascos localmente fuertes, mientras que en el este del país y el archipiélago balear las precipitaciones irán acompañadas de tormentas de especial intensidad que podrían venir en forma de granizo."
+    ],
+    "expected_answer": "El incendio declarado en Pinofranqueado, en la comarca cacereña de Las Hurdes, mantiene en alerta al sur de la provincia de Salamanca.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Cuál de estas afirmaciones es correcta según el texto?",
+    "passage": "El incendio declarado en Pinofranqueado, en la comarca cacereña de Las Hurdes, mantiene en alerta al sur de la provincia de Salamanca. Las llamas, que se encuentran a menos de tres kilómetros de Castilla y León, presentan dos frentes que amenazan a las localidades salmantinas de Agallas y Monsagro. El fuego se declaró este martes alrededor de las tres de la tarde y ya ha calcinado unas 1.600 hectáreas.",
+    "options": [
+     "El fuego se declaró este martes alrededor de las tres de la tarde y ya ha calcinado unas 1.600 hectáreas.",
+     "En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+     "Descenso generalizado de las temperaturas y bochorno en la costa ."
+    ],
+    "expected_answer": "El fuego se declaró este martes alrededor de las tres de la tarde y ya ha calcinado unas 1.600 hectáreas.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "listening",
+    "instructions": "Escucha el audio y completa la frase.",
+    "prompt": "El ___ declarado en Pinofranqueado, en la comarca cacereña de Las Hurdes, mantiene en alerta al sur de la provincia de Salamanca.",
+    "options": [
+     "incendio",
+     "llamas",
+     "encuentran"
+    ],
+    "expected_answer": "incendio",
+    "audio": true,
+    "audio_text": "El incendio declarado en Pinofranqueado, en la comarca cacereña de Las Hurdes, mantiene en alerta al sur de la provincia de Salamanca.",
+    "skill_weights": {
+     "listening": 1.0
+    }
+   }
+  ]
+ },
+ {
+  "slug": "news-17196038",
+  "title": "Noticias: El calentamiento sin precedentes de los mares europeos… · 17196038",
+  "cefr_level": "C2",
+  "topics": [
+   "noticias",
+   "sociedad"
+  ],
+  "source": "rtve",
+  "status": "published",
+  "grammar_tip": {
+   "wrong": "En las noticias en español no se usan conectores.",
+   "right": "Esta noticia usa el conector «que».",
+   "explanation": "Localiza «que» en el texto: los conectores organizan las ideas en la prosa periodística."
+  },
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 107.8,
+    "transcript": [
+     {
+      "es": "El cambio climático impulsado por la actividad humana está detrás de las temperaturas superficiales del mar (SST) sin precedentes registradas en las costas europeas, el Atlántico y el Mediterráneo occidental.",
+      "en": ""
+     },
+     {
+      "es": "Un análisis del grupo internacional de científicos World Weather Attribution advierte de que el pasado mes de julio se convirtió en el periodo con las aguas marinas más cálidas jamás registradas a nivel global , alcanzándose en Europa anomalías térmicas de hasta 6 grados Celsius por encima de los valores habituales.",
+      "en": ""
+     },
+     {
+      "es": "Esta drástica alteración de los termómetros marinos está transformando de forma directa la biodiversidad de los ecosistemas acuáticos.",
+      "en": ""
+     },
+     {
+      "es": "Los científicos informan de un desplazamiento masivo de especies hacia latitudes más norteñas en busca de aguas frías, con la consecuente amenaza para la fauna autóctona y la pesca destinada al consumo humano.",
+      "en": ""
+     },
+     {
+      "es": "En regiones como el Reino Unido se ha detectado una inusual proliferación de pulpos o comportamientos anómalos en cetáceos, como delfines alimentándose de medusas ante el descenso poblacional de sus presas habituales, entre ellas la caballa.",
+      "en": ""
+     },
+     {
+      "es": "Asimismo, el calentamiento de los mares traslada sus efectos a la franja terrestre, elevando la temperatura del aire y disparando los niveles de humedad en las regiones costeras.",
+      "en": ""
+     },
+     {
+      "es": "Este fenómeno agrava el estrés térmico sobre la población litoral , especialmente durante las noches, donde la falta de refrescamiento nocturno complica el descanso.",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "El cambio climático impulsado por la actividad humana…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   },
+   {
+    "start": 107.8,
+    "end": 173.95,
+    "transcript": [
+     {
+      "es": "El estudio, elaborado por investigadores de Suiza, Suecia, Estados Unidos, Irlanda y el Reino Unido, subraya la urgencia de estudiar el impacto acelerado de estos episodios de calor extremo en la superficie marina.",
+      "en": ""
+     },
+     {
+      "es": "Medusas en el Cantábrico .",
+      "en": ""
+     },
+     {
+      "es": "El aumento de las temperaturas marinas y lo cambios en la circulación atmosférica se han hecho de nuevo palpable en zonas como la costa cantábrica, donde han vuelto a avistarse este verano medusas.",
+      "en": ""
+     },
+     {
+      "es": "Durante el último lustro, la presencia de carabelas portuguesas se ha intensificado.",
+      "en": ""
+     },
+     {
+      "es": "Sólo en Gijón se localizaron este martes más de 150 ejemplares, lo que obligó a prohibir el baño.",
+      "en": ""
+     },
+     {
+      "es": "El principal riesgo de esta medusa reside sus tentáculos: tienen células urticantes que provocan grandes lesiones en la piel, por lo que recomiendan informarse, vigilar a los niños y avisar a emergencias si aparecen.",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "El estudio, elaborado por investigadores de Suiza, Suecia…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "type": "vocabulary",
+    "instructions": "Completa la frase de la noticia con la palabra correcta.",
+    "prompt": "Un análisis del grupo internacional de científicos World Weather Attribution advierte de que el pasado mes de julio se convirtió en el periodo con las aguas marinas más cálidas jamás ___ a nivel global , alcanzándose en Europa anomalías térmicas de hasta 6 grados Celsius por encima de los valores habituales.",
+    "options": [
+     "registradas",
+     "cambio",
+     "climático"
+    ],
+    "expected_answer": "registradas",
+    "skill_weights": {
+     "vocabulary": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Qué frase aparece en el texto?",
+    "passage": "El cambio climático impulsado por la actividad humana está detrás de las temperaturas superficiales del mar (SST) sin precedentes registradas en las costas europeas, el Atlántico y el Mediterráneo occidental. Un análisis del grupo internacional de científicos World Weather Attribution advierte de que el pasado mes de julio se convirtió en el periodo con las aguas marinas más cálidas jamás registradas a nivel global , alcanzándose en Europa anomalías térmicas de hasta 6 grados Celsius por encima de los valores habituales. Esta drástica alteración de los termómetros marinos está transformando de forma directa la biodiversidad de los ecosistemas acuáticos.",
+    "options": [
+     "El cambio climático impulsado por la actividad humana está detrás de las temperaturas superficiales del mar (SST) sin precedentes registradas en las costas europeas, el Atlántico y el Mediterráneo occidental.",
+     "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+     "Cielos muy nubosos predominarán especialmente en el tercio norte, donde se registrarán chubascos localmente fuertes, mientras que en el este del país y el archipiélago balear las precipitaciones irán acompañadas de tormentas de especial intensidad que podrían venir en forma de granizo."
+    ],
+    "expected_answer": "El cambio climático impulsado por la actividad humana está detrás de las temperaturas superficiales del mar (SST) sin precedentes registradas en las costas europeas, el Atlántico y el Mediterráneo occidental.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Cuál de estas afirmaciones es correcta según el texto?",
+    "passage": "El cambio climático impulsado por la actividad humana está detrás de las temperaturas superficiales del mar (SST) sin precedentes registradas en las costas europeas, el Atlántico y el Mediterráneo occidental. Un análisis del grupo internacional de científicos World Weather Attribution advierte de que el pasado mes de julio se convirtió en el periodo con las aguas marinas más cálidas jamás registradas a nivel global , alcanzándose en Europa anomalías térmicas de hasta 6 grados Celsius por encima de los valores habituales. Esta drástica alteración de los termómetros marinos está transformando de forma directa la biodiversidad de los ecosistemas acuáticos.",
+    "options": [
+     "Esta drástica alteración de los termómetros marinos está transformando de forma directa la biodiversidad de los ecosistemas acuáticos.",
+     "En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+     "Descenso generalizado de las temperaturas y bochorno en la costa ."
+    ],
+    "expected_answer": "Esta drástica alteración de los termómetros marinos está transformando de forma directa la biodiversidad de los ecosistemas acuáticos.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "listening",
+    "instructions": "Escucha el audio y completa la frase.",
+    "prompt": "El ___ climático impulsado por la actividad humana está detrás de las temperaturas superficiales del mar (SST) sin precedentes registradas en las costas europeas, el Atlántico y el Mediterráneo occidental.",
+    "options": [
+     "cambio",
+     "análisis",
+     "internacional"
+    ],
+    "expected_answer": "cambio",
+    "audio": true,
+    "audio_text": "El cambio climático impulsado por la actividad humana está detrás de las temperaturas superficiales del mar (SST) sin precedentes registradas en las costas europeas, el Atlántico y el Mediterráneo occidental.",
+    "skill_weights": {
+     "listening": 1.0
+    }
+   }
+  ]
+ },
+ {
+  "slug": "news-17195895",
+  "title": "Noticias: Estabilizado el nuevo incendio en la Sierra Oeste de Madrid… · 17195895",
+  "cefr_level": "C2",
+  "topics": [
+   "noticias",
+   "comunidad-de-madrid"
+  ],
+  "source": "rtve",
+  "status": "published",
+  "grammar_tip": {
+   "wrong": "En las noticias en español no se usan conectores.",
+   "right": "Esta noticia usa el conector «además».",
+   "explanation": "Localiza «además» en el texto: los conectores organizan las ideas en la prosa periodística."
+  },
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 80.36,
+    "transcript": [
+     {
+      "es": "Un nuevo incendio forestal se ha declarado este miércoles en la Sierra Oeste de Madrid y ha obligado a confinar durante buena parte de la jornada de este miércoles la localidad de Aldea del Fresno y a desalojar varias urbanizaciones en el municipio.",
+      "en": ""
+     },
+     {
+      "es": "Concretamente, han sido desalojadas las urbanizaciones Palomeque, Manga de la Pedrera y Carbajo, y varias viviendas de la urbanización María Elena, según informa el 112.",
+      "en": ""
+     },
+     {
+      "es": "En total, unos 60 vecinos.",
+      "en": ""
+     },
+     {
+      "es": "El cercano municipio de Villamantilla no ha sido confinado , como se había informado anteriormente, pero sus vecinos no pueden dirigirse a Aldea del Fresno.",
+      "en": ""
+     },
+     {
+      "es": "El incendio se ha originado en el kilómetro 52 de la carretera M-510 , y la Comunidad de Madrid declaró la situación operativa 2 del Plan Infoma, ya rebajada a situación operativa 1.",
+      "en": ""
+     },
+     {
+      "es": "Ya en la tarde del miércoles, las autoridades han declarado el incendio estabilizado tras quemar 330 hectáreas .",
+      "en": ""
+     },
+     {
+      "es": "Se han levantado todos los confinamientos y se ha permitido el regreso de los evacuados.",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "Un nuevo incendio forestal se ha declarado este…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   },
+   {
+    "start": 80.36,
+    "end": 147.98000000000002,
+    "transcript": [
+     {
+      "es": "También se han reabierto al tráfico los dos tramos cortados en las carreteras M-507 y M-510.",
+      "en": ""
+     },
+     {
+      "es": "El consejero de Interior y Medio Ambiente, Carlos Novillo , ha afirmado que los trabajos para la extinción continuarán durante la noche, con 17 dotaciones que permanecerán en la zona consolidando el perímetro y refrescando puntos calientes del interior.",
+      "en": ""
+     },
+     {
+      "es": "El operativo está formado por nueve medios aéreos y 33 medios terrestres.",
+      "en": ""
+     },
+     {
+      "es": "En las labores de extinción participan bomberos de la Comunidad de Madrid, bomberos forestales y agentes forestales, además de efectivos de la Unidad Militar de Emergencias (UME) y del Ministerio de Transición Ecológica (MITECO).",
+      "en": ""
+     },
+     {
+      "es": "El puesto de mando se ha habilitado en el campo de fútbol de Villa del Prado.",
+      "en": ""
+     },
+     {
+      "es": "La Sierra Oeste de Madrid ya sufrió el pasado julio un incendio que afectó a 17 municipios y quemó 27.000 hectáreas",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "También se han reabierto al tráfico los dos…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "type": "vocabulary",
+    "instructions": "Completa la frase de la noticia con la palabra correcta.",
+    "prompt": "Concretamente, han sido desalojadas las urbanizaciones Palomeque, Manga de la Pedrera y Carbajo, y ___ viviendas de la urbanización María Elena, según informa el 112.",
+    "options": [
+     "varias",
+     "incendio",
+     "forestal"
+    ],
+    "expected_answer": "varias",
+    "skill_weights": {
+     "vocabulary": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Qué frase aparece en el texto?",
+    "passage": "Un nuevo incendio forestal se ha declarado este miércoles en la Sierra Oeste de Madrid y ha obligado a confinar durante buena parte de la jornada de este miércoles la localidad de Aldea del Fresno y a desalojar varias urbanizaciones en el municipio. Concretamente, han sido desalojadas las urbanizaciones Palomeque, Manga de la Pedrera y Carbajo, y varias viviendas de la urbanización María Elena, según informa el 112. En total, unos 60 vecinos.",
+    "options": [
+     "Un nuevo incendio forestal se ha declarado este miércoles en la Sierra Oeste de Madrid y ha obligado a confinar durante buena parte de la jornada de este miércoles la localidad de Aldea del Fresno y a desalojar varias urbanizaciones en el municipio.",
+     "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+     "Cielos muy nubosos predominarán especialmente en el tercio norte, donde se registrarán chubascos localmente fuertes, mientras que en el este del país y el archipiélago balear las precipitaciones irán acompañadas de tormentas de especial intensidad que podrían venir en forma de granizo."
+    ],
+    "expected_answer": "Un nuevo incendio forestal se ha declarado este miércoles en la Sierra Oeste de Madrid y ha obligado a confinar durante buena parte de la jornada de este miércoles la localidad de Aldea del Fresno y a desalojar varias urbanizaciones en el municipio.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Cuál de estas afirmaciones es correcta según el texto?",
+    "passage": "Un nuevo incendio forestal se ha declarado este miércoles en la Sierra Oeste de Madrid y ha obligado a confinar durante buena parte de la jornada de este miércoles la localidad de Aldea del Fresno y a desalojar varias urbanizaciones en el municipio. Concretamente, han sido desalojadas las urbanizaciones Palomeque, Manga de la Pedrera y Carbajo, y varias viviendas de la urbanización María Elena, según informa el 112. En total, unos 60 vecinos.",
+    "options": [
+     "En total, unos 60 vecinos.",
+     "En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+     "Descenso generalizado de las temperaturas y bochorno en la costa ."
+    ],
+    "expected_answer": "En total, unos 60 vecinos.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "listening",
+    "instructions": "Escucha el audio y completa la frase.",
+    "prompt": "Un nuevo ___ forestal se ha declarado este miércoles en la Sierra Oeste de Madrid y ha obligado a confinar durante buena parte de la jornada de este miércoles la localidad de Aldea del Fresno y a desalojar varias urbanizaciones en el municipio.",
+    "options": [
+     "incendio",
+     "concretamente",
+     "desalojadas"
+    ],
+    "expected_answer": "incendio",
+    "audio": true,
+    "audio_text": "Un nuevo incendio forestal se ha declarado este miércoles en la Sierra Oeste de Madrid y ha obligado a confinar durante buena parte de la jornada de este miércoles la localidad de Aldea del Fresno y a desalojar varias urbanizaciones en el municipio.",
+    "skill_weights": {
+     "listening": 1.0
+    }
+   }
+  ]
+ },
+ {
+  "slug": "news-17195309",
+  "title": "Noticias: Muere a los 74 años Delfín Amaya, miembro del dúo de rumba… · 17195309",
+  "cefr_level": "C1",
+  "topics": [
+   "noticias",
+   "cultura"
+  ],
+  "source": "rtve",
+  "status": "published",
+  "grammar_tip": {
+   "wrong": "En las noticias en español no se usan conectores.",
+   "right": "Esta noticia usa el conector «también».",
+   "explanation": "Localiza «también» en el texto: los conectores organizan las ideas en la prosa periodística."
+  },
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 96.03999999999999,
+    "transcript": [
+     {
+      "es": "Delfín Amaya , miembro del dúo de rumba catalana Los Amaya, junto a su hermano José, con el que popularizó en los años 70 y 80 del pasado siglo canciones como 'Caramelos', 'Vete', 'Qué mala suerte la mía!', 'Mujer' o 'Amor, amor', ha fallecido en Barcelona a los 74 años .",
+      "en": ""
+     },
+     {
+      "es": "Los Amaya, familiares de la famosa bailaora Carmen Amaya , se convirtieron durante su trayectoria en uno de los máximos exponentes de la denominada rumba catalana, el género musical festivo creado por la comunidad gitana de Barcelona, que combina la rumba flamenca con melodías pop y ritmos latinos.",
+      "en": ""
+     },
+     {
+      "es": "Nacido en Oviedo en 1952, Delfín Amaya, que cantaba y tocaba la guitarra, formó junto a su hermano Los Amaya y su combo gitano a finales de los 60 y publicaron su primer disco en 1969 , un repertorio de canciones variadas con acento flamenco.",
+      "en": ""
+     },
+     {
+      "es": "En 1971 se dieron a conocer ante el gran público con la canción 'Caramelos' , año en el que también publicaron 'Ya la pagarás'.",
+      "en": ""
+     },
+     {
+      "es": "En 1978 ficharon por RCA, con Tony Ronald como productor, que impulsó su carrera con temas como 'Vete', 'La inyección', 'Amor, amor' o 'Decirle a ella que vuelva'.",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "Delfín Amaya , miembro del dúo de rumba…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   },
+   {
+    "start": 96.03999999999999,
+    "end": 141.12,
+    "transcript": [
+     {
+      "es": "En 1992 participaron en la ceremonia de clausura de los Juegos Olímpicos de Barcelona , en una actuación en la que compartieron escenario con otros exponentes de la rumba catalana, como Peret y Los Manolos.",
+      "en": ""
+     },
+     {
+      "es": "Fruto de esta colaboración apareció el álbum Rumbas de Clausura, en el que Peret y Los Amaya cantaban las canciones 'Gitana Hechicera', 'Soy la Rumba', 'Una lágrima', 'Borriquito', 'Vete' o 'No se Pué Aguantar'.",
+      "en": ""
+     },
+     {
+      "es": "El último trabajo discográfico del dúo se publicó en 2013 con el título Vuelven...",
+      "en": ""
+     },
+     {
+      "es": "Los Amaya , una recopilación de sus grandes éxitos.",
+      "en": ""
+     }
+    ],
+    "phrases": [
+     {
+      "text": "En 1992 participaron en la ceremonia de clausura…",
+      "translation": "",
+      "tip": "Frase destacada de la noticia."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "type": "vocabulary",
+    "instructions": "Completa la frase de la noticia con la palabra correcta.",
+    "prompt": "Los Amaya, familiares de la famosa bailaora Carmen Amaya , se convirtieron durante su trayectoria en uno de los máximos exponentes de la denominada rumba ___, el género musical festivo creado por la comunidad gitana de Barcelona, que combina la rumba flamenca con melodías pop y ritmos latinos.",
+    "options": [
+     "catalana",
+     "delfín",
+     "miembro"
+    ],
+    "expected_answer": "catalana",
+    "skill_weights": {
+     "vocabulary": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Qué frase aparece en el texto?",
+    "passage": "Delfín Amaya , miembro del dúo de rumba catalana Los Amaya, junto a su hermano José, con el que popularizó en los años 70 y 80 del pasado siglo canciones como 'Caramelos', 'Vete', 'Qué mala suerte la mía!', 'Mujer' o 'Amor, amor', ha fallecido en Barcelona a los 74 años . Los Amaya, familiares de la famosa bailaora Carmen Amaya , se convirtieron durante su trayectoria en uno de los máximos exponentes de la denominada rumba catalana, el género musical festivo creado por la comunidad gitana de Barcelona, que combina la rumba flamenca con melodías pop y ritmos latinos. Nacido en Oviedo en 1952, Delfín Amaya, que cantaba y tocaba la guitarra, formó junto a su hermano Los Amaya y su combo gitano a finales de los 60 y publicaron su primer disco en 1969 , un repertorio de canciones variadas con acento flamenco.",
+    "options": [
+     "Delfín Amaya , miembro del dúo de rumba catalana Los Amaya, junto a su hermano José, con el que popularizó en los años 70 y 80 del pasado siglo canciones como 'Caramelos', 'Vete', 'Qué mala suerte la mía!', 'Mujer' o 'Amor, amor', ha fallecido en Barcelona a los 74 años .",
+     "La entrada de un frente de aire frío por el norte romperá la estabilidad atmosférica este jueves y dejará una jornada de notable inestabilidad en gran parte de la península y Baleares .",
+     "Cielos muy nubosos predominarán especialmente en el tercio norte, donde se registrarán chubascos localmente fuertes, mientras que en el este del país y el archipiélago balear las precipitaciones irán acompañadas de tormentas de especial intensidad que podrían venir en forma de granizo."
+    ],
+    "expected_answer": "Delfín Amaya , miembro del dúo de rumba catalana Los Amaya, junto a su hermano José, con el que popularizó en los años 70 y 80 del pasado siglo canciones como 'Caramelos', 'Vete', 'Qué mala suerte la mía!', 'Mujer' o 'Amor, amor', ha fallecido en Barcelona a los 74 años .",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "reading",
+    "instructions": "Lee el texto y elige la opción correcta.",
+    "prompt": "¿Cuál de estas afirmaciones es correcta según el texto?",
+    "passage": "Delfín Amaya , miembro del dúo de rumba catalana Los Amaya, junto a su hermano José, con el que popularizó en los años 70 y 80 del pasado siglo canciones como 'Caramelos', 'Vete', 'Qué mala suerte la mía!', 'Mujer' o 'Amor, amor', ha fallecido en Barcelona a los 74 años . Los Amaya, familiares de la famosa bailaora Carmen Amaya , se convirtieron durante su trayectoria en uno de los máximos exponentes de la denominada rumba catalana, el género musical festivo creado por la comunidad gitana de Barcelona, que combina la rumba flamenca con melodías pop y ritmos latinos. Nacido en Oviedo en 1952, Delfín Amaya, que cantaba y tocaba la guitarra, formó junto a su hermano Los Amaya y su combo gitano a finales de los 60 y publicaron su primer disco en 1969 , un repertorio de canciones variadas con acento flamenco.",
+    "options": [
+     "Nacido en Oviedo en 1952, Delfín Amaya, que cantaba y tocaba la guitarra, formó junto a su hermano Los Amaya y su combo gitano a finales de los 60 y publicaron su primer disco en 1969 , un repertorio de canciones variadas con acento flamenco.",
+     "En el resto del territorio nacional se mantendrán los intervalos nubosos sin descartar algún chubasco ocasional , con viento moderado e intervalos de rachas muy fuertes en el sureste, el valle del Ebro, Baleares y el mar de Alborán.",
+     "Descenso generalizado de las temperaturas y bochorno en la costa ."
+    ],
+    "expected_answer": "Nacido en Oviedo en 1952, Delfín Amaya, que cantaba y tocaba la guitarra, formó junto a su hermano Los Amaya y su combo gitano a finales de los 60 y publicaron su primer disco en 1969 , un repertorio de canciones variadas con acento flamenco.",
+    "skill_weights": {
+     "reading": 1.0
+    }
+   },
+   {
+    "type": "listening",
+    "instructions": "Escucha el audio y completa la frase.",
+    "prompt": "___ Amaya , miembro del dúo de rumba catalana Los Amaya, junto a su hermano José, con el que popularizó en los años 70 y 80 del pasado siglo canciones como 'Caramelos', 'Vete', 'Qué mala suerte la mía!', 'Mujer' o 'Amor, amor', ha fallecido en Barcelona a los 74 años .",
+    "options": [
+     "delfín",
+     "familiares",
+     "famosa"
+    ],
+    "expected_answer": "delfín",
+    "audio": true,
+    "audio_text": "Delfín Amaya , miembro del dúo de rumba catalana Los Amaya, junto a su hermano José, con el que popularizó en los años 70 y 80 del pasado siglo canciones como 'Caramelos', 'Vete', 'Qué mala suerte la mía!', 'Mujer' o 'Amor, amor', ha fallecido en Barcelona a los 74 años .",
+    "skill_weights": {
+     "listening": 1.0
+    }
+   }
+  ]
+ }
+]

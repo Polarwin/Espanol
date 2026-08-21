@@ -71,7 +71,7 @@ def test_every_unit_has_its_own_conversation(
 ) -> None:
     from backend.app.routers import capabilities
 
-    lessons = client.get("/api/lessons").json()
+    lessons = client.get("/api/lessons", headers=auth_headers).json()
     setups = [
         client.get(
             "/api/conversation/setup",

@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..db import get_db
@@ -34,10 +35,18 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> AuthRes
         interests=payload.interests,
     )
     db.add(user)
-    db.flush()
-    init_skill_progress(db, user)
-    get_or_create_streak(db, user)
-    db.commit()
+    try:
+        # The email pre-check above is not atomic; a concurrent register can
+        # still hit the unique constraint here — answer 409, not a 500.
+        db.flush()
+        init_skill_progress(db, user)
+        get_or_create_streak(db, user)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email already registered"
+        ) from None
     return AuthResponse(token=create_token(user.id), user=UserOut.model_validate(user))
 
 

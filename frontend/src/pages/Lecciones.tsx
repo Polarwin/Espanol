@@ -54,7 +54,7 @@ function LessonCard({ lesson, current = false }: { lesson: CatalogLesson; curren
 
 export function Lecciones() {
   const [lessons, setLessons] = useState<LessonSummary[]>([])
-  const [currentId, setCurrentId] = useState('')
+  const [currentId, setCurrentId] = useState<number | null>(null)
   const [showAll, setShowAll] = useState(false)
   const [level, setLevel] = useState<(typeof LEVELS)[number] | 'Todos'>('Todos')
   const [error, setError] = useState('')
@@ -64,14 +64,14 @@ export function Lecciones() {
     Promise.all([api.getLessons(), api.getTodayPath(), api.getMe()])
       .then(([catalog, today, me]) => {
         setLessons(catalog)
-        setCurrentId(String(today.lesson.id))
+        setCurrentId(today.lesson.id)
         setUser(me)
       })
       .catch(() => setError('No se pudieron cargar las lecciones.'))
   }, [])
 
   const ordered = useMemo(() => curriculum(lessons), [lessons])
-  const currentIndex = Math.max(0, ordered.findIndex((lesson) => String(lesson.id) === currentId))
+  const currentIndex = Math.max(0, ordered.findIndex((lesson) => lesson.id === currentId))
   const windowStart = Math.max(0, Math.min(currentIndex - 1, ordered.length - 3))
   const nearby = ordered.slice(windowStart, windowStart + 3)
   const visibleAll = level === 'Todos' ? ordered : ordered.filter((lesson) => lesson.cefr_level === level)
@@ -95,7 +95,7 @@ export function Lecciones() {
             <button type="button" onClick={() => setShowAll(true)} className="rounded-full border border-river/25 bg-paper px-4 py-2 text-sm font-extrabold text-river shadow-soft">Elegir otra unidad</button>
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {nearby.map((lesson) => <LessonCard key={lesson.id} lesson={lesson} current={String(lesson.id) === currentId} />)}
+            {nearby.map((lesson) => <LessonCard key={lesson.id} lesson={lesson} current={lesson.id === currentId} />)}
           </div>
         </section>
       )}
@@ -112,7 +112,7 @@ export function Lecciones() {
           </div>
           <p className="mt-3 font-semibold text-ink-soft">Elige libremente entre las {visibleAll.length} unidades disponibles.</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {visibleAll.map((lesson) => <LessonCard key={lesson.id} lesson={lesson} current={String(lesson.id) === currentId} />)}
+            {visibleAll.map((lesson) => <LessonCard key={lesson.id} lesson={lesson} current={lesson.id === currentId} />)}
           </div>
         </section>
       )}

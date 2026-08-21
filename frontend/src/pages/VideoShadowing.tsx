@@ -24,7 +24,7 @@ export function VideoShadowing() {
 
   useEffect(() => {
     if (!lessonId) return
-    api.getLesson(lessonId).then(setLesson).catch(() => setError('No se pudo cargar el vídeo.'))
+    api.getLesson(Number(lessonId)).then(setLesson).catch(() => setError('No se pudo cargar el vídeo.'))
   }, [lessonId])
 
   const cues = useMemo(() => lesson?.segments.flatMap((segment) => {
@@ -79,7 +79,8 @@ export function VideoShadowing() {
     await playCue(cues[nextIndex])
   }
 
-  if (!lesson || !cue) return <div className="p-6 font-semibold text-ink-soft">{error || 'Preparando el vídeo para repetir…'}</div>
+  if (!lesson) return <div className="p-6 font-semibold text-ink-soft">{error || 'Preparando el vídeo para repetir…'}</div>
+  if (!cue) return <div className="p-6 font-semibold text-ink-soft">Esta lección no tiene frases para practicar todavía.</div>
   const recording = state === 'recording'
 
   return <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8 sm:py-8">

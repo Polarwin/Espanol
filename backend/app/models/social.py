@@ -6,6 +6,7 @@ from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..db import Base
+from ..services.time import utc_now
 
 
 class Group(Base):
@@ -25,7 +26,7 @@ class GroupMember(Base):
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     role: Mapped[str] = mapped_column(default="member")  # "owner" | "member"
-    joined_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    joined_at: Mapped[datetime] = mapped_column(default=utc_now)
 
 
 class GroupGoal(Base):
@@ -47,4 +48,4 @@ class Encouragement(Base):
     from_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     to_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     message: Mapped[str]
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=utc_now)

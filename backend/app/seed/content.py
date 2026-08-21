@@ -22,7 +22,7 @@ LESSONS: list[dict[str, Any]] = [
         "source": "video-library",
         "status": "published",
         "source_video": {
-            "path": "/srv/files/ytwatcher/Espanol/10 Natural Spanish Conversations for Beginners (A1–A2) ｜ Discussing Weekend Plans [NzqskjXnd5E].webm",
+            "path": "sources/weekend-plans.webm",
             "start": 0.6,
             "end": 162.7,
         },

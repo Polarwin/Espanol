@@ -47,6 +47,13 @@ export function VideoPlayer({ src, subtitle, cues, startTime, endTime, fallbackD
     ? src.replace(/video\.mp4(?:\?.*)?$/, 'poster.png')
     : undefined
 
+  // Reset playback state when the source changes so a previous clip's
+  // time/duration never bleeds into the next one.
+  useEffect(() => {
+    setTime(startTime ?? 0)
+    setDuration(fallbackDuration)
+  }, [src, startTime, fallbackDuration])
+
   // Simulated clock for the placeholder (no media available in mock mode).
   useEffect(() => {
     if (!playing || hasVideo) return
@@ -148,14 +155,7 @@ export function VideoPlayer({ src, subtitle, cues, startTime, endTime, fallbackD
           {playing ? <IconPause size={16} /> : <IconPlay size={16} />}
         </button>
         <button onClick={() => setMuted((value) => !value)} aria-label={muted ? 'Activar sonido' : 'Silenciar'} className={`hidden sm:block ${muted ? 'text-terracotta' : 'text-paper/80'}`}><IconVolume size={17} /></button>
-        <button
-          className="group relative h-4 flex-1 cursor-pointer"
-          aria-label="Barra de progreso"
-          onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect()
-            seek((e.clientX - rect.left) / rect.width)
-          }}
-        >
+        <div className="group relative h-4 flex-1">
           <div className="absolute inset-y-[6px] w-full rounded-full bg-white/25" />
           <div
             className="absolute inset-y-[6px] rounded-full bg-terracotta"
@@ -165,7 +165,17 @@ export function VideoPlayer({ src, subtitle, cues, startTime, endTime, fallbackD
             className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-paper shadow"
             style={{ left: `${progress * 100}%` }}
           />
-        </button>
+          <input
+            type="range"
+            min={0}
+            max={Math.max(duration, 1)}
+            step={0.1}
+            value={time}
+            onChange={(e) => seek(Number(e.target.value) / Math.max(duration, 1))}
+            aria-label="Barra de progreso"
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
+        </div>
         <span className="hidden text-[11px] font-semibold tabular-nums text-paper/85 sm:inline">
           {formatTime(time)} / {formatTime(duration)}
         </span>

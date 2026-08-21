@@ -72,10 +72,10 @@ systemctl --user restart vamos-api.service vamos-web.service vamos-web-https.ser
   changes). Production paths are configured with `VAMOS_TLS_CERT` and
   `VAMOS_TLS_KEY` in the unit.
 
-Smoke test after restart:
+Smoke test after restart (`/api/lessons` requires auth, so 401 means up):
 
 ```bash
-curl -s http://127.0.0.1:8011/api/lessons | python -c "import json,sys; print(len(json.load(sys.stdin())))"
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8011/api/lessons
 ```
 
 ## Content seeding
@@ -91,11 +91,16 @@ curl -s http://127.0.0.1:8011/api/lessons | python -c "import json,sys; print(le
   cut) generates `backend/app/seed/video_lessons_c.py`. `content/sources/` is
   git-ignored — a fresh clone must re-run `video_fetch` before seeding those
   lessons. Preview clips land in `content/seed/video-c*/video.mp4`.
+  `source_video` paths in seed data are **relative to the content dir**
+  (e.g. `sources/companion-c1-individuo.mp4`); `load.py` resolves them at
+  seed time — never commit absolute machine-specific paths.
 - Non-destructive load: `sync_missing_lessons(db, media=True)` in
   `backend/app/seed/load.py`. Full wipe/reseed: `./bin/python -m backend.app.seed.load`
-  (needs network for gTTS and ffmpeg for video rendering). Add `--news N` to
-  also fetch N random RTVE news lessons (C1/C2, built by
-  `backend/app/seed/news_content.py`); default 0 never touches the network.
-  Dedup keys on lesson **title**, so news titles are deterministic per article.
+  (needs network for gTTS and ffmpeg for video rendering). RTVE news lessons
+  (C1/C2, built by `backend/app/seed/news_content.py`) are cached in
+  `content/news-cache.json` (tracked in git): reseeds replay the cache, and
+  `--news N` tops it up to N lessons from the network — default 0 never
+  touches the network. Dedup keys on lesson **title**, so news titles are
+  deterministic per article (and carry the article id).
 - `SessionLocal` runs with `autoflush=False` — flush explicitly before any
   dedup-by-query logic.

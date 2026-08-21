@@ -69,10 +69,25 @@ def build_recap(db: Session, user: User, today: date | None = None) -> dict:
     )
     lessons_completed = lessons_goal.current if lessons_goal else 0
 
+    # One bulk fetch instead of a per-attempt db.get(Exercise, …).
+    exercises_by_id = (
+        {
+            exercise.id: exercise
+            for exercise in db.scalars(
+                select(Exercise).where(
+                    Exercise.id.in_({a.exercise_id for a in attempts})
+                )
+            )
+        }
+        if attempts
+        else {}
+    )
     vocab_exercise_ids = {
         a.exercise_id
         for a in attempts
-        if a.correct and (db.get(Exercise, a.exercise_id) or Exercise()) .type == "vocabulary"
+        if a.correct
+        and (exercise := exercises_by_id.get(a.exercise_id)) is not None
+        and exercise.type == "vocabulary"
     }
     words_learned = len(vocab_exercise_ids)
 

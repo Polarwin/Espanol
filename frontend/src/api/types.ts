@@ -44,7 +44,7 @@ export interface AuthResponse {
 export type LoopStep = 'mira' | 'escucha' | 'comprueba' | 'habla' | 'adapta' | 'conversa'
 
 export interface LessonRef {
-  id: string
+  id: number
   title: string
   cefr_level: string
   topics: string[]
@@ -68,7 +68,7 @@ export interface GrammarTip {
 }
 
 export interface NextSuggestion {
-  lesson_id: string | number | null
+  lesson_id: number | null
   label: string
   description: string
   topics: string[]
@@ -108,7 +108,7 @@ export interface TodayPath {
 }
 
 export interface LessonSummary {
-  id: string
+  id: number
   title: string
   cefr_level: string
   topics: string[]
@@ -122,7 +122,7 @@ export interface TranscriptLine {
 }
 
 export interface Phrase {
-  id: string
+  id: number
   text: string
   translation: string
 }
@@ -135,7 +135,7 @@ export interface VocabularyItem {
 }
 
 export interface LessonSegment {
-  id: string
+  id: number
   index: number
   video_url: string
   start_seconds: number
@@ -145,7 +145,7 @@ export interface LessonSegment {
 }
 
 export interface LessonDetail {
-  id: string
+  id: number
   title: string
   cefr_level: string
   topics: string[]
@@ -163,7 +163,7 @@ export interface LessonDetail {
 export type ExerciseType = 'vocabulary' | 'grammar' | 'reading' | 'writing' | 'listening'
 
 export interface Exercise {
-  id: string
+  id: number
   prompt: string
   /** reading text shown above the question (reading exercises only) */
   passage?: string | null

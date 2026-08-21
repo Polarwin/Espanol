@@ -467,7 +467,8 @@ def build_lesson(spec: dict[str, Any], window: dict[str, Any], source: Path,
         "slug": slug, "title": f"{spec['title']} · Vídeo",
         "cefr_level": spec["level"], "topics": list(spec["topics"]),
         "source": "video-library", "status": "published",
-        "source_video": {"path": str(source.resolve()), "start": start, "end": end},
+        # Relative to the content dir (portable); load.py resolves it at seed time.
+        "source_video": {"path": f"sources/{source.name}", "start": start, "end": end},
         "grammar_tip": {
             "wrong": spec["wrong"], "right": spec["right"],
             "explanation": spec["explanation"],

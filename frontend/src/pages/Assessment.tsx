@@ -49,9 +49,9 @@ export function Assessment() {
   const questionPanelRef = useRef<HTMLElement | null>(null)
   const { lessonId } = useParams()
   const [assessment, setAssessment] = useState<LessonAssessment | null>(null)
-  const [lessonTitle, setLessonTitle] = useState('Charla con vecinos')
-  const [cefr, setCefr] = useState('A2')
-  const [currentLessonId, setCurrentLessonId] = useState('')
+  const [lessonTitle, setLessonTitle] = useState('')
+  const [cefr, setCefr] = useState('')
+  const [currentLessonId, setCurrentLessonId] = useState(0)
   const [progress, setProgress] = useState<Record<string, GroupProgress>>({})
   const [groupIndex, setGroupIndex] = useState(0)
   const [exerciseIndex, setExerciseIndex] = useState(0)
@@ -65,11 +65,11 @@ export function Assessment() {
     let cancelled = false
     async function load() {
       try {
-        const id = lessonId ?? (await api.getTodayPath()).lesson.id
+        const id = lessonId ? Number(lessonId) : (await api.getTodayPath()).lesson.id
         const [a, lesson] = await Promise.all([api.getAssessment(id), api.getLesson(id)])
         if (cancelled) return
         setAssessment(a)
-        setCurrentLessonId(String(id))
+        setCurrentLessonId(id)
         setProgress(emptyProgress(a))
         setLessonTitle(lesson.title)
         setCefr(lesson.cefr_level)

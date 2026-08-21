@@ -11,6 +11,13 @@ from backend.app.config import Settings
 from backend.app.models import Lesson, LessonCompletion
 from backend.app.seed.load import wipe
 from backend.app.services.backup import backup_database_path
+from backend.app.services.security import hash_password, verify_password
+
+# Generated with passlib's pbkdf2_sha256.hash("test-password") before passlib
+# was removed from the dependencies — existing users carry hashes like this.
+LEGACY_PASSLIB_HASH = (
+    "$pbkdf2-sha256$29000$VEoJoZTy/n8vhTAmJERISQ$Ipb/EJocGgXAnWNXnrvz2PncVwrcR7XQJgrKhjPLz7M"
+)
 
 
 def test_production_rejects_committed_development_secret() -> None:
@@ -36,3 +43,23 @@ def test_wipe_removes_stale_lesson_completions(db_session: Session) -> None:
     db_session.flush()
     wipe(db_session, remove_media=False)
     assert db_session.scalar(select(func.count()).select_from(LessonCompletion)) == 0
+
+
+def test_legacy_passlib_hash_still_verifies() -> None:
+    assert verify_password("test-password", LEGACY_PASSLIB_HASH)
+    assert not verify_password("wrong-password", LEGACY_PASSLIB_HASH)
+
+
+def test_new_hashes_verify_and_reject_wrong_passwords() -> None:
+    hashed = hash_password("una-clave-segura")
+    assert hashed.startswith("vamos-pbkdf2$29000$")
+    assert hashed != hash_password("una-clave-segura")  # fresh salt per hash
+    assert verify_password("una-clave-segura", hashed)
+    assert not verify_password("otra-clave", hashed)
+
+
+def test_verify_password_tolerates_malformed_hashes() -> None:
+    assert not verify_password("x", "")
+    assert not verify_password("x", "not-a-hash")
+    assert not verify_password("x", "vamos-pbkdf2$notanumber$$")
+    assert not verify_password("x", "$pbkdf2-sha256$29000$***$%%%")
