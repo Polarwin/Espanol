@@ -78,6 +78,15 @@ Smoke test after restart (`/api/lessons` requires auth, so 401 means up):
 curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8011/api/lessons
 ```
 
+## Access over Tailscale
+
+`tailscale serve` (persistent, tailnet-only) proxies the web service with a real
+Let's Encrypt cert: `https://alicebob.tail352b02.ts.net:8443` →
+`http://127.0.0.1:5173`. Use this from phones on the tailnet — the bare
+Tailscale IP can't get a trusted cert (the mkcert HTTPS service on 5174 covers
+it but needs the mkcert root CA installed on each device). Manage with
+`tailscale serve status`; changes need sudo unless the operator is set.
+
 ## Content seeding
 
 - Lessons are authored Python dicts in `backend/app/seed/` (`content.py`,
