@@ -23,6 +23,46 @@ class Settings(BaseSettings):
     watch_dir: Path = Path("/srv/files/ytwatcher/Espanol")
     vitamina_dir: Path = PROJECT_ROOT / "Vitamina"
 
+    ai_enabled: bool = False
+    ai_cloud_enabled: bool = False
+    ai_conversation_adapter: str = "openai_compatible"
+    ai_conversation_url: str = "http://127.0.0.1:8349/v1"
+    ai_conversation_model: str = "SmolLM3-Q4_K_M.gguf"
+    ai_conversation_key_env: str = ""
+    ai_conversation_local: bool = True
+    ai_correction_adapter: str = "barto"
+    ai_correction_url: str = "http://127.0.0.1:8351"
+    ai_correction_model: str = "SkitCon/gec-spanish-BARTO-SYNTHETIC"
+    ai_correction_key_env: str = ""
+    ai_correction_local: bool = True
+
+    @model_validator(mode="after")
+    def validate_ai(self) -> "Settings":
+        from urllib.parse import urlparse
+        import os
+        for task in ("conversation", "correction"):
+            adapter = getattr(self, f"ai_{task}_adapter")
+            allowed = {"openai_compatible", "openai_responses", "anthropic"}
+            if task == "correction":
+                allowed.add("barto")
+            if adapter not in allowed:
+                raise ValueError(f"Unsupported {task} provider")
+            url = urlparse(getattr(self, f"ai_{task}_url"))
+            if url.scheme not in {"http", "https"} or not url.hostname or url.username or url.password:
+                raise ValueError(f"Invalid {task} URL")
+            if self.ai_enabled:
+                local = getattr(self, f"ai_{task}_local")
+                if local and url.hostname not in {"localhost", "127.0.0.1", "::1"}:
+                    raise ValueError("Local AI must use a loopback gateway")
+                if not local and not self.ai_cloud_enabled:
+                    raise ValueError("Cloud AI is disabled")
+                if not local and url.scheme != "https":
+                    raise ValueError("Cloud AI requires HTTPS")
+                key_env = getattr(self, f"ai_{task}_key_env")
+                if not local and (not key_env or not os.environ.get(key_env)):
+                    raise ValueError("Cloud AI needs a configured API key environment variable")
+        return self
+
     whisper_model: str = "small"
     whisper_device: str = "cpu"
     whisper_compute_type: str = "int8"

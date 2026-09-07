@@ -1,6 +1,7 @@
 """Exercise attempt schemas."""
 
 from pydantic import BaseModel, Field
+from ..services.ai.contracts import Correction
 
 
 class AttemptRequest(BaseModel):
@@ -17,3 +18,4 @@ class AttemptResponse(BaseModel):
     score: float
     feedback: str
     skill_updates: list[SkillUpdate]
+    correction: Correction | None = None

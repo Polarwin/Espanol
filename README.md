@@ -2,6 +2,10 @@
 
 Adaptive Spanish learning application with a FastAPI backend and React frontend.
 
+AI setup and provider switching: [operations guide](design/ai-operations.md).
+
+AI integration instructions: [conversation and writing providers](design/ai-conversation-writing-guide.md).
+
 ## Setup
 
 ```bash

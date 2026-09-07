@@ -3,7 +3,7 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/review", tags=["review"])
 
 
 class ReviewAnswer(BaseModel):
-    answer: str
+    answer: str = Field(max_length=2000)
 
 
 def _out(item: ReviewItem) -> dict:
@@ -66,6 +66,7 @@ def answer_review(
             status_code=status.HTTP_409_CONFLICT,
             detail="Este repaso aún no toca; vuelve cuando llegue su fecha.",
         )
+    correction = None
     exercise_id = (item.content or {}).get("exercise_id")
     exercise = db.get(Exercise, exercise_id) if exercise_id else None
     if exercise is None:
@@ -73,9 +74,11 @@ def answer_review(
         correct = payload.answer.strip().casefold() == str(expected).strip().casefold()
         feedback = "¡Correcto!" if correct else f"La respuesta correcta es: {expected}"
     else:
+        db.commit()  # Release the read transaction before optional model inference.
         result = score_attempt(exercise, payload.answer)
         correct, feedback = result.correct, result.feedback
+        correction = result.correction
         apply_skill_deltas(db, user, result.deltas)
     record_result(db, item, 5 if correct else 1)
     db.commit()
-    return {"correct": correct, "feedback": feedback, "next_due": item.due_date.isoformat()}
+    return {"correct": correct, "feedback": feedback, "next_due": item.due_date.isoformat(), "correction": correction.model_dump() if correction else None}

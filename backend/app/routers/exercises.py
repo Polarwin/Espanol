@@ -27,6 +27,7 @@ def post_attempt(
     if exercise is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found")
 
+    db.commit()  # Release the read transaction before optional model inference.
     result = score_attempt(exercise, payload.answer)
     already_scored = db.scalar(
         select(Attempt.id).where(
@@ -57,5 +58,6 @@ def post_attempt(
         correct=result.correct,
         score=result.score,
         feedback=result.feedback,
+        correction=result.correction,
         skill_updates=[SkillUpdate.model_validate(u) for u in updates],
     )

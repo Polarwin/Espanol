@@ -1,0 +1,15 @@
+[Unit]
+Description=Vamos local Spanish sentence correction
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Projects/Espanol
+ExecStart=%h/Projects/Espanol/.local-models/spanish-barto/venv/bin/python tools/spanish-barto/worker.py
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

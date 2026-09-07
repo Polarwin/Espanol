@@ -191,7 +191,16 @@ export interface SkillUpdate {
   delta: number
 }
 
+export interface WritingCorrection {
+  status: 'suggestions' | 'no_suggestion' | 'partial' | 'unavailable'
+  original: string
+  suggested: string | null
+  processed: number
+  skipped: number
+}
+
 export interface AttemptResult {
+  correction?: WritingCorrection | null
   correct: boolean
   score: number
   feedback: string
@@ -209,6 +218,7 @@ export interface ReviewItem {
 }
 
 export interface ReviewResult {
+  correction?: WritingCorrection | null
   correct: boolean
   feedback: string
   next_due: string
@@ -227,6 +237,9 @@ export interface PronunciationResult {
 }
 
 export interface ConversationResult {
+  writing_correction?: WritingCorrection | null
+  session_id?: string
+  fallback?: boolean
   transcript: string
   reply: string
   feedback: string
@@ -242,6 +255,7 @@ export interface ConversationResult {
 }
 
 export interface ConversationSetup {
+  session_id?: string
   lesson_id: number
   title: string
   cefr_level: string

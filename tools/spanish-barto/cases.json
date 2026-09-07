@@ -1,0 +1,20 @@
+[
+ {"id":"age","kind":"error","text":"Soy veinte años.","expected":"Tengo veinte años."},
+ {"id":"gustar","kind":"error","text":"Me gusta las películas españolas.","expected":"Me gustan las películas españolas."},
+ {"id":"age_and_gustar","kind":"error","text":"Soy veinte años y me gusta las películas españolas.","expected":"Tengo veinte años y me gustan las películas españolas."},
+ {"id":"past_tense","kind":"diagnostic","text":"Ayer voy al mercado y compro dos manzanas.","expected":"Ayer fui al mercado y compré dos manzanas."},
+ {"id":"counterfactual","kind":"error","text":"Si habría sabido que el tren se retrasaba, habría salido más tarde de casa.","expected":"Si hubiera sabido que el tren se retrasaba, habría salido más tarde de casa."},
+ {"id":"agreement","kind":"error","text":"La casa es muy bonito.","expected":"La casa es muy bonita."},
+ {"id":"subject_verb","kind":"error","text":"Mis amigos vive en Madrid.","expected":"Mis amigos viven en Madrid."},
+ {"id":"ser_estar","kind":"error","text":"Soy de acuerdo contigo.","expected":"Estoy de acuerdo contigo."},
+ {"id":"model_card_1","kind":"error","text":"Yo va al tienda.","expected":"Yo voy a la tienda."},
+ {"id":"model_card_2","kind":"error","text":"Espero que tú ganas.","expected":"Espero que tú ganes."},
+ {"id":"valid_depende","kind":"correct","text":"Depende de que tengamos tiempo."},
+ {"id":"valid_ojala","kind":"correct","text":"Ojalá hubiera más trenes los domingos."},
+ {"id":"valid_regional","kind":"correct","text":"Hoy fui al mercado y compré unas frutillas para mis amigos."},
+ {"id":"valid_age_gustar","kind":"correct","text":"Tengo veinte años y me gustan las películas españolas."},
+ {"id":"valid_counterfactual","kind":"correct","text":"Si hubiera sabido que el tren se retrasaba, habría salido más tarde de casa."},
+ {"id":"valid_hambre","kind":"correct","text":"Tengo hambre."},
+ {"id":"valid_simple","kind":"correct","text":"Me llamo Ana y vivo en Valencia."},
+ {"id":"off_topic","kind":"correct","text":"Los elefantes comen plantas y tienen orejas grandes."}
+]

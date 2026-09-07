@@ -1,0 +1,61 @@
+{
+  "manifest": {
+    "model": "flax-community/spanish-t5-small",
+    "revision": "37a7d1ce23d20605a705b098e9ef705d8a3e9b2a"
+  },
+  "load_seconds": 0.375,
+  "device": "cpu",
+  "threads": 4,
+  "decoding": "greedy",
+  "max_new_tokens": 64,
+  "results": [
+    {
+      "input": "Soy <extra_id_0> años.",
+      "output": "yo.",
+      "raw_output": "<pad><extra_id_0>yo.</s>",
+      "seconds": 0.069,
+      "generated_tokens": 5,
+      "ended_with_eos": true
+    },
+    {
+      "input": "Tengo veinte años y me <extra_id_0> las películas españolas.",
+      "output": "aaaay meaaay mey españolas.",
+      "raw_output": "<pad><extra_id_0>a<extra_id_1>a<extra_id_2>a<extra_id_3>a<extra_id_4>y me<extra_id_5>a<extra_id_6>a<extra_id_7>a<extra_id_8>y me<extra_id_9>y<extra_id_10> españolas.</s>",
+      "seconds": 0.377,
+      "generated_tokens": 27,
+      "ended_with_eos": true
+    },
+    {
+      "input": "Corrige la gramática: Soy veinte años y me gusta las películas españolas.",
+      "output": "gramáticapoesía: soy veintegramática: soy quince años.",
+      "raw_output": "<pad><extra_id_0><extra_id_1>gramática<extra_id_2>poesía: soy veinte<extra_id_3>gramática: soy quince años.</s>",
+      "seconds": 0.227,
+      "generated_tokens": 16,
+      "ended_with_eos": true
+    },
+    {
+      "input": "Corrige la gramática: Ayer voy al mercado y compro dos manzanas.",
+      "output": "gramática:gramáticagramática:gramática:al mercado y compro dos manzanas.",
+      "raw_output": "<pad><extra_id_0> gramática:<extra_id_1>gramática<extra_id_2>gramática:<extra_id_3>gramática:<extra_id_4>al mercado y compro dos manzanas.</s>",
+      "seconds": 0.334,
+      "generated_tokens": 24,
+      "ended_with_eos": true
+    },
+    {
+      "input": "Corrige la gramática: Depende de que tengamos tiempo.",
+      "output": "gramática: depende degramáticaagramática: depende de que tengamos tiempo.",
+      "raw_output": "<pad><extra_id_0>gramática: depende de<extra_id_1>gramática<extra_id_2>a<extra_id_3>gramática: depende de que tengamos tiempo.</s>",
+      "seconds": 0.266,
+      "generated_tokens": 19,
+      "ended_with_eos": true
+    },
+    {
+      "input": "Cliente: Quiero un café con leche de soja. Camarera:",
+      "output": "soja. camarera:: quiero un café con leche de soja. camareracamarera: quiero un café con leche de soja. camarera: quiero un café con leche de soja. camarera: quiero un café con leche de soja. camarera:",
+      "raw_output": "<pad><extra_id_0> soja. camarera:<extra_id_1>: quiero un café con leche de soja. camarera<extra_id_2>camarera: quiero un café con leche de soja. camarera: quiero un café con leche de soja. camarera: quiero un café con leche de soja. camarera:",
+      "seconds": 0.895,
+      "generated_tokens": 64,
+      "ended_with_eos": false
+    }
+  ]
+}

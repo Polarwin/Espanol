@@ -244,11 +244,14 @@ export const api = {
     return request<ConversationSetup>(`/api/conversation/setup${query}`)
   },
 
-  respondToConversation(turn: number, audio: Blob, lessonId?: number): Promise<ConversationResult> {
+  respondToConversation(turn: number, audio: Blob | null, lessonId?: number, sessionId?: string, requestId?: string, text?: string): Promise<ConversationResult> {
     const form = new FormData()
     form.append('turn', String(turn))
     if (lessonId) form.append('lesson_id', String(lessonId))
-    form.append('audio', audio, 'conversation.webm')
+    if (audio) form.append('audio', audio, 'conversation.webm')
+    if (sessionId) form.append('session_id', sessionId)
+    if (requestId) form.append('request_id', requestId)
+    if (text) form.append('text', text)
     return request<ConversationResult>('/api/conversation/respond', { method: 'POST', body: form })
   },
 

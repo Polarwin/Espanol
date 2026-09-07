@@ -109,6 +109,6 @@ def test_every_unit_has_its_own_conversation(
         headers=auth_headers,
     )
     correction = response.json()["correction"]
-    assert correction["has_error"] is True
-    assert correction["corrected"] == "Vamos a escuchar música"
-    assert "infinitivo" in correction["explanation"]
+    # ASR output is not treated as a confirmed writing error.
+    assert correction["has_error"] is False
+    assert correction["status"] == "not_assessed"

@@ -47,3 +47,6 @@ dist-ssr/
 
 # venv artifacts
 /share/
+
+# Isolated local model experiments
+/.local-models/

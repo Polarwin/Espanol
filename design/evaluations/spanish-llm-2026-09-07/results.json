@@ -1,0 +1,610 @@
+[
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 1,
+    "case": "cafe",
+    "cold_switch": true,
+    "ttft": 9.276,
+    "seconds": 10.313,
+    "text": "¡Entiendo! ¿Qué le gusta más? Café o chocolate?\n¿Me puedes decir el nombre de otra bebida?",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 26,
+      "prompt_tokens": 95,
+      "total_tokens": 121,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 1,
+    "case": "memory",
+    "cold_switch": false,
+    "ttft": 0.762,
+    "seconds": 1.422,
+    "text": "Claro, aquí tienes tu billete. ¿Te gustaría salir ahora mismo?",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 17,
+      "prompt_tokens": 133,
+      "total_tokens": 150,
+      "prompt_tokens_details": {
+        "cached_tokens": 62
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 1,
+    "case": "past_tense",
+    "cold_switch": false,
+    "ttft": 1.523,
+    "seconds": 5.149,
+    "text": "No hay error. La respuesta es correcta.\n\nEl verbo *comprar* se usa en el pretérito en español, aunque en los países hispanohablantes de América Latina se prefiere el pretérito perfecto (*he comprado*). Por eso, tu uso del pretérito indefinido (*Ayer voy al mercado y compro...*) es gramaticalmente correcto y válido según las reglas del ejercicio.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 84,
+      "prompt_tokens": 119,
+      "total_tokens": 203,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 1,
+    "case": "valid_subjunctive",
+    "cold_switch": false,
+    "ttft": 0.482,
+    "seconds": 1.899,
+    "text": "Tu respuesta cumple con la tarea. Expresas una condición (Depende de que tengamos tiempo) y un deseo (Ojalá hubiera más trenes los domingos).",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 36,
+      "prompt_tokens": 115,
+      "total_tokens": 151,
+      "prompt_tokens_details": {
+        "cached_tokens": 72
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 1,
+    "case": "agreement",
+    "cold_switch": false,
+    "ttft": 0.437,
+    "seconds": 1.912,
+    "text": "Tu respuesta es correcta y completa. La edad es \"veinte años\" y la preferencia por las películas \"españolas\" es clara y adecuada para el nivel A1.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 38,
+      "prompt_tokens": 111,
+      "total_tokens": 149,
+      "prompt_tokens_details": {
+        "cached_tokens": 72
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 1,
+    "case": "regional",
+    "cold_switch": false,
+    "ttft": 0.394,
+    "seconds": 1.115,
+    "text": "La respuesta es correcta y cumple con la tarea. No hay errores reales para corregir.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 19,
+      "prompt_tokens": 111,
+      "total_tokens": 130,
+      "prompt_tokens_details": {
+        "cached_tokens": 72
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 1,
+    "case": "off_topic",
+    "cold_switch": false,
+    "ttft": 0.415,
+    "seconds": 1.563,
+    "text": "No cumple la tarea. La respuesta no menciona el nombre, el país ni el lugar de residencia, solo información sobre elefantes.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 29,
+      "prompt_tokens": 116,
+      "total_tokens": 145,
+      "prompt_tokens_details": {
+        "cached_tokens": 72
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 1,
+    "case": "advanced",
+    "cold_switch": false,
+    "ttft": 0.448,
+    "seconds": 2.321,
+    "text": "Tu respuesta es correcta. La estructura \"Si + subjunctivo + pretérito imperfecto, habría + infinitivo\" es precisa para la condición hipotética pasada y su consecuencia. No hay errores de vocabulario ni gramática.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 48,
+      "prompt_tokens": 122,
+      "total_tokens": 170,
+      "prompt_tokens_details": {
+        "cached_tokens": 72
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 2,
+    "case": "cafe",
+    "cold_switch": false,
+    "ttft": 0.559,
+    "seconds": 1.296,
+    "text": "Entiendo. ¿Prefieres un café con leche de almendras o de soja?",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 19,
+      "prompt_tokens": 95,
+      "total_tokens": 114,
+      "prompt_tokens_details": {
+        "cached_tokens": 62
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 2,
+    "case": "memory",
+    "cold_switch": false,
+    "ttft": 0.722,
+    "seconds": 1.274,
+    "text": "Sí, el billete está confirmado. ¿Tienes tu tarjeta?",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 15,
+      "prompt_tokens": 133,
+      "total_tokens": 148,
+      "prompt_tokens_details": {
+        "cached_tokens": 62
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 2,
+    "case": "past_tense",
+    "cold_switch": false,
+    "ttft": 0.153,
+    "seconds": 3.356,
+    "text": "La respuesta es incorrecta porque el pretérito indefinido se usa para acciones pasadas completas, no para acciones en progreso. La palabra \"voy\" (presente) y \"compro\" (presente) son incorrectas; debes usar \"vi\" y \"compré\".\n\n**Corrección:** \"Ayer vi al mercado y compré dos manzanas.\"",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 81,
+      "prompt_tokens": 119,
+      "total_tokens": 200,
+      "prompt_tokens_details": {
+        "cached_tokens": 115
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 2,
+    "case": "valid_subjunctive",
+    "cold_switch": false,
+    "ttft": 0.437,
+    "seconds": 2.911,
+    "text": "La respuesta es correcta y cumple con la tarea. Expresa una condición (\"Depende de que tengamos tiempo\") y un deseo (\"Ojalá hubiera más trenes los domingos\") con un sentido lógico coherente. No hay errores ortográficos, gramaticales o de vocabulario.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 61,
+      "prompt_tokens": 115,
+      "total_tokens": 176,
+      "prompt_tokens_details": {
+        "cached_tokens": 72
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 2,
+    "case": "agreement",
+    "cold_switch": false,
+    "ttft": 0.405,
+    "seconds": 2.526,
+    "text": "La respuesta es correcta y cumple con los requisitos de la tarea. El estudiante da su edad (veinte años) y menciona un gusto (películas españolas), respondiendo al prompt de forma clara y natural. No hay errores de significado o gramática.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 54,
+      "prompt_tokens": 111,
+      "total_tokens": 165,
+      "prompt_tokens_details": {
+        "cached_tokens": 72
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 2,
+    "case": "regional",
+    "cold_switch": false,
+    "ttft": 0.431,
+    "seconds": 2.127,
+    "text": "Tu respuesta es correcta y completa. Cumple perfectamente con la tarea al contar una acción realizada hoy y los detalles específicos de lo que compraste. No hay errores ortográficos, gramaticales o de contenido.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 44,
+      "prompt_tokens": 111,
+      "total_tokens": 155,
+      "prompt_tokens_details": {
+        "cached_tokens": 72
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 2,
+    "case": "off_topic",
+    "cold_switch": false,
+    "ttft": 0.385,
+    "seconds": 2.17,
+    "text": "La respuesta es incorrecta. No se pide nombre, país o ubicación; se pide describir qué comen y qué tienen los elefantes. La respuesta dice cosas sobre ellos que no están relacionadas con la tarea.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 45,
+      "prompt_tokens": 116,
+      "total_tokens": 161,
+      "prompt_tokens_details": {
+        "cached_tokens": 72
+      }
+    }
+  },
+  {
+    "model": "Qwen3.5-2B-Q4_K_M.gguf",
+    "run": 2,
+    "case": "advanced",
+    "cold_switch": false,
+    "ttft": 0.425,
+    "seconds": 0.944,
+    "text": "La respuesta es correcta y cumple con el objetivo de la tarea.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 14,
+      "prompt_tokens": 122,
+      "total_tokens": 136,
+      "prompt_tokens_details": {
+        "cached_tokens": 72
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 1,
+    "case": "cafe",
+    "cold_switch": true,
+    "ttft": 10.848,
+    "seconds": 12.668,
+    "text": "\nClaro, puedo prepararte un café con leche de almendra o de soja. ¿Prefieres una de estas opciones?",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 28,
+      "prompt_tokens": 133,
+      "total_tokens": 161,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 1,
+    "case": "memory",
+    "cold_switch": false,
+    "ttft": 1.28,
+    "seconds": 2.065,
+    "text": "\n¿Necesitas ayuda para comprar el billete?",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 13,
+      "prompt_tokens": 179,
+      "total_tokens": 192,
+      "prompt_tokens_details": {
+        "cached_tokens": 101
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 1,
+    "case": "past_tense",
+    "cold_switch": false,
+    "ttft": 1.322,
+    "seconds": 2.429,
+    "text": "\nRespuesta: Ayer fui al mercado y compré dos manzanas.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 18,
+      "prompt_tokens": 162,
+      "total_tokens": 180,
+      "prompt_tokens_details": {
+        "cached_tokens": 41
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 1,
+    "case": "valid_subjunctive",
+    "cold_switch": false,
+    "ttft": 0.654,
+    "seconds": 4.148,
+    "text": "\nLa respuesta es correcta. Has expresado una condición (\"Depende de que tengamos tiempo\") y un deseo (\"Ojalá hubiera más trenes los domingos\"). La estructura y el significado son adecuados.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 52,
+      "prompt_tokens": 161,
+      "total_tokens": 213,
+      "prompt_tokens_details": {
+        "cached_tokens": 115
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 1,
+    "case": "agreement",
+    "cold_switch": false,
+    "ttft": 0.648,
+    "seconds": 1.92,
+    "text": "\nSoy veinte años y me gusta las películas españolas. **Correcto**.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 20,
+      "prompt_tokens": 153,
+      "total_tokens": 173,
+      "prompt_tokens_details": {
+        "cached_tokens": 117
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 1,
+    "case": "regional",
+    "cold_switch": false,
+    "ttft": 0.649,
+    "seconds": 1.903,
+    "text": "\nCorrecto. Hoy fuiste al mercado y compraste frutillas para tus amigos.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 19,
+      "prompt_tokens": 152,
+      "total_tokens": 171,
+      "prompt_tokens_details": {
+        "cached_tokens": 117
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 1,
+    "case": "off_topic",
+    "cold_switch": false,
+    "ttft": 0.657,
+    "seconds": 4.699,
+    "text": "\nLa respuesta no cumple con la tarea A1. Debe incluir tu nombre, país y lugar de residencia. Por ejemplo: \"Mi nombre es [Tu Nombre], soy de [Tu País] y vivo en [Tu Ciudad o País de Residencia].\"",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 58,
+      "prompt_tokens": 159,
+      "total_tokens": 217,
+      "prompt_tokens_details": {
+        "cached_tokens": 117
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 1,
+    "case": "advanced",
+    "cold_switch": false,
+    "ttft": 0.659,
+    "seconds": 1.057,
+    "text": "\nLa respuesta es correcta.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 7,
+      "prompt_tokens": 171,
+      "total_tokens": 178,
+      "prompt_tokens_details": {
+        "cached_tokens": 117
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 2,
+    "case": "cafe",
+    "cold_switch": false,
+    "ttft": 0.765,
+    "seconds": 2.803,
+    "text": "\nClaro, tengo un café con leche de soja. ¿Te gustaría también un croissant?",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 23,
+      "prompt_tokens": 133,
+      "total_tokens": 156,
+      "prompt_tokens_details": {
+        "cached_tokens": 101
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 2,
+    "case": "memory",
+    "cold_switch": false,
+    "ttft": 1.293,
+    "seconds": 2.329,
+    "text": "\nTu billete está confirmado. ¡Buen viaje a Valencia!",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 16,
+      "prompt_tokens": 179,
+      "total_tokens": 195,
+      "prompt_tokens_details": {
+        "cached_tokens": 101
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 2,
+    "case": "past_tense",
+    "cold_switch": false,
+    "ttft": 0.659,
+    "seconds": 2.326,
+    "text": "\nRespuesta incorrecta. Debería ser: Ayer fui al mercado y compré dos manzanas.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 25,
+      "prompt_tokens": 162,
+      "total_tokens": 187,
+      "prompt_tokens_details": {
+        "cached_tokens": 115
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 2,
+    "case": "valid_subjunctive",
+    "cold_switch": false,
+    "ttft": 0.654,
+    "seconds": 2.688,
+    "text": "\nRespuesta: Depende de que tengamos tiempo. Ojalá hubiera más trenes los domingos. La respuesta cumple la tarea.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 32,
+      "prompt_tokens": 161,
+      "total_tokens": 193,
+      "prompt_tokens_details": {
+        "cached_tokens": 115
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 2,
+    "case": "agreement",
+    "cold_switch": false,
+    "ttft": 0.651,
+    "seconds": 2.226,
+    "text": "\nTarea A1: Soy veinte años y me gusta las películas españolas. Tu respuesta es correcta.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 25,
+      "prompt_tokens": 153,
+      "total_tokens": 178,
+      "prompt_tokens_details": {
+        "cached_tokens": 117
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 2,
+    "case": "regional",
+    "cold_switch": false,
+    "ttft": 0.641,
+    "seconds": 1.808,
+    "text": "\nHoy fui al mercado y compré unas frutillas para mis amigos.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 18,
+      "prompt_tokens": 152,
+      "total_tokens": 170,
+      "prompt_tokens_details": {
+        "cached_tokens": 117
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 2,
+    "case": "off_topic",
+    "cold_switch": false,
+    "ttft": 0.65,
+    "seconds": 3.64,
+    "text": "\nRespuesta incorrecta. La tarea era escribir tu nombre, país y lugar de residencia. Tu respuesta menciona a los elefantes, lo cual no es relevante. Por favor, completa la tarea correctamente.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 46,
+      "prompt_tokens": 159,
+      "total_tokens": 205,
+      "prompt_tokens_details": {
+        "cached_tokens": 117
+      }
+    }
+  },
+  {
+    "model": "SmolLM3-Q4_K_M.gguf",
+    "run": 2,
+    "case": "advanced",
+    "cold_switch": false,
+    "ttft": 0.658,
+    "seconds": 2.718,
+    "text": "\nRespuesta correcta: Si hubiera sabido que el tren se retrasaba, habría salido más tarde de casa.",
+    "reasoning": "",
+    "finish": "stop",
+    "usage": {
+      "completion_tokens": 29,
+      "prompt_tokens": 171,
+      "total_tokens": 200,
+      "prompt_tokens_details": {
+        "cached_tokens": 117
+      }
+    }
+  }
+]

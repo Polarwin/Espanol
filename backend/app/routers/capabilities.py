@@ -1,20 +1,20 @@
 """Status endpoints for external content and speech-analysis integration."""
 
 from pathlib import Path
-import re
 import tempfile
-import unicodedata
+from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
 from ..config import settings
 from ..db import get_db
-from ..models import Lesson, User, UserState
+from ..models import Lesson, User, UserState, ConversationSession
+from ..services.ai.providers import respond as ai_respond, correct as ai_correct
 from ..seed.conversation_content import CONVERSATION_SCENARIOS
 from ..seed.vocabulary_content import VOCABULARY_BANKS
 from ..services.goals import increment_goal
@@ -88,38 +88,6 @@ def _conversation_profile(lesson: Lesson, name: str) -> dict:
         "prompts": scenario["prompts"],
         "closing": scenario["closing"],
     }
-
-
-def _plain(text: str) -> str:
-    return "".join(char for char in unicodedata.normalize("NFD", text.lower()) if unicodedata.category(char) != "Mn")
-
-
-def _conversation_correction(transcript: str, lesson: Lesson) -> dict:
-    """Return one clear, level-appropriate correction without interrupting the role-play."""
-    original = transcript.strip()
-    grammar = lesson.grammar_tip or {}
-    wrong, right = grammar.get("wrong", ""), grammar.get("right", "")
-    if wrong and right:
-        heard, target = set(_plain(original).split()), set(_plain(wrong).split())
-        if target and len(heard & target) / len(target) >= 0.7:
-            return {"has_error": True, "original": original, "corrected": right, "explanation": grammar.get("explanation", "Esta forma es más natural en español.")}
-
-    patterns = [
-        (r"\bsoy (\d{1,3}) a(?:n|ñ)os\b", r"tengo \1 años", "Para decir la edad usamos tener, no ser."),
-        (r"\bme gusta (los|las)\b", r"me gustan \1", "Gustar concuerda con la cosa que gusta: en plural, gustan."),
-        (r"\b(yo|t[uú]|[eé]l|ella) gusto\b", r"me gusta", "Con gustar decimos me gusta, te gusta o le gusta."),
-        (r"\b(yo )?soy de acuerdo\b", r"estoy de acuerdo", "La expresión fija es estar de acuerdo."),
-        (r"\bdepende de que\b", r"depende de", "Después de depende de añadimos directamente el nombre o la situación."),
-        (r"\bvamos (?!a\b)([a-záéíóúñ]+(?:ar|er|ir))\b", r"vamos a \1", "Para hablar de un plan usamos ir a + infinitivo."),
-        (r"\btengo (hambre|sed|fr[ií]o|calor)\b", lambda m: f"tengo {m.group(1).replace('frio', 'frío')}", "Estas expresiones usan tener; recuerda la tilde de frío."),
-    ]
-    normalized = _plain(original)
-    for pattern, replacement, explanation in patterns:
-        if re.search(pattern, normalized, flags=re.IGNORECASE):
-            corrected = re.sub(pattern, replacement, original, count=1, flags=re.IGNORECASE)
-            corrected = corrected[:1].upper() + corrected[1:]
-            return {"has_error": True, "original": original, "corrected": corrected, "explanation": explanation}
-    return {"has_error": False, "original": original, "corrected": "", "explanation": "Tu frase se entiende bien. Sigue ampliando la respuesta."}
 
 
 def _conversation_reply(transcript: str, turn: int, name: str, profile: dict, correction: dict) -> tuple[str, str, list[str]]:
@@ -215,41 +183,89 @@ def conversation_setup(
     db: Session = Depends(get_db),
 ) -> dict:
     lesson = _conversation_lesson(db, user, lesson_id)
-    return _conversation_profile(lesson, (user.nickname or user.display_name).strip())
+    profile = _conversation_profile(lesson, (user.nickname or user.display_name).strip())
+    session = ConversationSession(id=uuid4().hex, user_id=user.id, lesson_id=lesson.id, turn=0,
+        history=[{'role': 'assistant', 'content': profile['greeting']}])
+    db.add(session)
+    db.commit()
+    return {**profile, 'session_id': session.id}
 
 
 @router.post("/api/conversation/respond", dependencies=[Depends(rate_limit(max_calls=30, window_seconds=60))])
 async def conversation_respond(
-    audio: UploadFile = File(...),
-    turn: int = Form(0),
+    audio: UploadFile | None = File(None),
+    turn: int = Form(0, ge=0, le=3),
+    session_id: str | None = Form(None, max_length=64),
+    request_id: str | None = Form(None, max_length=64),
+    text: str | None = Form(None, max_length=2000),
     lesson_id: int | None = Form(None),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> dict:
-    data = await audio.read(10 * 1024 * 1024 + 1)
-    if not data or len(data) > 10 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="Invalid audio")
+    session = db.get(ConversationSession, session_id) if session_id else None
+    if session_id and (session is None or session.user_id != user.id):
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    if session:
+        if lesson_id is not None and lesson_id != session.lesson_id:
+            raise HTTPException(status_code=409, detail="Conversation lesson mismatch")
+        if request_id and session.last_request == request_id:
+            return session.last_result
+        if session.turn != turn:
+            raise HTTPException(status_code=409, detail="Conversation turn mismatch")
+        lesson_id = session.lesson_id
     lesson = _conversation_lesson(db, user, lesson_id)
     profile = _conversation_profile(lesson, (user.nickname or user.display_name).strip())
-    suffix = Path(audio.filename or "recording.webm").suffix or ".webm"
-    temp_path: Path | None = None
-    try:
-        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as temp:
-            temp.write(data)
-            temp_path = Path(temp.name)
-        transcript = await run_in_threadpool(
-            transcribe_spanish, temp_path,
-            f"Una conversación en español sobre {profile['topic']}: {', '.join(profile['vocabulary'])}",
-        )
-    finally:
-        if temp_path is not None:
-            temp_path.unlink(missing_ok=True)
-    correction = _conversation_correction(transcript, lesson)
+    history = list(session.history) if session else [{'role': 'assistant', 'content': profile['greeting']}]
+    # Release the read transaction while speech and model inference run.
+    db.commit()
+    transcript = (text or '').strip()
+    if not transcript:
+        if audio is None:
+            raise HTTPException(status_code=400, detail="Send text or audio")
+        data = await audio.read(10 * 1024 * 1024 + 1)
+        if not data or len(data) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Invalid audio")
+        temp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix='.webm', delete=False) as temp:
+                temp.write(data)
+                temp_path = Path(temp.name)
+            transcript = await run_in_threadpool(transcribe_spanish, temp_path,
+                f"Una conversación en español sobre {profile['topic']}")
+        finally:
+            if temp_path:
+                temp_path.unlink(missing_ok=True)
+    transcript = transcript.strip()
+    if not transcript or len(transcript) > 2000:
+        raise HTTPException(status_code=422, detail="Send a shorter, nonempty response")
+    # Speech transcripts can contain ASR errors: detailed correction belongs to
+    # confirmed writing, not automatic accusations about spoken grammar.
+    correction = {'has_error': False, 'original': transcript, 'corrected': '',
+        'explanation': 'Puedes practicar esta respuesta también por escrito.', 'status': 'not_assessed'}
     reply, feedback, suggestions = _conversation_reply(
-        transcript, turn, (user.nickname or user.display_name).strip(), profile, correction
-    )
-    apply_skill_deltas(db, user, {"fluency": 1.5, "listening": 0.5, "pronunciation": 0.5})
-    increment_goal(db, user, "sentences_spoken")
+        transcript, turn, (user.nickname or user.display_name).strip(), profile, correction)
+    writing_correction = await run_in_threadpool(ai_correct, transcript) if text else None
+    fallback = False
+    if turn < 3:
+        reply, fallback = await run_in_threadpool(ai_respond, profile, history, transcript, reply)
+    feedback = 'Sigue practicando con tus propias palabras.' if turn < 3 else 'Has completado la práctica.'
+    result = {'transcript': transcript, 'reply': reply, 'feedback': feedback,
+        'correction': correction, 'suggestions': suggestions, 'turn': turn + 1,
+        'complete': turn >= 3, 'fallback': fallback, 'session_id': session_id,
+        'writing_correction': writing_correction.model_dump() if writing_correction else None}
+    if session:
+        claimed = db.execute(update(ConversationSession).where(
+            ConversationSession.id == session.id, ConversationSession.turn == turn
+        ).values(turn=turn+1, history=[*history, {'role': 'user', 'content': transcript},
+            {'role': 'assistant', 'content': reply}], last_request=request_id, last_result=result))
+        if claimed.rowcount != 1:
+            db.rollback()
+            db.refresh(session)
+            if request_id and session.last_request == request_id:
+                return session.last_result
+            raise HTTPException(status_code=409, detail="Conversation already advanced")
+    apply_skill_deltas(db, user, {"fluency": 1.5, "writing": 0.5} if text else {"fluency": 1.5, "listening": 0.5, "pronunciation": 0.5})
+    increment_goal(db, user, "writing_responses" if text else "sentences_spoken")
     record_activity(db, user)
     db.commit()
-    return {"transcript": transcript, "reply": reply, "feedback": feedback, "correction": correction, "suggestions": suggestions, "turn": turn + 1, "complete": turn >= 3}
+    return result

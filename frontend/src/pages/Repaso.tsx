@@ -1,3 +1,4 @@
+import { WritingFeedback } from '../components/WritingFeedback'
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import type { ReviewItem, ReviewResult } from '../api/types'
@@ -45,6 +46,7 @@ export function Repaso() {
       <h2 className="mt-6 font-display text-2xl font-bold">{item.prompt}</h2>
       {item.options ? <div className="mt-4 grid gap-2">{item.options.map((option) => <button key={option} disabled={Boolean(result) || checking} onClick={() => setAnswer(option)} className={`rounded-2xl border-2 px-4 py-3 text-left font-semibold ${answer === option ? 'border-river bg-river-soft' : 'border-ink/10'}`}>{option}</button>)}</div> : <textarea rows={3} disabled={Boolean(result) || checking} value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="Escribe tu respuesta…" className="mt-4 w-full rounded-2xl border-2 border-ink/10 px-4 py-3 outline-none focus:border-river" />}
       {result && <div className={`mt-4 rounded-2xl p-4 font-semibold ${result.correct ? 'bg-leaf-soft text-leaf' : 'bg-blush text-terracotta'}`}><p className="font-bold">{result.feedback}</p>{!result.correct && <p className="mt-1 text-sm">Vuelve mañana: este punto seguirá en tu repaso.</p>}{result.correct && <p className="mt-1 text-sm">¡Bien! Volverá más adelante para confirmar que lo recuerdas.</p>}</div>}
+      <WritingFeedback correction={result?.correction} />
       {error && <p className="mt-4 font-bold text-terracotta" role="alert">{error}</p>}
       <button disabled={!answer.trim() || checking} onClick={result ? next : () => void check()} className="mt-5 w-full rounded-2xl bg-terracotta py-3 font-bold text-paper disabled:opacity-40">{checking ? 'Comprobando…' : result ? (index + 1 === items.length ? 'Terminar' : 'Siguiente error') : 'Comprobar'}</button>
     </section>

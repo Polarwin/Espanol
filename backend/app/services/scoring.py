@@ -5,6 +5,8 @@ import unicodedata
 from dataclasses import dataclass
 
 from ..models import Exercise
+from .ai.contracts import Correction
+from .ai.providers import correct as suggest_correction
 
 SUCCESS_DELTA = 2.0  # per unit of skill weight, scaled by score
 FAILURE_DELTA = -1.0  # per unit of skill weight
@@ -30,11 +32,15 @@ class ScoreResult:
     feedback: str
     deltas: dict[str, float]  # per-skill signed delta, weighted by exercise.skill_weights
 
+    correction: Correction | None = None
+
 
 def score_attempt(exercise: Exercise, answer: str) -> ScoreResult:
     answer = answer.strip()
+    correction = None
     if exercise.type == "writing":
         correct, score, feedback = _score_writing(answer)
+        correction = suggest_correction(answer)
     elif exercise.options:
         correct = answer == exercise.expected_answer.strip()
         score = 1.0 if correct else 0.0
@@ -54,13 +60,13 @@ def score_attempt(exercise: Exercise, answer: str) -> ScoreResult:
             skill: round(FAILURE_DELTA * weight, 2)
             for skill, weight in (exercise.skill_weights or {}).items()
         }
-    return ScoreResult(correct=correct, score=score, feedback=feedback, deltas=deltas)
+    return ScoreResult(correct=correct, score=score, feedback=feedback, deltas=deltas, correction=correction)
 
 
 def _score_writing(answer: str) -> tuple[bool, float, str]:
     words = len(answer.split())
     if words >= MIN_WRITING_WORDS:
-        return True, 0.8, "¡Bien escrito! Tu respuesta ha sido aceptada."
+        return True, 0.8, "Respuesta guardada. Recibes crédito por practicar; la gramática y el contenido no se califican automáticamente."
     if words > 0:
         return False, 0.0, "Escribe un poco más: tu respuesta es demasiado corta."
     return False, 0.0, "La respuesta está vacía. Inténtalo de nuevo."

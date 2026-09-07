@@ -1,3 +1,4 @@
+import { WritingFeedback } from '../components/WritingFeedback'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client'
@@ -286,6 +287,7 @@ export function Assessment() {
                     {result.feedback}
                   </p>
                 )}
+                <WritingFeedback correction={result?.correction} />
                 {error && <p className="mt-3 text-sm font-bold text-terracotta">{error}</p>}
 
                 {result ? (
