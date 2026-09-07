@@ -1,3 +1,4 @@
+import { Conversacion } from './Conversacion'
 import { WritingFeedback } from '../components/WritingFeedback'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
@@ -10,6 +11,7 @@ import {
   IconBuilding,
   IconCheck,
   IconClock,
+  IconChat,
   IconEar,
   IconGlobe,
   IconHeadphones,
@@ -60,6 +62,10 @@ export function Assessment() {
   const [result, setResult] = useState<AttemptResult | null>(null)
   const [checking, setChecking] = useState(false)
   const [finished, setFinished] = useState(false)
+  const [conversationActive, setConversationActive] = useState(false)
+  const [conversationStarted, setConversationStarted] = useState(false)
+  const openConversation = () => { setConversationActive(true); setConversationStarted(true) }
+  const [conversationDone, setConversationDone] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -69,6 +75,8 @@ export function Assessment() {
         const id = lessonId ? Number(lessonId) : (await api.getTodayPath()).lesson.id
         const [a, lesson] = await Promise.all([api.getAssessment(id), api.getLesson(id)])
         if (cancelled) return
+        setConversationActive(false); setConversationDone(false); setConversationStarted(false)
+        setGroupIndex(0); setExerciseIndex(0); setSelected(null); setResult(null); setFinished(false)
         setAssessment(a)
         setCurrentLessonId(id)
         setProgress(emptyProgress(a))
@@ -128,6 +136,7 @@ export function Assessment() {
         try {
           await api.completeLesson(currentLessonId)
           setFinished(true)
+          openConversation()
         } catch {
           setError('Tus respuestas están guardadas, pero no pudimos marcar la lección como completada. Inténtalo otra vez.')
         } finally {
@@ -142,6 +151,7 @@ export function Assessment() {
     const group = assessment.groups[candidateIndex]
     const answered = progress[group.type]?.answered ?? 0
     if (answered >= group.exercises.length) return
+    setConversationActive(false)
     setGroupIndex(candidateIndex)
     setExerciseIndex(answered)
     setSelected(null)
@@ -180,7 +190,14 @@ export function Assessment() {
       <div className="mt-5 flex flex-1 flex-col gap-4 lg:flex-row lg:gap-6">
         {/* Question card */}
         <section ref={questionPanelRef} className="min-w-0 scroll-mt-16 flex-1 rounded-3xl bg-paper p-4 shadow-soft sm:p-6">
-          {finished ? (
+          {conversationActive ? (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="font-display text-xl font-bold">{assessment.groups.length + 1}. Conversación</h2>
+                <button onClick={() => setConversationActive(false)} className="rounded-full bg-cream px-4 py-2 text-sm font-bold text-river">{finished ? 'Ver resumen de ejercicios' : 'Volver a los ejercicios'}</button>
+              </div>
+            </>
+          ) : finished ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 py-10 text-center">
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-leaf text-paper">
                 <IconCheck size={26} />
@@ -190,6 +207,7 @@ export function Assessment() {
                 Has respondido las {assessment.total_questions} preguntas. Tu ruta ya se ha ajustado
                 con tus resultados de vocabulario, gramática, escritura y comprensión.
               </p>
+              <button onClick={openConversation} className="mt-3 rounded-full bg-terracotta px-6 py-2.5 text-sm font-bold text-paper">{conversationDone ? 'Conversar otra vez' : `${assessment.groups.length + 1}. Continuar con conversación`}</button>
               <Link
                 to="/progreso"
                 className="mt-3 rounded-full bg-terracotta px-6 py-2.5 text-sm font-bold text-paper shadow-soft transition hover:bg-terracotta-dark"
@@ -310,6 +328,9 @@ export function Assessment() {
               </>
             )
           )}
+          {conversationStarted && <div className={conversationActive ? '' : 'hidden'}>
+            <Conversacion practiceLessonId={currentLessonId} onComplete={() => setConversationDone(true)} />
+          </div>}
         </section>
 
         {/* Right panel */}
@@ -335,6 +356,11 @@ export function Assessment() {
                   </div>
                 )
               })}
+              <button onClick={openConversation} disabled={checking} className="flex items-center gap-3 py-3 text-left disabled:opacity-50">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blush text-terracotta"><IconChat size={17} /></span>
+                <span className="flex-1 text-[15px] font-semibold">Conversación</span>
+                <span className="text-xs font-bold text-river">{conversationDone ? 'Practicada' : 'Practicar'}</span>
+              </button>
             </div>
           </section>
 
@@ -360,11 +386,11 @@ export function Assessment() {
       </div>
 
       {/* Exercise strip */}
-      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 xl:gap-4">
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 xl:gap-4">
         {assessment.groups.map((g, i) => {
           const style = GROUP_STYLE[g.type]
           const p = progress[g.type] ?? { answered: 0, correct: 0 }
-          const status = statusOf(g, p, activeGroup.type)
+          const status = statusOf(g, p, conversationActive ? '' : activeGroup.type)
           return (
             <button
               type="button"
@@ -399,6 +425,14 @@ export function Assessment() {
             </button>
           )
         })}
+        <button type="button" onClick={() => { openConversation(); window.setTimeout(() => questionPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0) }} disabled={checking} className={`rounded-3xl border-2 bg-paper p-4 text-left shadow-soft transition hover:border-river/50 disabled:opacity-50 ${conversationActive ? 'border-river' : 'border-transparent'}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-terracotta text-[13px] font-bold text-paper">{assessment.groups.length + 1}</span><span className="text-[15px] font-bold">Conversación</span></div>
+            {conversationDone ? <IconCheck size={20} className="text-leaf" /> : <IconChat size={20} className="text-terracotta" />}
+          </div>
+          <p className="mt-1.5 text-[13px] font-semibold text-ink-soft">Practica esta unidad con Ana durante cuatro turnos.</p>
+          <p className="mt-3 text-sm font-bold text-river">{conversationActive ? 'Conversando ahora' : conversationDone ? 'Conversación practicada' : 'Conversar ahora'}</p>
+        </button>
       </div>
 
       {/* Footer */}

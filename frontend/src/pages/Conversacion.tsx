@@ -12,8 +12,9 @@ function TutorMessage({ text }: { text: string }) {
   return <div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sun-soft text-xl">👩🏽</div><div className="max-w-[85%] rounded-3xl rounded-tl-md bg-paper p-4 shadow-soft"><p className="font-semibold">{text}</p><button onClick={() => void speech.play()} disabled={speech.loading} className="mt-2 flex items-center gap-1.5 text-sm font-bold text-river disabled:opacity-50"><IconSpeaker size={16} />{speech.playing ? 'Reproduciendo…' : 'Escuchar'}</button></div></div>
 }
 
-export function Conversacion() {
-  const { lessonId } = useParams()
+export function Conversacion({ practiceLessonId, onComplete }: { practiceLessonId?: number; onComplete?: () => void } = {}) {
+  const { lessonId: routeLessonId } = useParams()
+  const lessonId = practiceLessonId ? String(practiceLessonId) : routeLessonId
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const fromRoute = searchParams.get('desde') === 'ruta'
@@ -58,6 +59,7 @@ export function Conversacion() {
     try {
       const response = await api.respondToConversation(turn, draft.trim() ? null : blob, setup.lesson_id, setup.session_id, requestId.current, draft.trim() || undefined)
       setMessages((old) => [...old, { role: 'user', text: response.transcript }, { role: 'tutor', text: response.reply }])
+      if (response.complete) onComplete?.()
       setResult(response); setTurn(response.turn); setDraft(''); requestId.current = null; reset()
     } catch { setError('No se pudo enviar tu respuesta. Puedes intentarlo otra vez.') }
     finally { setBusy(false) }
