@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { API_UNAVAILABLE_EVENT, getToken, placementComplete } from './api/client'
+import { PracticeLayout } from './components/PracticeLayout'
 import { AppLayout } from './components/AppLayout'
 import { Assessment } from './pages/Assessment'
 import { Grupos } from './pages/Grupos'
@@ -16,6 +17,12 @@ import { Perfil } from './pages/Perfil'
 import { Conversacion } from './pages/Conversacion'
 import { Repaso } from './pages/Repaso'
 import { VideoShadowing } from './pages/VideoShadowing'
+
+function ConversationRedirect() {
+  const { lessonId } = useParams()
+  const { search } = useLocation()
+  return <Navigate to={`/practica/conversacion${lessonId ? `/${lessonId}` : ''}${search}`} replace />
+}
 
 function RequireAuth() {
   return getToken() ? <Outlet /> : <Navigate to="/entrar" replace />
@@ -58,10 +65,14 @@ export default function App() {
             <Route path="/lecciones" element={<Lecciones />} />
             <Route path="/leccion/:lessonId" element={<Leccion />} />
             <Route path="/leccion/:lessonId/repetir-video" element={<VideoShadowing />} />
-            <Route path="/practica" element={<Practica />} />
+            <Route path="/practica" element={<PracticeLayout />}>
+              <Route index element={<Practica />} />
+              <Route path="conversacion" element={<Conversacion />} />
+              <Route path="conversacion/:lessonId" element={<Conversacion />} />
+            </Route>
             <Route path="/repaso" element={<Repaso />} />
-            <Route path="/conversacion" element={<Conversacion />} />
-            <Route path="/leccion/:lessonId/conversacion" element={<Conversacion />} />
+            <Route path="/conversacion" element={<ConversationRedirect />} />
+            <Route path="/leccion/:lessonId/conversacion" element={<ConversationRedirect />} />
             <Route path="/progreso" element={<Progreso />} />
             <Route path="/grupos" element={<Grupos />} />
             <Route path="/perfil" element={<Perfil />} />

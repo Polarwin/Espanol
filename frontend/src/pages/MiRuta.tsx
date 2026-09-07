@@ -109,7 +109,7 @@ export function MiRuta() {
               </div>
               {today.step === 'conversa' ? (
                 <Link
-                  to={`/leccion/${today.lesson.id}/conversacion?desde=ruta`}
+                  to={`/practica/conversacion/${today.lesson.id}?desde=ruta`}
                   className="shrink-0 rounded-full bg-terracotta px-5 py-3 text-center text-sm font-bold text-paper shadow-soft transition hover:bg-terracotta-dark"
                 >
                   {stageCopy[2]}

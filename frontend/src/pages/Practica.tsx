@@ -57,7 +57,7 @@ export function Practica() {
   if (error && !exercise) return <div className="p-6 font-semibold text-terracotta">{error}</div>
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-2xl flex-col justify-center px-4 py-8 sm:px-8 md:min-h-screen">
+    <div className="mx-auto max-w-3xl px-4 py-6 sm:px-8">
       <div className="rounded-3xl bg-paper p-5 shadow-card sm:p-8">
         <Link to="/repaso" className="float-right rounded-full bg-sun-soft px-4 py-2 text-sm font-bold text-terracotta-dark">Repasar mis errores</Link>
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-blush text-terracotta">
@@ -65,14 +65,14 @@ export function Practica() {
         </span>
         {done ? (
           <>
-            <h1 className="mt-5 font-display text-3xl font-bold">¡Práctica completada!</h1>
+            <h2 className="mt-5 font-display text-3xl font-bold">¡Práctica completada!</h2>
             <p className="mt-2 font-semibold text-ink-soft">Tus respuestas ya se reflejan en tu ruta adaptativa.</p>
             <button onClick={() => { setIndex(0); setDone(false) }} className="mt-6 w-full rounded-2xl bg-terracotta py-3 font-bold text-paper">Practicar otra vez</button>
           </>
         ) : exercise ? (
           <>
             <div className="mt-5 flex items-center justify-between gap-3">
-              <div><h1 className="font-display text-2xl font-bold">Práctica rápida</h1><p className="text-sm font-semibold text-ink-soft">{today?.lesson.title}</p></div>
+              <div><h2 className="font-display text-2xl font-bold">Práctica rápida</h2><p className="text-sm font-semibold text-ink-soft">{today?.lesson.title}</p></div>
               <span className="rounded-full bg-river-soft px-3 py-1 text-sm font-bold text-river">{index + 1} de {exercises.length}</span>
             </div>
             {exercise.passage && (
