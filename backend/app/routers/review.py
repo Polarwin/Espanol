@@ -22,9 +22,9 @@ class ReviewAnswer(BaseModel):
     answer: str = Field(max_length=2000)
 
 
-def _out(item: ReviewItem) -> dict:
+def _out(item: ReviewItem, previous_incorrect_answer: str | None = None) -> dict:
     content = item.content or {}
-    return {
+    out = {
         "id": item.id,
         "kind": item.kind,
         "prompt": content.get("prompt") or content.get("word") or content.get("concept", "Repasa este punto"),
@@ -33,6 +33,40 @@ def _out(item: ReviewItem) -> dict:
         "audio_url": media_url(content.get("audio_path")),
         "due_date": item.due_date.isoformat(),
     }
+    if previous_incorrect_answer:
+        out["previous_incorrect_answer"] = previous_incorrect_answer
+    return out
+
+
+def _eligible_exercise_ids(items: list[ReviewItem]) -> set[int]:
+    """Vocabulary multiple-choice items backed by an original exercise."""
+    ids: set[int] = set()
+    for item in items:
+        content = item.content or {}
+        exercise_id = content.get("exercise_id")
+        if item.kind == "vocabulary" and content.get("options") and exercise_id is not None:
+            ids.add(exercise_id)
+    return ids
+
+
+def _latest_failed_answers(db: Session, user: User, items: list[ReviewItem]) -> dict[int, str]:
+    """exercise_id -> answer of the user's latest failed original attempt (one batch query)."""
+    exercise_ids = _eligible_exercise_ids(items)
+    if not exercise_ids:
+        return {}
+    rows = db.execute(
+        select(Attempt.exercise_id, Attempt.answer)
+        .where(
+            Attempt.user_id == user.id,
+            Attempt.exercise_id.in_(exercise_ids),
+            Attempt.correct.is_(False),
+        )
+        .order_by(Attempt.created_at.desc(), Attempt.id.desc())
+    ).all()
+    latest: dict[int, str] = {}
+    for exercise_id, answer in rows:
+        latest.setdefault(exercise_id, answer)
+    return latest
 
 
 @router.get("")
@@ -48,7 +82,9 @@ def review_queue(user: User = Depends(get_current_user), db: Session = Depends(g
     for exercise in failed_exercises:
         review_item_from_failed_exercise(db, user, exercise)
     db.commit()
-    return [_out(item) for item in due_items(db, user, limit=20)]
+    items = due_items(db, user, limit=20)
+    latest_failed = _latest_failed_answers(db, user, items)
+    return [_out(item, latest_failed.get((item.content or {}).get("exercise_id"))) for item in items]
 
 
 @router.post("/{item_id}")

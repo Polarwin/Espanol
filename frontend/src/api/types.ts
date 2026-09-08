@@ -214,6 +214,8 @@ export interface ReviewItem {
   options?: string[] | null
   passage?: string | null
   audio_url?: string | null
+  /** The user's latest wrong answer (vocabulary multiple-choice only); never the correct one. */
+  previous_incorrect_answer?: string | null
   due_date: string
 }
 
