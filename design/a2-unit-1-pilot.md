@@ -15,7 +15,18 @@ voice practice, and open writing/grammar practice using the existing BARTO
 correction adapter. The complete lesson design remains in `a2-unit-1-sample.md`.
 This pilot does not claim all parts of that design have been implemented.
 
-Vocabulary now follows 30 guided chapters, each with at most five entries.
+Vocabulary now follows 27 guided chapters, each with three to seven entries.
+One- or two-entry category tails are merged into the preceding chapter on the
+same topic. All 135 entries remain covered. The data migration remaps existing
+positions and preserves current quizzes, scores, feedback and review queues.
+A pre-merge quiz can finish its original question set before teaching the added
+words; someone already in a tail finishes just that remaining portion once.
+No completed vocabulary is reset. This is a backend content change; APK 1.0.48
+receives the new chapter layout through the existing API without rebuilding.
+Validation for the merge: 214 backend tests passed, one opt-in test skipped,
+including remapping every old chapter in teaching, quiz and summary phases.
+Existing production journeys were backed up and checked against the migration
+result before restarting the service.
 The learner sees one teaching card at a time, can hear the word with browser
 Spanish TTS, hide the meaning for recall, and then takes a short quiz. There is
 no category picker. Chapter order moves from personality/interests through daily

@@ -5,6 +5,7 @@ import pytest
 from backend.app.seed.a2_sample import WORDS
 from backend.app.seed.a2_vocabulary_clues import BY_ID, CHAPTERS
 from backend.app.services import vocabulary_journey as journey
+from backend.alembic.versions.j6b1c9e5f7a3_merge_short_vocabulary_chapters import OLD, remap
 
 ROOT = '/api/sample/a2-unit-1/journey'
 
@@ -28,8 +29,8 @@ def test_glossary_coverage_and_small_chapters():
     ids = [word for chapter in CHAPTERS for word in chapter['words']]
     assert set(ids) == {word['id'] for word in WORDS}
     assert len(ids) == len(set(ids)) == 135
-    assert all(1 <= len(chapter['words']) <= 5 for chapter in CHAPTERS)
-    assert len(CHAPTERS) == 30
+    assert all(3 <= len(chapter['words']) <= 7 for chapter in CHAPTERS)
+    assert len(CHAPTERS) == 27
     assert all(BY_ID[word]['clue'] for word in ids)
 
 
@@ -110,6 +111,50 @@ def test_all_quiz_options_unambiguous_and_bilingual():
                 assert journey.current(state) in {option['id'] for option in question['options']}
             state = journey.transition(answer(state), 'continue')
         state = journey.transition(state, 'next')
+
+
+@pytest.mark.parametrize('old_index', range(30))
+@pytest.mark.parametrize('phase', ['learn', 'quiz', 'summary'])
+def test_merge_migration_preserves_progress_and_teaches_remaining_words(old_index, phase):
+    original = journey.initial('en')
+    original.update(chapter=old_index, phase=phase,
+                    index=len(OLD[old_index]) if phase == 'summary' else len(OLD[old_index]) - 1,
+                    correct=2 if phase != 'learn' else 0,
+                    seen=[word for words in OLD[:old_index] for word in words],
+                    mistakes={'5-0': {'wrong': 2, 'streak': 1}},
+                    last_final={'correct': 120, 'total': 135})
+    if phase != 'learn':
+        original['seen'] += OLD[old_index]
+    else:
+        original['seen'] += OLD[old_index][:-1]
+    state = remap(original)
+    assert state['mistakes'] == original['mistakes']
+    assert state['last_final'] == original['last_final']
+    assert state['correct'] == original['correct']
+    assert state['seen'] == original['seen']
+    if phase != 'summary':
+        assert journey.current(state) == OLD[old_index][original['index']]
+    while state['phase'] != 'complete':
+        state = journey.transition(finish_chapter(state), 'next')
+    assert set(state['seen']) == set(BY_ID)
+
+
+def test_merge_migration_keeps_active_review_final_and_pending_feedback():
+    original = journey.initial()
+    original.update(chapter=10, phase='quiz', index=1,
+                    feedback={'correct': True, 'word': 'ver series'},
+                    active={'kind': 'review', 'words': ['5-0', '5-0'], 'index': 1,
+                            'correct': 1, 'feedback': None, 'done': False})
+    state = remap(original)
+    assert state['active'] == original['active']
+    assert state['feedback'] == original['feedback']
+    assert journey.current(state) == '5-0'
+    state['active'] = None
+    assert journey.current(state) == '2-21'
+    assert journey.view(state, 5)['total'] == 2
+    original.update(chapter=30, phase='complete')
+    state = remap(original)
+    assert state['chapter'] == 27 and state['active'] == original['active']
 
 
 def test_api_persistence_idempotency_stale_actions_and_old_client(client, auth_headers):

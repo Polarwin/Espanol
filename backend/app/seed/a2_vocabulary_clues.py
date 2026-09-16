@@ -36,4 +36,8 @@ CHAPTERS = []
 for category, title in zip(ORDER, TITLES):
     ids = [word['id'] for word in WORDS if word['category'] == category]
     for start in range(0, len(ids), 5):
-        CHAPTERS.append({'title': title, 'category': category, 'words': ids[start:start + 5]})
+        words = ids[start:start + 5]
+        if len(words) <= 2 and CHAPTERS and CHAPTERS[-1]['category'] == category:
+            CHAPTERS[-1]['words'].extend(words)
+        else:
+            CHAPTERS.append({'title': title, 'category': category, 'words': words})

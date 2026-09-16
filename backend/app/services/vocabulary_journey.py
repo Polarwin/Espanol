@@ -11,13 +11,18 @@ def initial(language='es'):
             'language': language, 'seen': [], 'quiz_round': 0}
 
 
+def chapter_words(state):
+    """Resume a pre-merge round without retesting its completed neighbours."""
+    return state.get('chapter_words', CHAPTERS[state['chapter']]['words'])
+
+
 def current(state):
     active = state['active']
     if active:
         return None if active['done'] else active['words'][active['index']]
     if state['chapter'] >= len(CHAPTERS) or state['phase'] == 'summary':
         return None
-    return CHAPTERS[state['chapter']]['words'][state['index']]
+    return chapter_words(state)[state['index']]
 
 
 def options(state):
@@ -45,12 +50,12 @@ def view(state, revision):
     result = {
         'revision': revision, 'language': state['language'],
         'chapter': state['chapter'], 'chapters': len(CHAPTERS),
-        'completed': min(len(CHAPTERS), state['chapter'] + (state['phase'] == 'summary')),
+        'completed': min(len(CHAPTERS), state['chapter'] + (state['phase'] == 'summary' and not state.get('continuation_words'))),
         'title': CHAPTERS[state['chapter']]['title'] if state['chapter'] < len(CHAPTERS) else 'Todo el vocabulario',
         'mode': active['kind'] if active else 'chapter',
         'phase': ('summary' if active['done'] else 'quiz') if active else state['phase'],
         'index': active['index'] if active else state['index'],
-        'total': len(active['words']) if active else (len(CHAPTERS[state['chapter']]['words']) if state['chapter'] < len(CHAPTERS) else 0),
+        'total': len(active['words']) if active else (len(chapter_words(state)) if state['chapter'] < len(CHAPTERS) else 0),
         'correct': active['correct'] if active else state['correct'],
         'seen': len(state['seen']), 'word_count': len(BY_ID),
         'mistakes': len(state['mistakes']), 'feedback': feedback,
@@ -111,10 +116,15 @@ def transition(original, action, choice=None):
             if word_id not in state['seen']:
                 state['seen'].append(word_id)
             state['index'] += 1
-            if state['index'] == len(CHAPTERS[state['chapter']]['words']):
+            if state['index'] == len(chapter_words(state)):
                 state.update(phase='quiz', index=0, correct=0)
                 state['quiz_round'] += 1
         elif state['phase'] == 'summary':
+            continuation = state.pop('continuation_words', None)
+            if continuation:
+                state.update(chapter_words=continuation, phase='learn', index=0, correct=0, feedback=None)
+                return state
+            state.pop('chapter_words', None)
             state.update(chapter=state['chapter'] + 1, phase='learn', index=0, correct=0, feedback=None)
             if state['chapter'] == len(CHAPTERS):
                 state['phase'] = 'complete'
@@ -146,7 +156,7 @@ def transition(original, action, choice=None):
             raise ValueError('Responde antes de continuar.')
         holder['feedback'] = None
         holder['index'] += 1
-        total = len(active['words']) if active else len(CHAPTERS[state['chapter']]['words'])
+        total = len(active['words']) if active else len(chapter_words(state))
         if holder['index'] == total:
             if active:
                 active['done'] = True
