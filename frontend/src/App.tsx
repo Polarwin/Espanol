@@ -13,6 +13,7 @@ import { Auth } from './pages/Auth'
 import { Placement } from './pages/Placement'
 import { Lecciones } from './pages/Lecciones'
 import { Leccion } from './pages/Leccion'
+import { A2Sample } from './pages/A2Sample'
 import { Perfil } from './pages/Perfil'
 import { Conversacion } from './pages/Conversacion'
 import { Repaso } from './pages/Repaso'
@@ -64,6 +65,7 @@ export default function App() {
             <Route path="/ruta" element={<MiRuta />} />
             <Route path="/lecciones" element={<Lecciones />} />
             <Route path="/leccion/:lessonId" element={<Leccion />} />
+            <Route path="/muestra/a2/1" element={<A2Sample />} />
             <Route path="/leccion/:lessonId/repetir-video" element={<VideoShadowing />} />
             <Route path="/practica" element={<PracticeLayout />}>
               <Route index element={<Practica />} />

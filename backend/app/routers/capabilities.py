@@ -56,6 +56,8 @@ def _conversation_profile(lesson: Lesson, name: str) -> dict:
     topics = [topic for topic in lesson.topics if "vitamina" not in topic.lower()]
     topic = topics[0] if topics else lesson.title.lower()
     scenario = CONVERSATION_SCENARIOS.get(lesson.title)
+    if lesson.title == 'Vitamina A2 · U1: Vamos a conocernos':
+        vocabulary = ['conocer gente', 'hacer un intercambio', 'sociable', 'me cuesta']
     if scenario is None and lesson.title.endswith(" · Vídeo"):
         scenario = {
             "role": "compañera",

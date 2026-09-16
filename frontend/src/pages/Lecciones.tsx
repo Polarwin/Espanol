@@ -87,6 +87,7 @@ export function Lecciones() {
         </div>
       </div>
       {error && <p className="mt-5 font-bold text-terracotta">{error}</p>}
+      <Link to="/muestra/a2/1" className="mt-5 block rounded-2xl bg-river p-5 font-bold text-paper">Nueva muestra · A2 Unidad 1: aprende con el vocabulario y los audios del libro →</Link>
 
       {!showAll && (
         <section className="mt-6">

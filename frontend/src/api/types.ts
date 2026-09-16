@@ -127,6 +127,28 @@ export interface Phrase {
   translation: string
 }
 
+export interface A2StudyState {
+  language: 'es' | 'en'
+  reviewed: string[]
+  draft: string
+  original: string
+}
+
+export interface A2Sample {
+  words: { id: string; category: string; text: string; translation: string }[]
+  grammar: { prompt: string; answer: string; rule: string }[]
+  lesson_id: number | null
+  state: A2StudyState
+}
+
+export interface A2Correction {
+  status: 'suggestions' | 'no_suggestion' | 'partial' | 'unavailable'
+  original: string
+  suggested: string | null
+  processed: number
+  skipped: number
+}
+
 export interface VocabularyItem {
   text: string
   translation: string

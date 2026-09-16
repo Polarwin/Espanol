@@ -4,6 +4,7 @@
 import * as mock from './mock'
 import { Capacitor } from '@capacitor/core'
 import type {
+  A2Sample, A2StudyState, A2Correction,
   AttemptResult,
   AuthResponse,
   ClipQuizResult,
@@ -122,6 +123,26 @@ async function withMock<T>(call: () => Promise<T>, fallback: () => Promise<T>): 
 }
 
 export const api = {
+  getA2Sample(): Promise<A2Sample> {
+    return request('/api/sample/a2-unit-1')
+  },
+  saveA2Sample(state: A2StudyState): Promise<{ saved: boolean }> {
+    return request('/api/sample/a2-unit-1/state', { method: 'PUT', body: JSON.stringify(state) })
+  },
+  explainA2Word(id: string): Promise<{ definition: string; example: string }> {
+    return request(`/api/sample/a2-unit-1/words/${encodeURIComponent(id)}`, { method: 'POST' })
+  },
+  correctA2Writing(text: string): Promise<A2Correction> {
+    return request('/api/sample/a2-unit-1/writing', { method: 'POST', body: JSON.stringify({ text }) })
+  },
+  async getA2Audio(track: number): Promise<Blob> {
+    const response = await fetch(`${API_ORIGIN}/api/sample/a2-unit-1/audio/${track}`, {
+      headers: { Authorization: `Bearer ${getToken() ?? ''}` },
+    })
+    handleUnauthorized('/api/sample/a2-unit-1/audio', response.status)
+    if (!response.ok) throw new ApiError(response.status, 'Audio unavailable')
+    return response.blob()
+  },
   getMe(): Promise<User> {
     return request<User>('/api/me')
   },
