@@ -25,10 +25,10 @@ WORDS = [
 ]
 
 GRAMMAR = [
-    {'prompt': 'Me ___ los idiomas.', 'answer': 'gustan', 'rule': 'Gustar concuerda con lo que gusta: los idiomas es plural.'},
-    {'prompt': 'Me ___ conocer gente.', 'answer': 'gusta', 'rule': 'Con un infinitivo, usamos gusta: me gusta conocer gente.'},
-    {'prompt': 'No me gusta ir de compras. —A mí ___.', 'answer': 'tampoco', 'rule': 'Para coincidir con una frase negativa usamos tampoco.'},
-    {'prompt': 'Me ___ las conversaciones rápidas.', 'answer': 'cuestan', 'rule': 'Costar concuerda con las conversaciones: plural, cuestan.'},
+    {'prompt': 'Expresa un gusto con gustar: Me ___ los idiomas. (gusta / gustan)', 'answer': 'gustan', 'rule': 'Con gustar, usamos gustan porque «los idiomas» es plural. «Me cuestan los idiomas» también es correcto, pero expresa dificultad, no un gusto.'},
+    {'prompt': 'Completa con gustar: Me ___ conocer gente. (gusta / gustan)', 'answer': 'gusta', 'rule': 'Con gustar y un infinitivo, usamos gusta: «Me gusta conocer gente». Otros verbos pueden formar frases correctas, pero aquí practicamos gustar.'},
+    {'prompt': 'Expresa acuerdo: No me gusta ir de compras. —A mí ___. (también / tampoco)', 'answer': 'tampoco', 'rule': 'Para coincidir con una frase negativa usamos tampoco. «A mí sí» también es correcto, pero expresa desacuerdo.'},
+    {'prompt': 'Expresa dificultad con costar: Me ___ las conversaciones rápidas. (cuesta / cuestan)', 'answer': 'cuestan', 'rule': 'Con costar, usamos cuestan porque «las conversaciones rápidas» es plural. «Me gustan las conversaciones rápidas» también es correcto, pero expresa un gusto, no dificultad.'},
     {'prompt': 'Me cuesta ___ amigos. (hacer / hago)', 'answer': 'hacer', 'rule': 'Me cuesta + infinitivo expresa dificultad.'},
     {'prompt': 'Te recomiendo ___ español cada día. (practicar / practicas)', 'answer': 'practicar', 'rule': 'Te recomiendo + infinitivo sirve para dar un consejo.'},
     {'prompt': 'Hay que ___ con atención. (escuchar / escuchas)', 'answer': 'escuchar', 'rule': 'Hay que + infinitivo expresa una recomendación general.'},

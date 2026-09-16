@@ -78,6 +78,9 @@ timeout. Original and suggested text remain separate. Partial/unavailable result
 are labelled; unchanged text is not presented as proof of correctness. Grammar
 gap questions use authored answers and explanations; open grammar sentences use
 BARTO. Neither model grades proficiency or the writing task's completeness.
+Gap prompts explicitly name the target verb or communicative purpose and provide
+the relevant choices. Feedback distinguishes a different valid meaning (for
+example, «me cuestan los idiomas») from the target form requested by the exercise.
 
 The explicit Save draft button retains the writing draft and its first reviewed
 version in `a2_sample_progress`, keyed by the authenticated user. Older vocabulary
