@@ -6,7 +6,7 @@ the existing Vitamina A2 Unit 1 lesson. Sign in with an existing Español accoun
 - HTTP LAN: `http://192.168.0.9:5173/muestra/a2/1`.
 - HTTPS LAN: `https://192.168.0.9:5174/muestra/a2/1` (device must trust the local
   certificate authority, as with the existing voice-practice pages).
-- Android release: 1.0.48 / versionCode 49.
+- Android release: 1.0.49 / versionCode 50.
 
 The sample contains the p.148 glossary (135 category entries, including phrases
 repeated in separate source categories), eight authored grammar checks, both
@@ -79,7 +79,9 @@ are labelled; unchanged text is not presented as proof of correctness. Grammar
 gap questions use authored answers and explanations; open grammar sentences use
 BARTO. Neither model grades proficiency or the writing task's completeness.
 Gap prompts explicitly name the target verb or communicative purpose and provide
-the relevant choices. Feedback distinguishes a different valid meaning (for
+the relevant choices as answer buttons, with immediate feedback on selection.
+Open grammar/writing practice remains a textbox reviewed by BARTO. Older APKs
+still receive choices within the prompt text. Feedback distinguishes a different valid meaning (for
 example, «me cuestan los idiomas») from the target form requested by the exercise.
 
 The explicit Save draft button retains the writing draft and its first reviewed

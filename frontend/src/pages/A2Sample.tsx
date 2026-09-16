@@ -47,7 +47,6 @@ export function A2Sample() {
   const [state, setState] = useState<A2StudyState>({ language: 'es', reviewed: [], draft: '', original: '' })
   const [error, setError] = useState('')
   const [answers, setAnswers] = useState<Record<number, string>>({})
-  const [checked, setChecked] = useState<Record<number, boolean>>({})
   const [grammarText, setGrammarText] = useState('')
   const [grammarResult, setGrammarResult] = useState<A2Correction | null>(null)
   const [writingResult, setWritingResult] = useState<A2Correction | null>(null)
@@ -105,11 +104,19 @@ export function A2Sample() {
           <p><strong>Dificultad:</strong> Me cuesta hablar. Me cuestan las conversaciones rápidas.</p>
           <p><strong>Consejos:</strong> Puedes practicar. Te recomiendo escuchar. Hay que repetir. Usa el infinitivo.</p>
         </div>
-        <div className="space-y-4">{data.grammar.map((item, index) => <div key={item.prompt} className="rounded-xl bg-slate-900 p-4">
-          <label htmlFor={`grammar-${index}`} className="block font-semibold">{item.prompt}</label>
-          <div className="mt-2 flex flex-wrap gap-2"><input id={`grammar-${index}`} className="min-w-0 rounded-lg bg-slate-700 p-2" value={answers[index] ?? ''} maxLength={100} onChange={e => { setAnswers({ ...answers, [index]: e.target.value }); setChecked({ ...checked, [index]: false }) }} /><button className={button} disabled={!answers[index]?.trim()} onClick={() => setChecked({ ...checked, [index]: true })}>Comprobar</button></div>
-          {checked[index] && <p className="mt-2 text-lime-200" role="status">{answers[index].trim().toLocaleLowerCase('es') === item.answer ? 'Correcto. ' : `Respuesta: ${item.answer}. `}{item.rule}</p>}
-        </div>)}</div>
+        <p className="mb-4 text-sm text-slate-300">Elige una respuesta para ver la explicación.</p>
+        <div className="space-y-4">{data.grammar.map((item, index) => <fieldset key={item.prompt} className="rounded-xl bg-slate-900 p-4">
+          <legend className="px-1 font-semibold">{item.prompt.replace(` (${item.options.join(' / ')})`, '')}</legend>
+          <div className="mt-2 grid grid-cols-2 gap-3">{item.options.map(option => {
+            const selected = answers[index] === option
+            const correct = option.toLocaleLowerCase('es') === item.answer
+            const answered = answers[index] !== undefined
+            return <button key={option} type="button" aria-pressed={selected} aria-describedby={answered ? `grammar-feedback-${index}` : undefined} onClick={() => setAnswers(current => ({ ...current, [index]: option }))} className={`min-h-12 rounded-xl border-2 px-4 py-3 text-lg font-bold transition ${answered && correct ? 'border-lime-300 bg-lime-300/10 text-lime-200' : selected ? 'border-orange-300 bg-orange-300/10 text-orange-100' : 'border-slate-600 bg-slate-800 hover:border-lime-300'}`}>
+              {option}{answered && correct ? ' ✓' : selected ? ' ↻' : ''}
+            </button>
+          })}</div>
+          {answers[index] !== undefined && <p id={`grammar-feedback-${index}`} className="mt-3 text-lime-200" role="status">{answers[index].toLocaleLowerCase('es') === item.answer ? 'Correcto. ' : `Respuesta: ${item.answer}. `}{item.rule}</p>}
+        </fieldset>)}</div>
         <label htmlFor="grammar-writing" className="mt-5 block font-bold">Ahora crea tres frases: un gusto, una dificultad y un consejo.</label>
         <textarea id="grammar-writing" className="mt-2 w-full rounded-xl bg-slate-900 p-3" rows={3} maxLength={2000} value={grammarText} onChange={e => { setGrammarText(e.target.value); setGrammarResult(null) }} placeholder="Me gustan… Me cuesta… Te recomiendo…" />
         <button className={button} disabled={!!reviewing || !grammarText.trim()} onClick={() => void review('grammar')}>{reviewing === 'grammar' ? 'Revisando…' : 'Revisar mis frases'}</button>

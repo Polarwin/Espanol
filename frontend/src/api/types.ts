@@ -165,7 +165,7 @@ export interface VocabularyAction {
 
 export interface A2Sample {
   words: { id: string; category: string; text: string; translation: string }[]
-  grammar: { prompt: string; answer: string; rule: string }[]
+  grammar: { prompt: string; answer: string; rule: string; options: string[] }[]
   lesson_id: number | null
   state: A2StudyState
 }

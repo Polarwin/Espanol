@@ -34,3 +34,12 @@ GRAMMAR = [
     {'prompt': 'Hay que ___ con atención. (escuchar / escuchas)', 'answer': 'escuchar', 'rule': 'Hay que + infinitivo expresa una recomendación general.'},
     {'prompt': '¿___ quieres practicar? (Tu / Tú)', 'answer': 'tú', 'rule': 'Tú es la persona; tu indica posesión, como en tu compañero.'},
 ]
+
+# Explicit choices for tap-to-answer clients. Keep them in the prompt as well
+# so already-installed APKs still show the intended choices with their textbox.
+for exercise, choices in zip(GRAMMAR, [
+    ['gusta', 'gustan'], ['gusta', 'gustan'], ['también', 'tampoco'],
+    ['cuesta', 'cuestan'], ['hacer', 'hago'], ['practicar', 'practicas'],
+    ['escuchar', 'escuchas'], ['Tu', 'Tú'],
+]):
+    exercise['options'] = choices
