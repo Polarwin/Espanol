@@ -4,7 +4,7 @@
 import * as mock from './mock'
 import { Capacitor } from '@capacitor/core'
 import type {
-  A2Sample, A2StudyState, A2Correction,
+  A2Sample, A2StudyState, A2Correction, VocabularyJourney, VocabularyAction,
   AttemptResult,
   AuthResponse,
   ClipQuizResult,
@@ -123,6 +123,12 @@ async function withMock<T>(call: () => Promise<T>, fallback: () => Promise<T>): 
 }
 
 export const api = {
+  getVocabularyJourney(): Promise<VocabularyJourney> {
+    return request('/api/sample/a2-unit-1/journey')
+  },
+  actVocabularyJourney(action: VocabularyAction): Promise<VocabularyJourney> {
+    return request('/api/sample/a2-unit-1/journey', { method: 'POST', body: JSON.stringify(action) })
+  },
   getA2Sample(): Promise<A2Sample> {
     return request('/api/sample/a2-unit-1')
   },

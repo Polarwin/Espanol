@@ -134,6 +134,35 @@ export interface A2StudyState {
   original: string
 }
 
+export interface VocabularyJourney {
+  revision: number
+  language: 'es' | 'en'
+  chapter: number
+  chapters: number
+  completed: number
+  title: string
+  mode: 'chapter' | 'review' | 'final'
+  phase: 'learn' | 'quiz' | 'summary' | 'complete'
+  index: number
+  total: number
+  correct: number
+  seen: number
+  word_count: number
+  mistakes: number
+  final_unlocked: boolean
+  last_final: { correct: number; total: number } | null
+  feedback: { correct: boolean; word: string; meaning: string; answer_id: string; chosen_id: string } | null
+  word?: { id: string; text: string; translation: string; clue: string; category: string }
+  question?: { prompt: string; instruction: string; options: { id: string; label: string }[] }
+}
+
+export interface VocabularyAction {
+  action: 'next' | 'answer' | 'continue' | 'review' | 'final' | 'resume' | 'language'
+  choice?: string
+  revision: number
+  request_id: string
+}
+
 export interface A2Sample {
   words: { id: string; category: string; text: string; translation: string }[]
   grammar: { prompt: string; answer: string; rule: string }[]

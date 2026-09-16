@@ -1,7 +1,7 @@
 """SQLAlchemy models for ¡Vamos!."""
 
 from .conversation import ConversationSession
-from .sample import A2SampleProgress
+from .sample import A2SampleProgress, VocabularyJourney
 from .content import Exercise, Lesson, Phrase, Segment
 from .progress import SKILLS, Attempt, LessonCompletion, ReviewItem, SkillProgress, Streak, WeeklyGoal, WeeklyRecap
 from .social import Encouragement, Group, GroupGoal, GroupMember

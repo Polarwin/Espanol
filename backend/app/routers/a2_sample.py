@@ -5,16 +5,18 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..config import settings
 from ..db import get_db
-from ..models import A2SampleProgress, Lesson, User
+from ..models import A2SampleProgress, Lesson, User, VocabularyJourney
 from ..seed.a2_sample import WORDS, GRAMMAR, TITLE
 from ..services.ai import providers, vocabulary
 from ..services.security import get_current_user
 from ..services.ratelimit import rate_limit
+from ..services import vocabulary_journey as journey
 
 router = APIRouter(prefix='/api/sample/a2-unit-1', tags=['A2 sample'])
 
@@ -28,6 +30,53 @@ class StudyState(BaseModel):
 
 class Writing(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
+
+
+class JourneyAction(BaseModel):
+    action: Literal['next', 'answer', 'continue', 'review', 'final', 'resume', 'language']
+    choice: str | None = Field(default=None, max_length=40)
+    revision: int = Field(ge=0)
+    request_id: str = Field(min_length=8, max_length=80)
+
+
+def _initial_journey(db, user):
+    sample = db.get(A2SampleProgress, user.id)
+    return journey.initial(sample.data.get('language', 'es') if sample else 'es')
+
+
+@router.get('/journey')
+def get_journey(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    record = db.get(VocabularyJourney, user.id)
+    return journey.view(record.data, record.revision) if record else journey.view(_initial_journey(db, user), 0)
+
+
+@router.post('/journey')
+def act_journey(body: JourneyAction, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    record = db.get(VocabularyJourney, user.id)
+    if record is None:
+        record = VocabularyJourney(user_id=user.id, data=_initial_journey(db, user), revision=0)
+        db.add(record)
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            record = db.get(VocabularyJourney, user.id)
+    if record.last_request == body.request_id:
+        return journey.view(record.data, record.revision)
+    if record.revision != body.revision:
+        raise HTTPException(409, 'Tu progreso ha cambiado. Recarga la actividad.')
+    try:
+        data = journey.transition(record.data, body.action, body.choice)
+    except ValueError as error:
+        raise HTTPException(422, str(error))
+    changed = db.execute(update(VocabularyJourney).where(
+        VocabularyJourney.user_id == user.id, VocabularyJourney.revision == body.revision
+    ).values(data=data, revision=body.revision + 1, last_request=body.request_id))
+    if changed.rowcount != 1:
+        db.rollback()
+        raise HTTPException(409, 'Tu progreso ha cambiado. Recarga la actividad.')
+    db.commit()
+    return journey.view(data, body.revision + 1)
 
 
 @router.get('')

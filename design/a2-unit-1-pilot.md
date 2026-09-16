@@ -6,7 +6,7 @@ the existing Vitamina A2 Unit 1 lesson. Sign in with an existing Español accoun
 - HTTP LAN: `http://192.168.0.9:5173/muestra/a2/1`.
 - HTTPS LAN: `https://192.168.0.9:5174/muestra/a2/1` (device must trust the local
   certificate authority, as with the existing voice-practice pages).
-- Android release: 1.0.45 / versionCode 46.
+- Android release: 1.0.46 / versionCode 47.
 
 The sample contains the p.148 glossary (135 category entries, including phrases
 repeated in separate source categories), eight authored grammar checks, both
@@ -15,8 +15,37 @@ voice practice, and open writing/grammar practice using the existing BARTO
 correction adapter. The complete lesson design remains in `a2-unit-1-sample.md`.
 This pilot does not claim all parts of that design have been implemented.
 
-Vocabulary has Spanish and English modes. Spanish definitions and examples are
-generated on request by `SmolLM3-Q4_K_M.gguf`, the same model used by Claro. The
+Vocabulary now follows 30 guided chapters, each with at most five entries.
+The learner sees one teaching card at a time, can hear the word with browser
+Spanish TTS, hide the meaning for recall, and then takes a short quiz. There is
+no category picker. Chapter order moves from personality/interests through daily
+life and social encounters into learning and city activities. All 135 original
+category entries remain covered.
+
+Quizzes alternate between finding a word from its meaning and finding a meaning
+from its word. Authored Spanish cues and the existing English meanings provide
+stable questions. Correct answers and grading stay on the server; generated
+model output never determines a quiz grade. Distractors exclude the same category
+to avoid close synonyms, and exclude repeated words/translations. This first
+version tests recognition rather than free recall or certified mastery.
+
+Errors enter a personal review queue. A round covers up to five error items,
+each appearing twice in different question directions. An item leaves the queue
+after two correct review answers; another mistake resets that item's streak.
+Completed chapters plus an empty mistake queue unlock a final test with all 135
+entries in shuffled order. Final-test errors go into the same review queue.
+Review returns the learner to the exact chapter/card they left. Final tests are
+resumable and can be retaken after reviewing errors.
+
+The new `a2_vocabulary_journey` table stores each user's position, scores, errors,
+language preference and current feedback. Every action is saved automatically,
+with optimistic revisions and request IDs protecting against stale tabs and a
+retried lost response. Old practice checkmarks are preserved separately but do
+not count as quiz passes. Existing writing drafts are untouched.
+
+Vocabulary has Spanish and English modes. Teaching cards show an authored simple
+meaning immediately. Additional Spanish explanations and examples are generated
+on request by `SmolLM3-Q4_K_M.gguf`, the same model used by Claro. The
 service uses the configured local conversation gateway URL, pins that model ID,
 requires AI enabled and a loopback/local endpoint, and never falls back to cloud.
 It uses structured JSON generation, a 45-second HTTP timeout, one active glossary
@@ -30,14 +59,17 @@ are labelled; unchanged text is not presented as proof of correctness. Grammar
 gap questions use authored answers and explanations; open grammar sentences use
 BARTO. Neither model grades proficiency or the writing task's completeness.
 
-The explicit Save button stores language preference, marked vocabulary, the
-writing draft and its first reviewed version in `a2_sample_progress`, keyed by
-the authenticated user. Save before navigating to dialogue or leaving the page.
-Grammar exercise answers and the separate short grammar textbox are session-only.
-Marked vocabulary means practised, not mastered. Existing lesson IDs, accounts,
-history and content files are preserved; no reseed is needed.
+The explicit Save draft button retains the writing draft and its first reviewed
+version in `a2_sample_progress`, keyed by the authenticated user. Older vocabulary
+checkmarks and preference are retained there for compatibility. Its updates cannot
+overwrite the separate vocabulary journey. Save writing before leaving the page;
+vocabulary needs no manual save. Grammar exercise answers and the separate short
+grammar textbox remain session-only. Existing lesson IDs, accounts, history and
+content files are preserved; no reseed is needed.
 
-Validation: backend suite (117 passed, 1 opt-in test skipped), frontend build and
-lint, real SmolLM3 definitions and BARTO correction, browser checks with an isolated
-in-memory database (mobile width, desktop, saved draft/language, real audio,
-definition generation and writing correction), LAN HTTP/HTTPS and auth checks.
+Validation for 1.0.46: backend suite (123 passed, 1 opt-in test skipped), frontend
+build and lint; complete all-chapter/final-test simulation, mistake review and
+account isolation; mobile/desktop browser checks with an isolated database,
+including teach/quiz/review/resume, language persistence, and a response dropped
+after the server committed followed by an idempotent retry. Existing real model,
+writing and audio integrations were verified in 1.0.45 and retained.

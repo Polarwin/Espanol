@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { A2Sample as Sample, A2StudyState, A2Correction } from '../api/types'
+import { VocabularyJourney } from '../components/VocabularyJourney'
 
 const button = 'rounded-xl bg-lime-300 px-4 py-2 font-bold text-slate-950 disabled:opacity-50'
 const secondary = 'rounded-xl border border-slate-500 px-4 py-2 font-semibold text-white disabled:opacity-50'
@@ -45,12 +46,6 @@ export function A2Sample() {
   const [data, setData] = useState<Sample | null>(null)
   const [state, setState] = useState<A2StudyState>({ language: 'es', reviewed: [], draft: '', original: '' })
   const [error, setError] = useState('')
-  const [category, setCategory] = useState('Animales')
-  const [selected, setSelected] = useState('0-0')
-  const [definitions, setDefinitions] = useState<Record<string, { definition: string; example: string }>>({})
-  const [loadingWord, setLoadingWord] = useState('')
-  const [wordError, setWordError] = useState('')
-  const [revealed, setRevealed] = useState(false)
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [checked, setChecked] = useState<Record<number, boolean>>({})
   const [grammarText, setGrammarText] = useState('')
@@ -75,14 +70,6 @@ export function A2Sample() {
     catch { setSaveMessage('No se pudo guardar. Inténtalo de nuevo antes de salir.') }
     finally { setSaving(false) }
   }
-  async function explain(id: string) {
-    setLoadingWord(id); setWordError('')
-    try {
-      const result = await api.explainA2Word(id)
-      setDefinitions(current => ({ ...current, [id]: result }))
-    } catch { setWordError('No se pudo generar la explicación. Espera un momento y vuelve a intentarlo; también puedes elegir English.') }
-    finally { setLoadingWord('') }
-  }
   async function review(kind: 'grammar' | 'writing') {
     const text = kind === 'grammar' ? grammarText : state.draft
     setReviewing(kind); setReviewError('')
@@ -97,9 +84,6 @@ export function A2Sample() {
     finally { setReviewing(null) }
   }
   if (!data) return <p className="p-8" role="status">{error || 'Cargando A2 · Unidad 1…'}</p>
-  const word = data.words.find(item => item.id === selected)!
-  const definition = definitions[word.id]
-  const categories = [...new Set(data.words.map(item => item.category))]
   return <main className="min-h-screen bg-slate-950 px-4 py-6 text-white sm:px-8">
     <div className="mx-auto max-w-4xl space-y-6">
       <header>
@@ -112,33 +96,7 @@ export function A2Sample() {
           <a href="#palabras">1. Vocabulario</a><a href="#gramatica">2. Gramática</a><a href="#escuchar">3. Escuchar</a><a href="#usar">4. Hablar y escribir</a>
         </nav>
       </header>
-      <section id="palabras" className={panel}>
-        <h2 className="text-2xl font-bold">1. Aprende las palabras del libro</h2>
-        <p className="mt-2 text-slate-300">Estudia 6–8 expresiones cada vez. Piensa en su significado antes de mostrarlo. {state.reviewed.length} de {data.words.length} entradas marcadas como practicadas; no es una nota de dominio.</p>
-        <div className="mt-4 flex flex-wrap items-center gap-4">
-          <label>Categoría <select className="ml-2 max-w-full rounded-lg bg-slate-900 p-2" value={category} onChange={e => {
-            setCategory(e.target.value); setSelected(data.words.find(item => item.category === e.target.value)!.id); setRevealed(false); setWordError('')
-          }}>{categories.map(item => <option key={item}>{item}</option>)}</select></label>
-          <fieldset className="flex gap-3"><legend className="mb-1 text-sm text-slate-300">Aprender el significado en</legend>
-            {(['es', 'en'] as const).map(lang => <label key={lang} className="flex gap-2"><input type="radio" name="language" checked={state.language === lang} onChange={() => update({ language: lang })} />{lang === 'es' ? 'Español sencillo' : 'English'}</label>)}
-          </fieldset>
-        </div>
-        <div className="mt-4 flex max-h-48 flex-wrap gap-2 overflow-auto" aria-label="Palabras">
-          {data.words.filter(item => item.category === category).map(item => <button key={item.id} aria-pressed={item.id === selected}
-            className={item.id === selected ? button : secondary} onClick={() => { setSelected(item.id); setRevealed(false); setWordError('') }}>
-            {item.text}{state.reviewed.includes(item.id) ? ' ✓' : ''}</button>)}
-        </div>
-        <div className="mt-5 rounded-2xl bg-slate-900 p-5">
-          <p className="text-3xl font-bold">{word.text}</p>
-          {!revealed ? <button className={`${button} mt-4`} onClick={() => setRevealed(true)}>Mostrar significado</button>
-            : state.language === 'en' ? <p className="mt-4 text-xl" lang="en">{word.translation}</p>
-              : definition ? <div className="mt-4 space-y-3"><p className="text-lg">{definition.definition}</p><p className="italic text-lime-200">{definition.example}</p><p className="text-xs text-slate-400">Explicación generada automáticamente; puede contener errores.</p></div>
-                : <div className="mt-4"><button className={button} disabled={!!loadingWord} onClick={() => void explain(word.id)}>{loadingWord === word.id ? 'Preparando explicación…' : loadingWord ? 'Terminando otra explicación…' : 'Explicar en español'}</button><p className="mt-2 text-sm text-slate-300">La primera explicación puede tardar un poco.</p></div>}
-          {wordError && <p role="alert" className="mt-3 text-orange-200">{wordError}</p>}
-          <label className="mt-5 flex items-center gap-2"><input type="checkbox" checked={state.reviewed.includes(word.id)} onChange={e => update({ reviewed: e.target.checked ? [...state.reviewed, word.id] : state.reviewed.filter(id => id !== word.id) })} />He practicado esta expresión</label>
-          <p className="mt-2 text-sm text-slate-300">Ahora úsala en una frase sobre ti. Por ejemplo: «Me gusta…», «Me cuesta…» o «Te recomiendo…».</p>
-        </div>
-      </section>
+      <VocabularyJourney />
       <section id="gramatica" className={panel}>
         <h2 className="text-2xl font-bold">2. Entiende y practica la gramática</h2>
         <div className="my-4 grid gap-3 sm:grid-cols-2">
@@ -179,9 +137,9 @@ export function A2Sample() {
         <p className="mt-3 text-sm text-slate-300">Revisa las sugerencias y edita tu texto. Comprueba tú también si has incluido los gustos, la dificultad y la recomendación: la corrección no califica el contenido.</p>
       </section>
       {reviewError && <p role="alert" className="text-orange-200">{reviewError}</p>}
-      <footer className="sticky bottom-20 rounded-2xl border border-slate-600 bg-slate-900 p-4 shadow-xl">
-        <button className={button} disabled={saving} onClick={() => void save()}>{saving ? 'Guardando…' : 'Guardar vocabulario y borrador'}</button>
-        <p className="mt-2 text-sm text-slate-300" role="status">{saveMessage || 'Guarda antes de salir. Tu idioma elegido, las palabras marcadas y el borrador se guardan en tu cuenta.'}</p>
+      <footer className="rounded-2xl border border-slate-600 bg-slate-900 p-4 shadow-xl">
+        <button className={button} disabled={saving} onClick={() => void save()}>{saving ? 'Guardando…' : 'Guardar mi borrador'}</button>
+        <p className="mt-2 text-sm text-slate-300" role="status">{saveMessage || 'El vocabulario se guarda automáticamente. Guarda tu borrador de escritura antes de salir.'}</p>
       </footer>
     </div>
   </main>
