@@ -5,6 +5,11 @@ import type { VocabularyJourney as Journey, VocabularyAction } from '../api/type
 const primary = 'rounded-2xl bg-lime-300 px-6 py-3 font-bold text-slate-950 shadow-lg transition hover:bg-lime-200 active:scale-[0.98] disabled:opacity-50'
 const secondary = 'rounded-2xl border border-slate-500 px-4 py-3 font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50'
 const encouragements = ['¡Bien hecho!', '¡Exacto!', '¡Lo tienes!', '¡Muy bien recordado!', '¡Así se hace!', '¡Una más!']
+const perfectRounds = ['¡Todas correctas!', '¡Pleno de aciertos!', '¡Qué buena ronda!', '¡Objetivo de esta ronda cumplido!', '¡Has acertado cada pregunta!', '¡Reto superado!', '¡Excelente trabajo en esta ronda!']
+const practiceRounds = ['Un paso más, con nuevas pistas', 'Ronda completada: seguimos aprendiendo', 'Ya sabes qué palabras reforzar', 'Buen trabajo: ahora toca afianzar', 'Cada intento te da nuevas pistas', 'Vamos a dar otra vuelta a las difíciles', 'Lo que cuesta también se aprende']
+const firstSteps = ['Empezamos desde aquí, paso a paso', 'Estas palabras necesitan otra vuelta', 'Vamos a repasarlas con calma', 'Ya tenemos una guía para practicar', 'Un nuevo intento, con más pistas']
+const mistakeMessages = ['Ya tienes una pista para la próxima.', 'Mira la diferencia y vuelve a intentarlo en el repaso.', 'Esta merece otra vuelta.', 'Vamos a fijarnos en su significado.', 'La próxima vez tendrás esta pista.']
+const memoryPrompts = ['Hazla tuya: piensa en una persona o situación de tu vida relacionada con esta expresión.', 'Imagina una escena en la que podrías usar esta expresión.', 'Prueba a crear una frase breve con esta palabra.', 'Asocia esta expresión con alguien o algo que conoces.', 'Dila en voz alta y piensa cuándo te sería útil.']
 
 export function VocabularyJourney() {
   const [journey, setJourney] = useState<Journey | null>(null)
@@ -85,6 +90,8 @@ export function VocabularyJourney() {
   const finished = journey.phase === 'complete'
   const progress = journey.completed / journey.chapters * 100
   const extra = journey.word ? explanation[journey.word.id] : null
+  const roundMessages = journey.correct === journey.total ? perfectRounds : journey.correct === 0 ? firstSteps : practiceRounds
+  const roundMessage = roundMessages[(journey.chapter + journey.revision) % roundMessages.length]
   return <section id="palabras" className="overflow-hidden rounded-[2rem] border border-slate-700 bg-slate-800 shadow-xl">
     <div className="bg-gradient-to-br from-teal-900 via-slate-800 to-slate-900 px-5 py-6 sm:px-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -112,7 +119,7 @@ export function VocabularyJourney() {
           <button className="mt-3 text-sm font-semibold text-lime-300" onClick={() => setRevealed(!revealed)}>{revealed ? 'Ocultar y probar mi memoria' : 'Ver significado otra vez'}</button>
           {extra ? <div className="mt-5 rounded-2xl bg-slate-800 p-4"><p>{extra.definition}</p><p className="mt-2 italic text-teal-200">«{extra.example}»</p><p className="mt-2 text-xs text-slate-400">Ejemplo generado automáticamente; puede contener errores.</p></div> : <button className="mt-5 block text-sm font-bold text-teal-200 disabled:opacity-50" disabled={!!explaining} onClick={() => void explain()}>{explaining === journey.word.id ? 'Preparando tu ejemplo…' : explaining ? 'Terminando el ejemplo anterior…' : 'Explícamelo con un ejemplo en español'}</button>}
           {extraError?.id === journey.word.id && <p className="mt-3 text-sm text-orange-200" role="status">{extraError.message}</p>}
-          <p className="mt-6 text-sm text-slate-400">Hazla tuya: piensa en una persona o situación de tu vida relacionada con esta expresión.</p>
+          <p className="mt-6 text-sm text-slate-400">{memoryPrompts[(journey.chapter + journey.index) % memoryPrompts.length]}</p>
           <button className={`${primary} mt-6 w-full sm:w-auto`} disabled={disabled} onClick={() => act('next')}>{journey.index + 1 === journey.total ? '¡Vamos al mini quiz! →' : 'Siguiente palabra →'}</button>
         </div>}
 
@@ -121,7 +128,7 @@ export function VocabularyJourney() {
           <h3 className="mt-2 text-2xl font-bold leading-snug">{journey.question.prompt}</h3>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">{journey.question.options.map((option, i) => <button key={option.id} disabled={disabled || !!journey.feedback} onClick={() => act('answer', option.id)} className={`flex min-h-20 items-center gap-3 rounded-2xl border p-4 text-left font-semibold transition enabled:hover:border-lime-300 enabled:hover:bg-slate-700 ${journey.feedback?.answer_id === option.id ? 'border-lime-300 bg-lime-300/10' : journey.feedback?.chosen_id === option.id ? 'border-orange-300 bg-orange-300/10' : 'border-slate-600 bg-slate-900'}`}><span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-700 text-sm text-lime-200">{journey.feedback?.answer_id === option.id ? '✓' : journey.feedback?.chosen_id === option.id ? '↻' : i + 1}</span><span>{option.label}</span></button>)}</div>
           {journey.feedback && <div ref={feedback} tabIndex={-1} className={`mt-5 scroll-mb-28 rounded-2xl border p-5 outline-none ${journey.feedback.correct ? 'border-lime-400/40 bg-lime-300/10' : 'border-orange-300/40 bg-orange-300/10'}`} role="status">
-            <p className="text-xl font-bold">{journey.feedback.correct ? encouragements[(journey.correct - 1) % encouragements.length] : 'Ya tienes una pista para la próxima.'}</p>
+            <p className="text-xl font-bold">{journey.feedback.correct ? encouragements[(journey.chapter + journey.correct - 1) % encouragements.length] : mistakeMessages[(journey.chapter + journey.index) % mistakeMessages.length]}</p>
             <p className="mt-2 font-bold">{journey.feedback.word}</p><p className="mt-1">{journey.feedback.meaning}</p>
             {!journey.feedback.correct && <p className="mt-3 text-sm text-orange-100">La guardamos para tu repaso de errores. Lee el significado antes de seguir.</p>}
             {journey.feedback.correct ? <p className="mt-4 text-sm text-lime-200">{pending && !busy ? 'Pendiente de guardar…' : 'Siguiente pregunta…'}</p> : <button className={`${primary} mt-4`} disabled={disabled} onClick={() => act('continue')}>Continuar →</button>}
@@ -130,7 +137,7 @@ export function VocabularyJourney() {
 
         {summary && <div className="rounded-3xl bg-slate-900 p-7 text-center">
           <span aria-hidden="true" className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-lime-300 text-3xl text-slate-950">✓</span>
-          <h3 className="mt-5 text-2xl font-bold">{journey.correct === journey.total ? '¡Una ronda redonda!' : 'Un paso más, con nuevas pistas'}</h3>
+          <h3 className="mt-5 text-2xl font-bold">{roundMessage}</h3>
           <p className="mt-3 text-4xl font-bold text-lime-300">{journey.correct} <span className="text-xl text-slate-400">/ {journey.total}</span></p>
           <p className="mt-2 text-slate-300">Respuestas correctas en esta ronda.</p>
           <p className="mt-4 text-sm text-slate-400">{journey.mistakes ? `${journey.mistakes} expresiones esperan un pequeño repaso.` : 'No quedan errores pendientes. Puedes seguir o volver cuando quieras.'}</p>
