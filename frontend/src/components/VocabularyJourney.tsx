@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { api, ApiError } from '../api/client'
 import type { VocabularyJourney as Journey, VocabularyAction } from '../api/types'
 
 const primary = 'rounded-2xl bg-lime-300 px-6 py-3 font-bold text-slate-950 shadow-lg transition hover:bg-lime-200 active:scale-[0.98] disabled:opacity-50'
 const secondary = 'rounded-2xl border border-slate-500 px-4 py-3 font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50'
+const encouragements = ['¡Bien hecho!', '¡Exacto!', '¡Lo tienes!', '¡Muy bien recordado!', '¡Así se hace!', '¡Una más!']
 
 export function VocabularyJourney() {
   const [journey, setJourney] = useState<Journey | null>(null)
@@ -26,6 +27,12 @@ export function VocabularyJourney() {
   useEffect(() => { void load() }, [])
   useEffect(() => { setRevealed(true); setSpeechError(''); window.speechSynthesis?.cancel() }, [journey?.word?.id])
   useEffect(() => () => { window.speechSynthesis?.cancel() }, [])
+  const advanceCorrect = useEffectEvent(() => act('continue'))
+  useEffect(() => {
+    if (!journey?.feedback?.correct || busy || pending) return
+    const timer = window.setTimeout(() => advanceCorrect(), 1100)
+    return () => window.clearTimeout(timer)
+  }, [journey?.revision, journey?.feedback?.correct, busy, pending])
 
   async function send(command: VocabularyAction) {
     if (lock.current) return
@@ -114,10 +121,10 @@ export function VocabularyJourney() {
           <h3 className="mt-2 text-2xl font-bold leading-snug">{journey.question.prompt}</h3>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">{journey.question.options.map((option, i) => <button key={option.id} disabled={disabled || !!journey.feedback} onClick={() => act('answer', option.id)} className={`flex min-h-20 items-center gap-3 rounded-2xl border p-4 text-left font-semibold transition enabled:hover:border-lime-300 enabled:hover:bg-slate-700 ${journey.feedback?.answer_id === option.id ? 'border-lime-300 bg-lime-300/10' : journey.feedback?.chosen_id === option.id ? 'border-orange-300 bg-orange-300/10' : 'border-slate-600 bg-slate-900'}`}><span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-700 text-sm text-lime-200">{journey.feedback?.answer_id === option.id ? '✓' : journey.feedback?.chosen_id === option.id ? '↻' : i + 1}</span><span>{option.label}</span></button>)}</div>
           {journey.feedback && <div ref={feedback} tabIndex={-1} className={`mt-5 scroll-mb-28 rounded-2xl border p-5 outline-none ${journey.feedback.correct ? 'border-lime-400/40 bg-lime-300/10' : 'border-orange-300/40 bg-orange-300/10'}`} role="status">
-            <p className="text-xl font-bold">{journey.feedback.correct ? '¡Eso es! Bien recordado.' : 'Ya tienes una pista para la próxima.'}</p>
+            <p className="text-xl font-bold">{journey.feedback.correct ? encouragements[(journey.correct - 1) % encouragements.length] : 'Ya tienes una pista para la próxima.'}</p>
             <p className="mt-2 font-bold">{journey.feedback.word}</p><p className="mt-1">{journey.feedback.meaning}</p>
             {!journey.feedback.correct && <p className="mt-3 text-sm text-orange-100">La guardamos para tu repaso de errores. Lee el significado antes de seguir.</p>}
-            <button className={`${primary} mt-4`} disabled={disabled} onClick={() => act('continue')}>Continuar →</button>
+            {journey.feedback.correct ? <p className="mt-4 text-sm text-lime-200">{pending && !busy ? 'Pendiente de guardar…' : 'Siguiente pregunta…'}</p> : <button className={`${primary} mt-4`} disabled={disabled} onClick={() => act('continue')}>Continuar →</button>}
           </div>}
         </div>}
 

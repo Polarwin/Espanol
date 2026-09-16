@@ -6,7 +6,7 @@ the existing Vitamina A2 Unit 1 lesson. Sign in with an existing Español accoun
 - HTTP LAN: `http://192.168.0.9:5173/muestra/a2/1`.
 - HTTPS LAN: `https://192.168.0.9:5174/muestra/a2/1` (device must trust the local
   certificate authority, as with the existing voice-practice pages).
-- Android release: 1.0.46 / versionCode 47.
+- Android release: 1.0.47 / versionCode 48.
 
 The sample contains the p.148 glossary (135 category entries, including phrases
 repeated in separate source categories), eight authored grammar checks, both
@@ -28,6 +28,12 @@ stable questions. Correct answers and grading stay on the server; generated
 model output never determines a quiz grade. Distractors exclude the same category
 to avoid close synonyms, and exclude repeated words/translations. This first
 version tests recognition rather than free recall or certified mastery.
+
+Correct quiz answers show varied encouragement and advance automatically after
+1.1 seconds, including in review and final tests. Incorrect answers retain the
+Continue button so the learner can read the explanation. Pending save failures
+pause automatic advancement until the learner retries; unmounting cancels the
+timer. Reloading a saved correct answer resumes the automatic transition.
 
 Errors enter a personal review queue. A round covers up to five error items,
 each appearing twice in different question directions. An item leaves the queue
