@@ -6,7 +6,16 @@ the existing Vitamina A2 Unit 1 lesson. Sign in with an existing Español accoun
 - HTTP LAN: `http://192.168.0.9:5173/muestra/a2/1`.
 - HTTPS LAN: `https://192.168.0.9:5174/muestra/a2/1` (device must trust the local
   certificate authority, as with the existing voice-practice pages).
-- Android release: 1.0.50 / versionCode 51.
+- Android release: 1.0.51 / versionCode 52.
+
+Listening now has three authored multiple-choice questions per track, one at a
+time, with a first-attempt score, automatic advance for correct answers and a
+mistakes-only retry. These practice scores are session-only (not saved mastery).
+The three-sentence exercise requests an advisory local SmolLM3 task-completion
+mark out of 3, one point each for a comprehensible preference, difficulty and
+piece of advice. Evidence must match the learner's text (punctuation spacing may
+be normalized). BARTO corrections stay separate; 3/3 is not a grammar accuracy
+grade. Unavailable/invalid grading does not become a zero. No learner data reset.
 
 The sample contains the p.148 glossary (135 category entries, including phrases
 repeated in separate source categories), eight authored grammar checks, both

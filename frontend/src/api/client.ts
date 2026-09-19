@@ -138,8 +138,8 @@ export const api = {
   explainA2Word(id: string): Promise<{ definition: string; example: string }> {
     return request(`/api/sample/a2-unit-1/words/${encodeURIComponent(id)}`, { method: 'POST' })
   },
-  correctA2Writing(text: string): Promise<A2Correction> {
-    return request('/api/sample/a2-unit-1/writing', { method: 'POST', body: JSON.stringify({ text }) })
+  correctA2Writing(text: string, task: 'writing' | 'grammar' = 'writing'): Promise<A2Correction> {
+    return request('/api/sample/a2-unit-1/writing', { method: 'POST', body: JSON.stringify({ text, task }) })
   },
   async getA2Audio(track: number): Promise<Blob> {
     const response = await fetch(`${API_ORIGIN}/api/sample/a2-unit-1/audio/${track}`, {

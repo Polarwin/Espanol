@@ -171,6 +171,7 @@ export interface A2Sample {
 }
 
 export interface A2Correction {
+  assessment?: { status: 'graded' | 'unavailable'; score?: number; total?: number; criteria?: Record<string, { met: boolean; evidence: string; feedback: string }> }
   status: 'suggestions' | 'no_suggestion' | 'partial' | 'unavailable'
   original: string
   suggested: string | null
