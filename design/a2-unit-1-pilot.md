@@ -6,7 +6,7 @@ the existing Vitamina A2 Unit 1 lesson. Sign in with an existing Español accoun
 - HTTP LAN: `http://192.168.0.9:5173/muestra/a2/1`.
 - HTTPS LAN: `https://192.168.0.9:5174/muestra/a2/1` (device must trust the local
   certificate authority, as with the existing voice-practice pages).
-- Android release: 1.0.49 / versionCode 50.
+- Android release: 1.0.50 / versionCode 51.
 
 The sample contains the p.148 glossary (135 category entries, including phrases
 repeated in separate source categories), eight authored grammar checks, both
@@ -74,7 +74,13 @@ API restart. Inference is shared with other local applications; unavailable/busy
 responses let the learner retry or switch to English.
 
 Writing uses the existing local `barto` correction provider and its 12-second
-timeout. Original and suggested text remain separate. Partial/unavailable results
+timeout. The shared writing-feedback component shows removed text struck through
+and additions highlighted, with a clean suggested version available on expansion.
+Spacing-only changes have their own label; removed spaces are visible as ␠.
+Identical text does not appear as a correction or as duplicate paragraphs.
+Classification preserves accents, punctuation and word boundaries (for example,
+«a ver» versus «aver» is not treated as a cosmetic spacing change).
+Partial/unavailable results
 are labelled; unchanged text is not presented as proof of correctness. Grammar
 gap questions use authored answers and explanations; open grammar sentences use
 BARTO. Neither model grades proficiency or the writing task's completeness.
@@ -98,3 +104,9 @@ account isolation; mobile/desktop browser checks with an isolated database,
 including teach/quiz/review/resume, language persistence, and a response dropped
 after the server committed followed by an idempotent retry. Existing real model,
 writing and audio integrations were verified in 1.0.45 and retained.
+
+Writing-feedback validation in 1.0.50: four text-comparison tests, frontend build
+and lint, and browser checks with controlled model responses for spacing-only,
+spelling/accent edits, identical text, partial coverage and unavailability on
+mobile/desktop. BARTO itself is unchanged; clearer feedback does not imply that
+it detects every grammar or meaning problem.

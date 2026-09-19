@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { A2Sample as Sample, A2StudyState, A2Correction } from '../api/types'
 import { VocabularyJourney } from '../components/VocabularyJourney'
+import { WritingFeedback } from '../components/WritingFeedback'
 
 const button = 'rounded-xl bg-lime-300 px-4 py-2 font-bold text-slate-950 disabled:opacity-50'
 const secondary = 'rounded-xl border border-slate-500 px-4 py-2 font-semibold text-white disabled:opacity-50'
@@ -28,17 +29,6 @@ function TextbookAudio({ track }: { track: number }) {
     {url ? <audio controls src={url} className="w-full" aria-label={`Audio del libro, pista ${track}`} />
       : <button className={secondary} disabled={busy} onClick={() => void load()}>{busy ? 'Cargando…' : `Escuchar pista ${track} del libro`}</button>}
     {error && <p role="alert">{error}</p>}
-  </div>
-}
-
-function WritingFeedback({ result }: { result: A2Correction }) {
-  return <div className="mt-3 space-y-2 rounded-xl bg-slate-900 p-4" aria-live="polite">
-    <p className="font-bold">{result.status === 'unavailable' ? 'La revisión no está disponible. Conserva tu texto e inténtalo de nuevo.'
-      : result.status === 'no_suggestion' ? 'No se sugieren cambios. Esto no garantiza que el texto sea correcto.'
-        : result.status === 'partial' ? 'Revisión parcial: algunas frases no se han revisado.' : 'Sugerencia para revisar'}</p>
-    <p className="text-sm text-slate-300">Tu texto: {result.original}</p>
-    {result.suggested && <p>{result.suggested}</p>}
-    <p className="text-xs text-slate-300">La revisión automática puede equivocarse. Compara los textos antes de cambiar el tuyo.</p>
   </div>
 }
 
@@ -120,7 +110,7 @@ export function A2Sample() {
         <label htmlFor="grammar-writing" className="mt-5 block font-bold">Ahora crea tres frases: un gusto, una dificultad y un consejo.</label>
         <textarea id="grammar-writing" className="mt-2 w-full rounded-xl bg-slate-900 p-3" rows={3} maxLength={2000} value={grammarText} onChange={e => { setGrammarText(e.target.value); setGrammarResult(null) }} placeholder="Me gustan… Me cuesta… Te recomiendo…" />
         <button className={button} disabled={!!reviewing || !grammarText.trim()} onClick={() => void review('grammar')}>{reviewing === 'grammar' ? 'Revisando…' : 'Revisar mis frases'}</button>
-        {grammarResult && <WritingFeedback result={grammarResult} />}
+        {grammarResult && <WritingFeedback correction={grammarResult} dark />}
       </section>
       <section id="escuchar" className={panel}>
         <h2 className="text-2xl font-bold">3. Escucha el libro</h2>
@@ -139,7 +129,7 @@ export function A2Sample() {
         <p className="mt-2 text-slate-300">Describe tu personalidad, dos intereses, una dificultad y una actividad para practicar juntos. Añade una recomendación. Usa palabras del glosario y las estructuras de esta unidad.</p>
         <textarea id="unit-writing" className="mt-3 w-full rounded-xl bg-slate-900 p-3" rows={7} maxLength={2000} value={state.draft} onChange={e => { update({ draft: e.target.value }); setWritingResult(null) }} placeholder="Hola, soy… Me interesa… Me cuesta…" />
         <button className={button} disabled={!!reviewing || !state.draft.trim()} onClick={() => void review('writing')}>{reviewing === 'writing' ? 'Revisando…' : 'Revisar mi texto'}</button>
-        {writingResult && <WritingFeedback result={writingResult} />}
+        {writingResult && <WritingFeedback correction={writingResult} dark />}
         {state.original && <details className="mt-4"><summary className="cursor-pointer text-lime-300">Comparar con mi primer borrador</summary><p className="mt-2 whitespace-pre-wrap">{state.original}</p></details>}
         <p className="mt-3 text-sm text-slate-300">Revisa las sugerencias y edita tu texto. Comprueba tú también si has incluido los gustos, la dificultad y la recomendación: la corrección no califica el contenido.</p>
       </section>
