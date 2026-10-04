@@ -1,0 +1,21 @@
+const {chromium}=require('/home/justin/tmp-reinforcement-browser/node_modules/playwright');
+const assert=require('node:assert/strict');
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--ignore-certificate-errors'],executablePath:'/home/justin/.cache/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-linux64/chrome-headless-shell'});
+ const context=await browser.newContext({ignoreHTTPSErrors:true});const page=await context.newPage();const errors=[],remote=[];
+ page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(new URL(r.url()).hostname!=='192.168.0.9')remote.push(r.url());});
+ await page.goto('https://192.168.0.9/ytwatcher/static/EspanolFlashcards/');
+ await page.getByText('Disponible sin conexión',{exact:true}).waitFor({timeout:30000});
+ await context.setOffline(true);await page.reload();
+ await page.getByRole('button',{name:'Empezar · 10 tarjetas',exact:true}).click();
+ await page.getByRole('button',{name:/Girar tarjeta/}).click();
+ await page.getByRole('button',{name:'Lo sabía Seguimos →',exact:true}).click();
+ assert.equal(await page.locator('#learned').innerText(),'1');
+ await page.getByRole('button',{name:'Explorar la biblioteca'}).click();
+ await page.getByRole('searchbox').fill('reunirse');await page.locator('.wordrow').first().click();
+ await page.getByText('me reúno',{exact:true}).waitFor();
+ const response=await page.evaluate(async()=>{const r=await fetch('EspanolFlashcards-offline.html');return {ok:r.ok,html:(await r.text()).includes('const DECK =')}});
+ assert.deepEqual(response,{ok:true,html:true});assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
+ console.log('PASS: actual LAN HTTPS, service worker installation, offline reload and study, offline conjugations, cached download, zero remote services');
+ await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});
