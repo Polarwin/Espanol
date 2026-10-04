@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from ..models import Exercise
 from .ai.contracts import Correction
 from .ai.providers import correct as suggest_correction
+from .ai.a2_checker import correction as check_a2
 
 SUCCESS_DELTA = 2.0  # per unit of skill weight, scaled by score
 FAILURE_DELTA = -1.0  # per unit of skill weight
@@ -40,7 +41,7 @@ def score_attempt(exercise: Exercise, answer: str) -> ScoreResult:
     correction = None
     if exercise.type == "writing":
         correct, score, feedback = _score_writing(answer)
-        correction = suggest_correction(answer)
+        correction = check_a2(answer) if exercise.lesson and exercise.lesson.cefr_level == 'A2' else suggest_correction(answer)
     elif exercise.options:
         correct = answer == exercise.expected_answer.strip()
         score = 1.0 if correct else 0.0

@@ -6,7 +6,25 @@ the existing Vitamina A2 Unit 1 lesson. Sign in with an existing Español accoun
 - HTTP LAN: `http://192.168.0.9:5173/muestra/a2/1`.
 - HTTPS LAN: `https://192.168.0.9:5174/muestra/a2/1` (device must trust the local
   certificate authority, as with the existing voice-practice pages).
-- Android release: 1.0.52 / versionCode 53.
+- Android release: 1.0.53 / versionCode 54.
+
+The checker now covers selected constructions in all ten Vitamina A2 units.
+`services/ai/a2_rules.py` contains the coverage list shown in the feedback panel:
+perfect participles (U2), impersonal se puede + infinitive (U3), common irregular
+gerunds (U4), tú preterite endings (U5), soler and quantities (U6), tan/tanto
+comparisons (U7), irregular imperfect forms and combined object pronouns (U8),
+doler and infinitive periphrases (U9), and possessive agreement (U10), plus the
+existing U1 rules. This is selected rule coverage per unit, not complete grammar
+mastery or a full syntactic parser. It avoids choosing past tense from regional
+time-adverb usage and preserves legitimate double participles.
+
+Every A2 lesson's writing exercise, linked mistake review and typed conversation
+now uses this checker. Speech transcripts do not receive automatic grammar
+accusations. Other CEFR levels keep their existing correction path. Responses
+retain rule metadata through the API's Correction schema. Rule corrections do
+not alter practice credit or the separate 0–3 communicative-task assessment.
+The full backend suite passed: 288 tests, one opt-in skipped. Live BARTO checks
+corrected planted errors across all ten units.
 
 Both open-writing buttons now use `services/ai/a2_checker.py` before BARTO.
 Conservative rules detect number agreement in familiar simple gustar/costar

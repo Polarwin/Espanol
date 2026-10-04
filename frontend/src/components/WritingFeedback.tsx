@@ -21,13 +21,14 @@ export function WritingFeedback({ correction, dark = false }: { correction?: Wri
       </>}
     </>}
     {correction.grammar_check && <div className="mt-4 space-y-3">
-      <h4 className="font-bold">Gramática de la unidad · {correction.grammar_check.issues.length} ajuste(s) detectado(s)</h4>
+      <h4 className="font-bold">Gramática A2 · {correction.grammar_check.issues.length} ajuste(s) detectado(s)</h4>
       {correction.grammar_check.issues.map(issue => <div key={`${issue.start}-${issue.rule}`} className="rounded-xl border border-slate-500 p-3">
-        <p className="font-bold">{issue.original} → {issue.replacement}</p><p className="mt-1">{issue.explanation}</p>
+        <p className="font-bold">{issue.original} → {issue.replacement}{issue.unit && <span className="ml-2 text-xs">Unidad {issue.unit}</span>}</p><p className="mt-1">{issue.explanation}</p>
         {issue.references.map(ref => <details key={`${ref.source}-${ref.page}`} className="mt-2 break-words"><summary className="cursor-pointer">Ejemplo del libro · página PDF {ref.page}</summary><p className="mt-2">{ref.source}</p><blockquote className="mt-1">«{ref.excerpt}»</blockquote><p className={`mt-1 text-xs ${muted}`}>Texto reconocido del libro; puede contener errores de lectura.</p></details>)}
       </div>)}
-      <p className={`text-xs ${muted}`}>Comprobamos algunas estructuras de gustos, dificultades y consejos. No detectar errores no garantiza que todo el texto sea correcto.</p>
-      {['unavailable', 'rejected'].includes(correction.grammar_check.model_status) && <p>Solo se ha podido completar la comprobación de las estructuras de la unidad. Puedes volver a intentar la revisión general.</p>}
+      <p className={`text-xs ${muted}`}>Comprobamos estructuras seleccionadas de las diez unidades A2. No detectar errores no garantiza que todo el texto sea correcto.</p>
+      {correction.grammar_check.units && <details><summary className="cursor-pointer">¿Qué comprobamos en A2?</summary><ul className="mt-2 list-inside list-disc">{correction.grammar_check.units.map(unit => <li key={unit}>{unit}</li>)}</ul></details>}
+      {['unavailable', 'rejected'].includes(correction.grammar_check.model_status) && <p>Solo se ha podido completar la comprobación de las estructuras A2. Puedes volver a intentar la revisión general.</p>}
     </div>}
     {correction.status === 'partial' && correction.skipped > 0 && <p className="mt-3 font-semibold">Revisión parcial: {correction.skipped} frase(s) sin revisar. Prueba con frases más cortas.</p>}
     <p className={`mt-3 text-xs ${muted}`}>El revisor puede pasar por alto errores. Comprueba que los cambios conservan lo que querías decir; no son una calificación del contenido.</p>

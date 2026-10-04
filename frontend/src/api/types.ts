@@ -245,9 +245,10 @@ export interface SkillUpdate {
 }
 
 export interface GrammarCheck {
-  coverage: 'a2-unit-1'
+  coverage: 'a2-unit-1' | 'a2'
+  units?: string[]
   model_status: string
-  issues: { start: number; end: number; original: string; replacement: string; rule: string; explanation: string; references: { source: string; page: number; excerpt: string }[] }[]
+  issues: { start: number; end: number; original: string; replacement: string; rule: string; unit?: number; explanation: string; references: { source: string; page: number; excerpt: string }[] }[]
 }
 
 export interface WritingCorrection {

@@ -87,6 +87,7 @@ def test_conversation_history_and_retry(client, auth_headers, db_session, monkey
 def test_writing_suggestion_does_not_change_credit(client, auth_headers, db_session, monkeypatch):
     from backend.app.services import scoring
     monkeypatch.setattr(scoring, 'suggest_correction', lambda text: Correction(status='suggestions', original=text, suggested='Tengo veinte años.', processed=1))
+    monkeypatch.setattr(providers, 'correct', lambda text: Correction(status='suggestions', original=text, suggested='Tengo veinte años.', processed=1))
     exercise = db_session.scalar(select(Exercise).where(Exercise.type == 'writing'))
     result = client.post(f'/api/exercises/{exercise.id}/attempt', json={'answer':'Soy veinte años.'}, headers=auth_headers)
     assert result.status_code == 200, result.text

@@ -15,6 +15,7 @@ from ..config import settings
 from ..db import get_db
 from ..models import Lesson, User, UserState, ConversationSession
 from ..services.ai.providers import respond as ai_respond, correct as ai_correct
+from ..services.ai.a2_checker import correction as check_a2
 from ..seed.conversation_content import CONVERSATION_SCENARIOS
 from ..seed.vocabulary_content import VOCABULARY_BANKS
 from ..services.goals import increment_goal
@@ -246,7 +247,8 @@ async def conversation_respond(
         'explanation': 'Puedes practicar esta respuesta también por escrito.', 'status': 'not_assessed'}
     reply, feedback, suggestions = _conversation_reply(
         transcript, turn, (user.nickname or user.display_name).strip(), profile, correction)
-    writing_correction = await run_in_threadpool(ai_correct, transcript) if text else None
+    checker = check_a2 if profile['cefr_level'] == 'A2' else ai_correct
+    writing_correction = await run_in_threadpool(checker, transcript) if text else None
     fallback = False
     if turn < 3:
         reply, fallback = await run_in_threadpool(ai_respond, profile, history, transcript, reply)

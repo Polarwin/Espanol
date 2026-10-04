@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class Correction(BaseModel):
+    grammar_check: dict | None = None
     status: Literal['suggestions', 'no_suggestion', 'partial', 'unavailable']
     original: str = Field(max_length=2000)
     suggested: str | None = Field(default=None, max_length=4000)

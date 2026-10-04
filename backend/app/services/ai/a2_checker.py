@@ -1,4 +1,4 @@
-"""Conservative A2 Unit 1 rules plus the existing correction provider.
+"""Conservative rules across A2 plus the existing correction provider.
 
 Rules cover familiar, unambiguous constructions, not arbitrary Spanish syntax.
 Offsets always address the original submission. Book evidence is retrieved,
@@ -6,7 +6,7 @@ never generated; model suggestions cannot change the targeted verb families.
 """
 import re
 
-from . import providers
+from . import providers, a2_rules
 from .. import textbook
 
 NOUNS = {
@@ -27,7 +27,7 @@ ADVICE = re.compile(r'\b(?P<head>(?:te|le|os|les)\s+recomiendo(?:\s+que)?|puedes
 PROTECTED = re.compile(r'\b(?:gust\w*|cuest\w*|recomiend\w*|puedes|hay)\b', re.I)
 
 
-def detect(text: str) -> list[dict]:
+def unit_one(text: str) -> list[dict]:
     issues = []
 
     def add(match, replacement, rule, explanation, query):
@@ -76,6 +76,15 @@ def detect(text: str) -> list[dict]:
     return sorted(issues, key=lambda item: item['start'])
 
 
+def detect(text: str) -> list[dict]:
+    candidates = [{**item, 'unit': 1} for item in unit_one(text)] + a2_rules.detect(text)
+    result = []
+    for issue in sorted(candidates, key=lambda item: item['start']):
+        if not result or issue['start'] >= result[-1]['end']:
+            result.append(issue)
+    return result
+
+
 def references(query: str) -> list[dict]:
     """Return a short literal example only when relevant words occur together."""
     patterns = {
@@ -85,7 +94,8 @@ def references(query: str) -> list[dict]:
         'hay que infinitivo': r'(?i)\bhay\s*\+?\s*que\s*\+?\s*infinitivo[^.;\n]{0,100}',
     }
     for passage in textbook.search(query, limit=4):
-        match = re.search(patterns[query], str(passage['text']))
+        pattern = patterns.get(query, r'(?i)\b' + re.escape(query) + r'\b[^.;\n]{0,100}')
+        match = re.search(pattern, str(passage['text']))
         if match:
             return [{'source': passage['source'], 'page': passage['page'], 'excerpt': match.group().strip()}]
     return []
@@ -98,7 +108,19 @@ def check(text: str) -> dict:
         repaired = repaired[:issue['start']] + issue['replacement'] + repaired[issue['end']:]
     model = providers.correct(repaired)
     suggestion = model.suggested
-    rejected = bool(suggestion and (detect(suggestion) or
+    # Do not let the model undo a deterministic repair anywhere in the text.
+    from difflib import SequenceMatcher
+    repaired_spans = []
+    shift = 0
+    for issue in issues:
+        start = issue['start'] + shift
+        repaired_spans.append((start, start + len(issue['replacement'])))
+        shift += len(issue['replacement']) - (issue['end'] - issue['start'])
+    overwrites = bool(suggestion and any(
+        tag != 'equal' and any((i < end and j > start) or (i == j and start <= i <= end)
+                               for start, end in repaired_spans)
+        for tag, i, j, _, _ in SequenceMatcher(None, repaired, suggestion).get_opcodes()))
+    rejected = bool(suggestion and (overwrites or detect(suggestion) or
         PROTECTED.findall(suggestion.lower()) != PROTECTED.findall(repaired.lower())))
     if rejected:
         suggestion = None
@@ -113,6 +135,11 @@ def check(text: str) -> dict:
         result['status'] = 'no_suggestion'
     for issue in issues:
         issue['references'] = references(issue.pop('query'))
-    result['grammar_check'] = {'issues': issues, 'coverage': 'a2-unit-1',
+    result['grammar_check'] = {'issues': issues, 'coverage': 'a2', 'units': a2_rules.UNITS,
         'model_status': 'rejected' if rejected else model.status}
     return result
+
+
+def correction(text: str):
+    from .contracts import Correction
+    return Correction.model_validate(check(text))
