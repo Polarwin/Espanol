@@ -7,6 +7,7 @@ import httpx
 from pydantic import BaseModel, Field
 
 from ...config import settings
+from .. import textbook
 from .vocabulary import MODEL, _slot
 
 
@@ -65,7 +66,8 @@ def grade(text: str) -> dict:
                     {'role': 'assistant', 'content': json.dumps({name: {
                         'met': False, 'evidence': '', 'feedback': 'Escribe una idea completa, no solo el nombre del objetivo.'}
                         for name in ['preference', 'difficulty', 'advice']})},
-                    {'role': 'user', 'content': json.dumps({'texto': text}, ensure_ascii=False)},
+                    {'role': 'user', 'content': json.dumps({'texto': text,
+                        'referencia_del_libro': textbook.context('gustar costar recomendar infinitivo', limit=2)}, ensure_ascii=False)},
                 ],
             })
             response.raise_for_status()
