@@ -13,7 +13,7 @@ from ..config import settings
 from ..db import get_db
 from ..models import A2SampleProgress, Lesson, User, VocabularyJourney
 from ..seed.a2_sample import WORDS, GRAMMAR, TITLE
-from ..services.ai import providers, vocabulary, a2_grading
+from ..services.ai import vocabulary, a2_grading, a2_checker
 from ..services.security import get_current_user
 from ..services.ratelimit import rate_limit
 from ..services import vocabulary_journey as journey
@@ -120,7 +120,7 @@ def writing(body: Writing, user: User = Depends(get_current_user)):
     # This pilot explicitly uses the existing local BARTO worker.
     if not settings.ai_correction_local or settings.ai_correction_adapter != 'barto':
         raise HTTPException(503, 'La revisión local no está disponible.')
-    result = providers.correct(body.text).model_dump()
+    result = a2_checker.check(body.text)
     if body.task == 'grammar':
         try:
             result['assessment'] = a2_grading.grade(body.text)

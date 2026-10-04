@@ -6,7 +6,30 @@ the existing Vitamina A2 Unit 1 lesson. Sign in with an existing Español accoun
 - HTTP LAN: `http://192.168.0.9:5173/muestra/a2/1`.
 - HTTPS LAN: `https://192.168.0.9:5174/muestra/a2/1` (device must trust the local
   certificate authority, as with the existing voice-practice pages).
-- Android release: 1.0.51 / versionCode 52.
+- Android release: 1.0.52 / versionCode 53.
+
+Both open-writing buttons now use `services/ai/a2_checker.py` before BARTO.
+Conservative rules detect number agreement in familiar simple gustar/costar
+constructions, singular agreement with a single known infinitive, and selected
+finite-verb errors after puedes, hay que and recomiendo (including que +
+subjunctive). This is limited A2 Unit 1 coverage, not a general Spanish parser.
+Coordinated subjects, relative clauses and unfamiliar noun phrases are left to
+review rather than assigned a deterministic correction. In particular, singular
+agreement can be valid with postposed coordinated subjects; see
+[FundéuRAE](https://www.fundeu.es/consulta/concordancia-de-numero-1085/).
+
+The UI shows original/replacement spans, authored rule explanations, and short
+literal textbook examples retrieved from the local index when a relevant example
+is found. Missing or unusable references are omitted, not invented. Book page
+numbers are PDF page numbers. These explanations do not depend on SmolLM3
+detecting the error. BARTO runs on the rule-corrected paragraph and its proposal
+is discarded if it reintroduces a known error or changes the protected verb
+families. If BARTO is unavailable, rule corrections remain visible as a partial
+review. The 0–3 communicative-task mark remains separate.
+
+Validation: 53 backend checks passed, one opt-in check skipped. A browser check
+against an isolated API with real BARTO/index verified three errors in a paragraph,
+book evidence, valid alternatives, spacing-only feedback and mobile layout.
 
 Listening now has three authored multiple-choice questions per track, one at a
 time, with a first-attempt score, automatic advance for correct answers and a
