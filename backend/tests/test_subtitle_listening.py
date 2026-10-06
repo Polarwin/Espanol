@@ -71,8 +71,8 @@ def test_selection_preserves_exact_contiguous_words():
     with pytest.raises(ValueError, match='existing'):
         listening.clip_from_selection(dict(decision(), last=20), window(), 'A2')
     rapid = [dict(s, start=s['start'] / 3, end=s['end'] / 3) for s in window()]
-    with pytest.raises(ValueError, match='Too fast'):
-        listening.clip_from_selection(decision(), rapid, 'A2')
+    fast_clip = listening.clip_from_selection(decision(), rapid, 'A2')
+    assert fast_clip['level_assessment']['words_per_minute'] > 170
     assert listening.clip_from_selection(decision(False), window(), 'A2') is None
 
 
@@ -131,12 +131,10 @@ def test_ffmpeg_extracts_expected_duration_and_rejects_truncated_audio(tmp_path)
     assert json.loads((tmp_path / 'audio.json').read_text())['source_hash'] == digest
 
 
-def test_a1_non_present_verbs_reject_the_generated_reading(monkeypatch):
-    model = Mock(return_value={'present_only': False, 'reason': 'Compró is past tense.'})
+def test_a1_guides_present_tense_without_a_blocking_model_review(monkeypatch):
+    model = Mock(side_effect=AssertionError('Do not run a strict tense reviewer'))
     monkeypatch.setattr(reading, 'chat', model)
-    with pytest.raises(ValueError, match='present indicative'):
-        reading.validate_generated_reading({'title': 'Test', 'reading': 'María compró pan. ' * 40},
-                                           None, SimpleNamespace(level='A1'))
-    model.return_value = {'present_only': True, 'reason': 'Compra is present indicative.'}
-    reading.validate_generated_reading({'title': 'Test', 'reading': 'María compra pan. ' * 40},
+    reading.validate_generated_reading({'title': 'Test', 'reading': 'María compró pan. ' * 30},
                                        None, SimpleNamespace(level='A1'))
+    assert 'presente de indicativo' in reading.LEVEL_GUIDES['A1']
+    model.assert_not_called()

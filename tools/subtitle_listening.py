@@ -8,14 +8,14 @@ import re
 import subprocess
 import tempfile
 
-from tools.subtitle_reading import TIMING, seconds, chat, object_schema, TEXT
+from tools.subtitle_reading import TIMING, seconds, chat, object_schema
 
 GUIDES = {
-    'A2': 'Vocabulario cotidiano y frecuente, temas concretos y familiares, frases sencillas, conectores básicos. Hechos explícitos; nada de jerga política o técnica necesaria para entender.',
-    'B1': 'Vocabulario frecuente sobre actualidad y vida cotidiana, narración clara, causas y opiniones explícitas. Puede incluir pasado y futuro; evita lenguaje especializado denso.',
+    'A2': 'Vocabulario cotidiano y frecuente, temas concretos y familiares, frases sencillas, conectores básicos. Prioriza la idea principal y hechos explícitos. Admite algunas palabras nuevas, nombres propios y términos de noticias si el contexto o el glosario ayudan. No exijas que cada palabra o verbo sea de A2.',
+    'B1': 'Vocabulario frecuente sobre actualidad y vida cotidiana, narración clara, causas y opiniones explícitas. Puede incluir pasado y futuro, algunas frases complejas y palabras menos frecuentes explicables con el contexto o glosario. Evalúa la comprensión global, no cada palabra por separado.',
     'B2': 'Actualidad, argumentos, contrastes, matices y subordinación. Admite vocabulario abstracto y algunas expresiones idiomáticas, pero no discurso muy especializado o implícito de C1/C2.',
 }
-MAX_WPM = {'A2': 170, 'B1': 195, 'B2': 230}
+PREFERRED_WPM = {'A2': 170, 'B1': 195, 'B2': 230}
 STAMP = re.compile(r'<((?:\d+:)?\d{2}:\d{2}[.,]\d{3})>')
 ENDING = re.compile(r'[.!?][»”"\')\]]*$')
 
@@ -125,8 +125,6 @@ def clip_from_selection(value, window, level):
     if not 50 <= count <= 300 or not 15 <= duration <= 180:
         raise ValueError('Select 50–300 words, 15–180 seconds, with complete content')
     pace = count * 60 / duration
-    if pace > MAX_WPM[level]:
-        raise ValueError(f'Too fast for {level}: {pace:.0f} words/minute')
     return {'reading': text, 'start': selected[0]['start'], 'duration': duration,
             'audio_kind': 'original', 'level_assessment': {
                 **{k: value[k] for k in ('reason', 'vocabulary', 'grammar', 'completeness')},
@@ -158,8 +156,9 @@ def select_clip(raw, args, progress=lambda stage: None):
         if len(keys) > 20:
             keys = [keys[round(i * (len(keys) - 1) / 19)] for i in range(20)]
             choices = {key: choices[key] for key in keys}
+        brief = {'type': 'string', 'minLength': 1, 'maxLength': 160}
         schema = object_schema({'range': {'type': 'string', 'enum': ['none', *choices]},
-                                'reason': TEXT, 'vocabulary': TEXT, 'grammar': TEXT, 'completeness': TEXT})
+                                'reason': brief, 'vocabulary': brief, 'grammar': brief, 'completeness': brief})
         def selected(value):
             key = value.get('range')
             if key != 'none' and key not in choices:
@@ -170,12 +169,15 @@ def select_clip(raw, args, progress=lambda stage: None):
         result = chat(args,
             f'Selecciona un fragmento CONTIGUO de audio original apto para {args.level}. {GUIDES[args.level]} '
             'Elige range de la lista ranges (IDs de primera:última frase, ambos incluidos); '
-            'los rangos ya cumplen límites de longitud y velocidad. '
-            'Evalúa TODO su vocabulario y gramática, no solo palabras fáciles. Debe ser una unidad completa: '
+            'los rangos ya cumplen límites de longitud. '
+            f'Prefiere un ritmo cercano a {PREFERRED_WPM[args.level]} palabras/minuto, sin rechazar solo por velocidad; se puede repetir o escuchar más lento. '
+            'Sé flexible con el nivel: basta comprender la idea principal con contexto y un pequeño glosario. '
+            'Admite algunas palabras o estructuras más difíciles. Debe ser una unidad completa: '
             'introduce quién o qué se trata, desarrolla una idea y termina esa idea. Rechaza referencias sin antecedente, '
-            'introducciones cortadas, listas de titulares, frases incompletas y conclusiones pendientes. '
-            'No reescribas ni inventes contenido. range="none" si no existe un fragmento adecuado. '
-            'Explica reason, vocabulary (términos concretos y dificultad), grammar y completeness incluso si rechazas.',
+            'introducciones cortadas y frases incompletas. Una noticia sobre una decisión futura puede ser una idea completa. '
+            'Escoge el fragmento más accesible que sirva para practicar el nivel. No reescribas ni inventes contenido. '
+            'range="none" solo si todos son claramente incomprensibles para este nivel o están incompletos. '
+            'Explica reason, vocabulary (palabras para el glosario), grammar y completeness en UNA frase corta por campo, máximo 160 caracteres cada uno.',
             json.dumps({'sentences': window, 'ranges': choices}, ensure_ascii=False),
             selected, schema, max_tokens=700)
         clip = selected(result)
@@ -188,11 +190,12 @@ def select_clip(raw, args, progress=lambda stage: None):
                 if not isinstance(value.get('reason'), str) or not value['reason'].strip():
                     raise ValueError('Explain review decision')
             review = chat(args,
-                f'Revisa este fragmento AISLADO para comprensión auditiva {args.level}. {GUIDES[args.level]} '
-                'Comprueba vocabulario, gramática y contenido completo. ¿Se entiende sin ningún contexto anterior '
-                'y termina la idea, sin pronombres sin antecedente ni frases cortadas? Si tienes dudas, suitable=false. '
-                'Devuelve suitable y reason; no reescribas el fragmento.', clip['reading'], validate_review,
-                object_schema({'suitable': {'type': 'boolean'}, 'reason': TEXT}), max_tokens=400)
+                'Comprueba solo si este fragmento contiene una idea comprensible y completa. '
+                'No vuelvas a evaluar el nivel, los tiempos verbales ni palabras difíciles. '
+                'Una decisión futura o una historia en curso no implica que el fragmento esté incompleto. '
+                'suitable=false solo si falta contexto esencial o se corta una frase o idea. '
+                'Devuelve suitable y reason en una sola frase corta (máximo 160 caracteres); no reescribas el fragmento.', clip['reading'], validate_review,
+                object_schema({'suitable': {'type': 'boolean'}, 'reason': brief}), max_tokens=400)
             if review['suitable']:
                 clip['level_assessment']['isolated_review'] = review['reason']
                 return clip

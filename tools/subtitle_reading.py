@@ -21,7 +21,7 @@ from urllib.request import Request, urlopen
 
 TIMING = re.compile(r'(?P<start>(?:\d+:)?\d{2}:\d{2}[.,]\d{3})\s*-->\s*(?P<end>(?:\d+:)?\d{2}:\d{2}[.,]\d{3})')
 LEVEL_GUIDES = {
-    'A1': '100–140 palabras. Frases muy cortas, vocabulario frecuente y una idea por frase. Usa SOLO presente de indicativo para verbos conjugados; sin pasado, futuro, condicional, subjuntivo ni imperativo. Puedes usar infinitivos. No cambies hechos pasados a presentes: describe el tema y atribuye la información a la fuente en presente. Explica términos inevitables. Preguntas literales muy sencillas: quién, qué, dónde.',
+    'A1': '100–140 palabras. Frases muy cortas, vocabulario frecuente y una idea por frase. Escribe los verbos en presente de indicativo, con frases sencillas y naturales. Puedes usar infinitivos. Prioriza claridad y comprensión para principiantes. No cambies hechos pasados a presentes: describe el tema y atribuye la información a la fuente en presente. Explica términos inevitables. Preguntas literales muy sencillas: quién, qué, dónde.',
     'A2': '180–220 palabras. Frases sencillas, conectores básicos y vocabulario cotidiano. Preguntas sobre hechos explícitos y secuencias claras.',
     'B1': '220–280 palabras. Conecta causas, consecuencias y opiniones atribuidas con claridad. Preguntas sobre la idea principal, detalles y motivos explicados.',
     'B2': '260–330 palabras. Incluye matices, contraste y subordinación natural sin añadir hechos. Preguntas sobre argumentos, perspectiva y deducciones apoyadas por el texto.',
@@ -263,8 +263,9 @@ def required_text(obj, key):
 def validate_reading(value, transcript=None):
     required_text(value, 'title')
     required_text(value, 'reading')
-    if not (50 if value.get('audio_kind') == 'original' else 100) <= len(value['reading'].split()) <= 500:
-        raise ValueError('reading must contain 100–500 words.')
+    minimum = 50 if value.get('audio_kind') == 'original' else 80 if value.get('level') == 'A1' else 100
+    if not minimum <= len(value['reading'].split()) <= 500:
+        raise ValueError(f'reading must contain {minimum}–500 words.')
     if transcript:
         extra = set(re.findall(r'\d+(?:[.,]\d+)?',value['reading'])) - set(re.findall(r'\d+(?:[.,]\d+)?',transcript))
         if extra:
@@ -374,22 +375,9 @@ def make_pdf(directory, browser):
 
 
 def validate_generated_reading(value, transcript, args):
-    validate_reading(value, transcript)
-    if args.level != 'A1':
-        return
-    def validate_review(review):
-        if type(review.get('present_only')) is not bool:
-            raise ValueError('present_only must be boolean')
-        required_text(review, 'reason')
-    review = chat(args, 'Comprueba TODOS los verbos conjugados de la lectura. Solo se admite presente de indicativo '
-                  '(también infinitivos). No se admiten pasado, futuro, condicional, subjuntivo ni imperativo. '
-                  'Devuelve present_only=true solo si TODOS cumplen, y reason con los verbos comprobados.',
-                  value['reading'], validate_review,
-                  object_schema({'present_only': {'type': 'boolean'}, 'reason': TEXT}), max_tokens=500)
-    if not review['present_only']:
-        # Propagates into the reading-generation retry, so the text is rewritten
-        # instead of repeatedly asking the reviewer to approve the same text.
-        raise ValueError('A1 requires present indicative only: ' + review['reason'][:180])
+    # Level/tense guidance belongs in the writing prompt. An occasional harder
+    # form must not block a useful beginner exercise or trigger reviewer loops.
+    validate_reading(dict(value, level=args.level), transcript)
 
 
 def generate_pack(transcript, args, progress=lambda stage: None, original=None):

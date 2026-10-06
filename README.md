@@ -106,17 +106,18 @@ The machine, local LLM service, and source/output storage must be available.
 New news-watcher packs use a different audio policy by level:
 
 - **A1:** adapted, frequent vocabulary and short sentences, with present-indicative
-  verbs only. A separate model check rejects other tenses before Piper narration.
+  requested in the writing prompt. Occasional harder forms do not block narration.
   Source facts are preserved through attribution, not by changing past events
   into current events.
 - **A2, B1, B2:** select a contiguous, self-contained excerpt from the original
   subtitles. Assess vocabulary, grammar, complete meaning and pace for that
-  level, then check the isolated excerpt again. ffmpeg extracts original audio;
+  level, then check the isolated excerpt for complete meaning. ffmpeg extracts original audio;
   its unrewritten subtitle text supplies the transcript, translation and questions.
 
-Clips contain 50–300 words and last 15–180 seconds, with conservative pace caps
-of 170/195/230 words per minute for A2/B1/B2. These are project selection rules,
-not official CEFR cutoffs. Word timestamps are preserved for rolling VTT captions;
+Clips contain 50–300 words and last 15–180 seconds, with preferred paces
+of 170/195/230 words per minute for A2/B1/B2. Pace is guidance, not a rejection
+threshold. A2/B1 selection allows unfamiliar words and occasional harder grammar
+when the main idea is accessible with context and vocabulary help. Word timestamps are preserved for rolling VTT captions;
 coarse SRT captions are cut only at cue boundaries. Unterminated final sentences
 are excluded. Audio duration is checked before publication.
 
