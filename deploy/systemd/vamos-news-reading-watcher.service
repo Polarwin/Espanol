@@ -1,0 +1,17 @@
+[Unit]
+Description=Generate Spanish reading packs when new news videos arrive
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/justin/Projects/Espanol
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/justin/Projects/Espanol/bin/python /home/justin/Projects/Espanol/tools/watch_news_readings.py
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=20
+UMask=0022
+
+[Install]
+WantedBy=default.target

@@ -42,25 +42,42 @@ Tests: `./bin/python -m pytest backend/tests/test_reading.py -q`,
 through the running API using a temporary account, with the API JWT configuration
 provided in its environment. It cleans up only its own test data on completion.
 
-### Daily news reading
+### Automatic reading from new news videos
 
-The host cron starts `tools/daily_reading.py` at **06:00 Europe/Madrid** every day.
-It generates one A2 NoticiasEspanol pack and adds a private copy to each existing
-learner's saved readings. Five questions, eight bilingual definitions, translation
-and suggested answers use the same local pipeline. Generation takes several
-minutes, so 06:00 is the start time, not a guaranteed ready time.
+The **daily 06:00 cron is retired**. The user service
+`vamos-news-reading-watcher.service` scans `/srv/files/ytwatcher/NoticiasEspanol/`
+every 60 seconds. New finalized videos need a matching Spanish VTT/SRT file and
+two minutes without file changes; partial downloads and missing subtitles wait.
+It adapts the first five minutes (or the whole video if shorter) into one A2 pack,
+using the local model and context-aware chunking. Generation takes several minutes.
 
-Date-keyed private caches in `backups/daily-readings/` avoid regenerating a
-successful pack, and deterministic per-user IDs prevent duplicate deliveries or
-overwriting answers on reruns. A shared file lock prevents overlap with interactive
-reading generation. The daily job waits up to an hour if busy and retries failed
-generation three times. Missing subtitles or repeated model failure are logged in
-`logs/daily-reading.log`; no invalid exercise is published.
+All generated files live in
+`/srv/files/static/SpanishReading/news-<video-id>-a2/`: `ejercicio.html`,
+`traduccion.html`, `respuestas.html`, `imprimir.html`, `ejercicio.pdf`,
+`ejercicio.json`, `subtitulos.txt`, and `resumenes.json`. A hidden `.pending` folder
+in the same static directory stages the pack until the PDF is ready. Vocabulary
+includes Spanish and English explanations. Generated packs remain unreviewed AI
+drafts; questions are open-ended and ungraded.
 
-Install/update the cron with one command:
-`./bin/python tools/install_daily_reading_cron.py`. The installer checks the host
-timezone, backs up the existing crontab, and preserves unrelated jobs. The machine
-and cron service must be running at 06:00; cron does not catch up after downtime.
+Each existing account also receives a private copy under Práctica → Lectura;
+answers are never included in the static export. Removing static reading files
+does not erase app history or regenerate old packs. The metadata-only ledger
+`backups/news-reading-watcher.sqlite3` stores identities/statuses, not generated
+text. Keep this ledger when cleaning static files. Video IDs prevent duplicates
+after renames, restarts, redownloads, or output cleanup. Existing videos are
+baselined on installation, not backfilled; new arrivals during downtime are found
+when the service resumes. Completed packs are never recreated automatically.
+
+The shared generation lock prevents concurrent reading model jobs. Busy work is
+retried on the next scan; failures retry after 10 and 20 minutes, then remain
+failed after three attempts. Changed input subtitles can requeue a failed video.
+Successful staged generation is reused if PDF creation or delivery needs retrying.
+
+Install with one command: `./bin/python tools/install_news_reading_watcher.py`.
+It backs up the crontab, removes only the old reading entry, preserves unrelated
+jobs, and enables the user service. Logs:
+`journalctl --user -u vamos-news-reading-watcher.service`.
+The machine, local LLM service, and source/output storage must be available.
 
 ## Setup
 
