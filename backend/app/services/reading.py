@@ -1,5 +1,7 @@
 """Single-process, bounded local generation; source paths never come from clients."""
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+import fcntl
 from hashlib import sha256
 import logging
 from pathlib import Path
@@ -21,6 +23,25 @@ lock = RLock()
 active: set[str] = set()
 executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix='reading')
 logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def generation_slot():
+    """Coordinate the API worker and scheduled generator on this host."""
+    settings.backup_dir.mkdir(parents=True, exist_ok=True)
+    with (settings.backup_dir / 'reading-generation.lock').open('a') as handle:
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        try:
+            yield
+        finally:
+            fcntl.flock(handle, fcntl.LOCK_UN)
+
+
+def model_args(level):
+    return SimpleNamespace(level=level, questions=5, vocabulary=8, context_size=settings.reading_context_size,
+                           max_output_tokens=2000, context_margin=512, max_source_chars=11000,
+                           api='http://127.0.0.1:8349/v1', model=settings.reading_model,
+                           timeout=240, debug_dir=None)
 
 
 def subtitle_candidates(root):
@@ -107,15 +128,12 @@ def generate(job_id, text, excerpt):
             job.status, job.stage = 'running', stage
             db.commit()
     try:
-        args = SimpleNamespace(level=None, questions=5, vocabulary=8, context_size=settings.reading_context_size,
-                               max_output_tokens=2000, context_margin=512, max_source_chars=11000,
-                               api='http://127.0.0.1:8349/v1', model=settings.reading_model,
-                               timeout=240, debug_dir=None)
         with SessionLocal() as db:
             job = db.get(ReadingPractice, job_id)
-            args.level = job.level
+            args = model_args(job.level)
             title = job.source_title
-        pack, _ = generate_pack(text, args, progress)
+        with generation_slot():
+            pack, _ = generate_pack(text, args, progress)
         pack.update(source=title, **excerpt)
         with SessionLocal() as db:
             job = db.get(ReadingPractice, job_id)

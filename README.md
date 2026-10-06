@@ -42,6 +42,26 @@ Tests: `./bin/python -m pytest backend/tests/test_reading.py -q`,
 through the running API using a temporary account, with the API JWT configuration
 provided in its environment. It cleans up only its own test data on completion.
 
+### Daily news reading
+
+The host cron starts `tools/daily_reading.py` at **06:00 Europe/Madrid** every day.
+It generates one A2 NoticiasEspanol pack and adds a private copy to each existing
+learner's saved readings. Five questions, eight bilingual definitions, translation
+and suggested answers use the same local pipeline. Generation takes several
+minutes, so 06:00 is the start time, not a guaranteed ready time.
+
+Date-keyed private caches in `backups/daily-readings/` avoid regenerating a
+successful pack, and deterministic per-user IDs prevent duplicate deliveries or
+overwriting answers on reruns. A shared file lock prevents overlap with interactive
+reading generation. The daily job waits up to an hour if busy and retries failed
+generation three times. Missing subtitles or repeated model failure are logged in
+`logs/daily-reading.log`; no invalid exercise is published.
+
+Install/update the cron with one command:
+`./bin/python tools/install_daily_reading_cron.py`. The installer checks the host
+timezone, backs up the existing crontab, and preserves unrelated jobs. The machine
+and cron service must be running at 06:00; cron does not catch up after downtime.
+
 ## Setup
 
 ```bash
