@@ -23,6 +23,7 @@ from backend.app.db import SessionLocal
 from backend.app.models import ReadingPractice, User
 from backend.app.services import reading
 from tools.subtitle_reading import clean_subtitles, render, make_pdf, TIMING, seconds
+from tools.reading_audio import ensure_audio
 
 log = logging.getLogger('news-reading-watcher')
 VIDEO_EXTENSIONS = {'.mp4', '.mkv', '.webm', '.m4v', '.mov'}
@@ -177,6 +178,7 @@ def publish(key, video, subtitle, root, output):
         (work / 'subtitulos.txt').write_text(transcript, encoding='utf-8')
         (work / 'resumenes.json').write_text(json.dumps(audit, ensure_ascii=False, indent=2), encoding='utf-8')
     if work == staging:
+        ensure_audio(work)
         for name, content in render(pack).items():
             (work / name).write_text(content, encoding='utf-8')
         make_pdf(work.resolve(), None)

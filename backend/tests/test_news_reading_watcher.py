@@ -119,6 +119,8 @@ def test_publish_pdf_resume_and_private_answers(setup, monkeypatch, db_session, 
                                     'vocabulary': [{'term': 'texto', 'spanish': 'Una explicación.', 'english': 'An explanation.'}],
                                     'review_status': 'draft'}, []))
     monkeypatch.setattr(watcher.reading, 'generate_pack', generator)
+    audio = Mock(side_effect=lambda directory: (directory / 'lectura.mp3').write_bytes(b'test MP3'))
+    monkeypatch.setattr(watcher, 'ensure_audio', audio)
     pdf = Mock(side_effect=OSError('PDF unavailable'))
     monkeypatch.setattr(watcher, 'make_pdf', pdf)
     watcher.scan(ledger, root, output, now=10)
@@ -129,7 +131,7 @@ def test_publish_pdf_resume_and_private_answers(setup, monkeypatch, db_session, 
     watcher.scan(ledger, root, output, now=800)
     generator.assert_called_once()
     destination = output / 'news-abcdefghijk-a2'
-    assert all((destination / name).is_file() for name in ['ejercicio.pdf', 'ejercicio.html', 'traduccion.html', 'respuestas.html', 'ejercicio.json', 'subtitulos.txt'])
+    assert all((destination / name).is_file() for name in ['lectura.mp3', 'ejercicio.pdf', 'ejercicio.html', 'traduccion.html', 'respuestas.html', 'ejercicio.json', 'subtitulos.txt'])
     job = db_session.scalar(select(ReadingPractice))
     job.answers = {'0': 'Mi respuesta'}
     db_session.commit()

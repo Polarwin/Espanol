@@ -79,6 +79,27 @@ jobs, and enables the user service. Logs:
 `journalctl --user -u vamos-news-reading-watcher.service`.
 The machine, local LLM service, and source/output storage must be available.
 
+### Local Spanish narration (CPU only)
+
+New watcher packs also include `lectura.mp3`, `audio.json`, and
+`audio-credits.txt` in the same static folder. Piper 1.8.0 uses the
+`es_ES-sharvard-medium` Spanish (Spain) voice, speaker 0, at a slightly slower
+learning pace. It narrates the adapted Spanish reading, not the questions/answers.
+
+Install with `./bin/python tools/install_piper.py`. Python 3.12, Piper and the
+voice are isolated in the git-ignored `.local-tts/` directory. Runtime uses only
+ONNX's CPU provider (no CUDA/Torch/GPU package), two inference threads, and a
+low-priority short-lived process. There is no always-running speech model and
+no internet request during synthesis. Successful narration is cached by text
+and voice settings; export retries don't synthesize it again.
+
+To narrate an existing pack, run
+`.local-tts/venv/bin/python tools/piper_narrate.py /path/to/ejercicio.json`.
+Audio stays beside the JSON. The voice's SHARVARD dataset is CC BY 3.0; attribution
+and source links accompany each MP3. CPU-only applies to narration, not to the
+separate local LLM generating the reading text. Audio failure leaves a new pack
+staged for retry rather than marking an incomplete pack delivered.
+
 ## Setup
 
 ```bash
