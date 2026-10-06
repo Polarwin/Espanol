@@ -62,6 +62,24 @@ export class ApiError extends Error {
   }
 }
 
+export interface ReadingJob {
+  id: string
+  status: 'queued' | 'running' | 'ready' | 'failed'
+  stage: string
+  level: string
+  source: string
+  source_title: string
+  error: string | null
+  created_at: string
+  answers?: Record<string, string>
+  pack?: {
+    title: string; reading: string; translation: string; review_status: string
+    questions: { question: string; suggested_answer: string }[]
+    vocabulary: { term: string; spanish: string; english: string }[]
+    start: number; duration: number
+  } | null
+}
+
 function handleUnauthorized(path: string, status: number) {
   if (status === 401 && !path.startsWith('/api/auth/')) {
     setToken(null)
@@ -123,6 +141,10 @@ async function withMock<T>(call: () => Promise<T>, fallback: () => Promise<T>): 
 }
 
 export const api = {
+  readingHistory: () => request<ReadingJob[]>('/api/reading'),
+  readingGet: (id: string) => request<ReadingJob>(`/api/reading/${id}`),
+  readingCreate: (source: string, level: string) => request<ReadingJob>('/api/reading', { method: 'POST', body: JSON.stringify({ source, level }) }),
+  readingSave: (id: string, answers: Record<string, string>) => request<ReadingJob>(`/api/reading/${id}/answers`, { method: 'PUT', body: JSON.stringify({ answers }) }),
   getVocabularyJourney(): Promise<VocabularyJourney> {
     return request('/api/sample/a2-unit-1/journey')
   },

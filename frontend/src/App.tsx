@@ -8,6 +8,7 @@ import { Grupos } from './pages/Grupos'
 import { Inicio } from './pages/Inicio'
 import { MiRuta } from './pages/MiRuta'
 import { Practica } from './pages/Practica'
+import { Lectura } from './pages/Lectura'
 import { Progreso } from './pages/Progreso'
 import { Auth } from './pages/Auth'
 import { Placement } from './pages/Placement'
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="/leccion/:lessonId/repetir-video" element={<VideoShadowing />} />
             <Route path="/practica" element={<PracticeLayout />}>
               <Route index element={<Practica />} />
+              <Route path="lectura" element={<Lectura />} />
               <Route path="conversacion" element={<Conversacion />} />
               <Route path="conversacion/:lessonId" element={<Conversacion />} />
             </Route>

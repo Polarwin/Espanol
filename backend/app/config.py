@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     log_file: Path = PROJECT_ROOT / "logs" / "vamos.log"
     watch_dir: Path = Path("/srv/files/ytwatcher/Espanol")
     vitamina_dir: Path = PROJECT_ROOT / "Vitamina"
+    reading_news_dir: Path = Path('/srv/files/ytwatcher/NoticiasEspanol')
+    reading_model: str = 'Qwen3.5-2B-Q4_K_M.gguf'
+    reading_context_size: int = 8192
 
     ai_enabled: bool = False
     ai_cloud_enabled: bool = False

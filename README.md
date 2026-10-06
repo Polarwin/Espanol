@@ -6,6 +6,42 @@ AI setup and provider switching: [operations guide](design/ai-operations.md).
 
 AI integration instructions: [conversation and writing providers](design/ai-conversation-writing-guide.md).
 
+## Lectura sorpresa
+
+Open **Práctica → Lectura** (`/practica/lectura`) and choose **Crear una lectura sorpresa**.
+The default mixes the library (published level-matched reading passages, indexed
+textbook pages, and Spanish subtitle files in `VAMOS_WATCH_DIR`) with Spanish
+VTT/SRT files in `/srv/files/ytwatcher/NoticiasEspanol/`. Filters let learners
+choose a source and A1–C2 adaptation level. Videos without subtitles are skipped;
+this feature does not transcribe video or download outside sources.
+
+Each private, saved exercise has five open questions, eight vocabulary entries
+with Spanish/English explanations, and separate translation and suggested-answer
+views. Save written responses before leaving. This is ungraded practice: the
+local model's draft may contain errors and is not a fact-check of the news.
+
+Generation uses the shared `tools/subtitle_reading.py` pipeline with UTF-8-aware
+context budgeting and hierarchical summaries, never silent source truncation.
+It always calls the loopback gateway `http://127.0.0.1:8349/v1`; no cloud fallback.
+`VAMOS_READING_MODEL` defaults to `Qwen3.5-2B-Q4_K_M.gguf` and
+`VAMOS_READING_CONTEXT_SIZE` to 8192 (must match llama-server `-c`).
+`VAMOS_READING_NEWS_DIR` changes the news root. This dedicated local reading
+pipeline is independent of the conversation provider and its enable flag.
+
+The current single-process API runs at most one reading job at a time; duplicate
+requests resume that user's existing job, while other users receive a busy
+message. Leaving the page does not stop generation. A server restart marks
+interrupted jobs failed on the next read; learners can retry. Keep one API worker
+until the in-process executor is replaced with a shared job queue. Texts and
+learner answers stay in the authenticated database, not the public media folder.
+
+Tests: `./bin/python -m pytest backend/tests/test_reading.py -q`,
+`python3 -m unittest discover -s tools -p test_subtitle_reading.py`, and
+`node tools/test_reading_ui.cjs` (Playwright; optional `PLAYWRIGHT_MODULE` and
+`CHROMIUM_PATH`). The opt-in `tools/smoke_reading.py` calls the real local model
+through the running API using a temporary account, with the API JWT configuration
+provided in its environment. It cleans up only its own test data on completion.
+
 ## Setup
 
 ```bash

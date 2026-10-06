@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from .config import settings
 from .routers import auth, capabilities, exercises, lessons, path, placement, progress, review, social
 from .routers import a2_sample
+from .routers import reading
 
 settings.log_file.parent.mkdir(parents=True, exist_ok=True)
 request_logger = logging.getLogger("vamos.requests")
@@ -72,6 +73,7 @@ app.include_router(capabilities.router)
 app.include_router(placement.router)
 app.include_router(review.router)
 app.include_router(a2_sample.router)
+app.include_router(reading.router)
 
 settings.content_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/media", StaticFiles(directory=settings.content_dir), name="media")
