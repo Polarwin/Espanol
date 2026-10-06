@@ -10,10 +10,28 @@ import subtitle_reading as app
 
 
 class ReadingTests(unittest.TestCase):
+    def test_level_guidance_and_listening_page(self):
+        self.assertIn('100–140', app.LEVEL_GUIDES['A1'])
+        self.assertIn('260–330', app.LEVEL_GUIDES['B2'])
+        pack = {'title': 'Texto', 'reading': '<secret transcript>', 'translation': 'English text',
+                'level': 'A1', 'source': 'News', 'start': 0, 'duration': 60, 'audio_file': 'lectura.mp3',
+                'questions': [{'question': '¿Qué?', 'suggested_answer': 'Secret answer'}],
+                'vocabulary': [{'term': 'texto', 'spanish': 'Una explicación.', 'english': 'An explanation.'}]}
+        page = app.render(pack)['escuchar.html']
+        self.assertIn('<audio controls', page)
+        self.assertIn('<details><summary>Mostrar transcripción', page)
+        self.assertNotIn('<details open', page)
+        self.assertNotIn('Secret answer', page)
+        self.assertNotIn('<secret transcript>', page)
+        self.assertIn('&lt;secret transcript&gt;', page)
+
     def test_translation_number_feedback(self):
         with self.assertRaisesRegex(ValueError, r"Missing: \['48,43'\]; unexpected: \['49'\]"):
             app.validate_translation({'translation': 'word ' * 60 + '49'}, 'palabra ' * 60 + '48,43')
         app.validate_translation({'translation': 'word ' * 60 + '48,43'}, 'palabra ' * 60 + '48,43')
+        app.validate_translation({'translation': 'word ' * 60 + '48.43'}, 'palabra ' * 60 + '48,43')
+        with self.assertRaises(ValueError):
+            app.validate_translation({'translation': 'word ' * 60 + '48.44'}, 'palabra ' * 60 + '48,43')
 
     def test_rolling_vtt(self):
         first = ' '.join('palabra'+str(n) for n in range(35))

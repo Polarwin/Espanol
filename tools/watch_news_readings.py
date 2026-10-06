@@ -27,6 +27,7 @@ from tools.reading_audio import ensure_audio
 
 log = logging.getLogger('news-reading-watcher')
 VIDEO_EXTENSIONS = {'.mp4', '.mkv', '.webm', '.m4v', '.mov'}
+LEVELS = ('A1', 'A2', 'B1', 'B2')
 
 
 def video_key(path, root):
@@ -76,6 +77,7 @@ def connect(path):
         id TEXT PRIMARY KEY, path TEXT NOT NULL, status TEXT NOT NULL,
         signature TEXT, changed REAL NOT NULL, attempts INTEGER NOT NULL DEFAULT 0,
         retry_at REAL NOT NULL DEFAULT 0, error TEXT)''')
+    db.execute('CREATE TABLE IF NOT EXISTS completed_levels (video_id TEXT, level TEXT, PRIMARY KEY(video_id, level))')
     db.commit()
     return db
 
@@ -134,10 +136,11 @@ def deliver(key, title, pack):
     with SessionLocal() as db:
         count = 0
         for user_id in db.scalars(select(User.id)).all():
-            job_id = sha256(f'news-video:{key}:A2:{user_id}'.encode()).hexdigest()[:32]
+            level = pack['level']
+            job_id = sha256(f'news-video:{key}:{level}:{user_id}'.encode()).hexdigest()[:32]
             if db.get(ReadingPractice, job_id):
                 continue
-            db.add(ReadingPractice(id=job_id, user_id=user_id, level='A2', source='news',
+            db.add(ReadingPractice(id=job_id, user_id=user_id, level=level, source='news',
                                    source_key=key, source_title=title, pack=pack, answers={},
                                    status='ready', stage='Lista'))
             count += 1
@@ -145,10 +148,25 @@ def deliver(key, title, pack):
     return count
 
 
-def publish(key, video, subtitle, root, output):
+def publish(key, video, subtitle, root, output, completed=(), on_complete=lambda level: None):
+    failure = None
+    for level in LEVELS:
+        if level in completed:
+            continue
+        try:
+            publish_level(key, video, subtitle, root, output, level)
+            on_complete(level)
+        except Exception as error:
+            log.error('%s %s: export failed (%s)', key, level, type(error).__name__)
+            failure = error
+    if failure:
+        raise failure
+
+
+def publish_level(key, video, subtitle, root, output, level):
     output.mkdir(parents=True, exist_ok=True)
-    destination = output / f'news-{key}-a2'
-    staging = output / f'.news-{key}-a2.pending'
+    destination = output / f'news-{key}-{level.lower()}'
+    staging = output / f'.news-{key}-{level.lower()}.pending'
     # Never follow a pre-existing output symlink or overwrite unrelated folders.
     for directory in (destination, staging):
         if directory.is_symlink():
@@ -158,7 +176,7 @@ def publish(key, video, subtitle, root, output):
     cache = work / 'ejercicio.json'
     if cache.exists():
         pack = json.loads(cache.read_text(encoding='utf-8'))
-        if pack.get('video_key') != key:
+        if pack.get('video_key') != key or pack.get('level') != level:
             raise ValueError('Output belongs to a different source')
     else:
         if destination.exists() or any(p.name != '.ejercicio.json.tmp' for p in work.iterdir()):
@@ -167,8 +185,8 @@ def publish(key, video, subtitle, root, output):
         # Use this newly detected video, never a random older news source.
         duration = min(300, max((seconds(m['end']) for m in TIMING.finditer(raw)), default=0))
         transcript = clean_subtitles(raw, 0, duration)
-        pack, audit = reading.generate_pack(transcript, reading.model_args('A2'),
-                                            lambda stage: log.info('%s: %s', key, stage))
+        pack, audit = reading.generate_pack(transcript, reading.model_args(level),
+                                            lambda stage: log.info('%s %s: %s', key, level, stage))
         pack.update(source=video.stem, subtitle_source=str(subtitle.relative_to(root)),
                     video_key=key, start=0, duration=duration)
         # Cache the successful LLM result before optional PDF/export steps.
@@ -179,6 +197,10 @@ def publish(key, video, subtitle, root, output):
         (work / 'resumenes.json').write_text(json.dumps(audit, ensure_ascii=False, indent=2), encoding='utf-8')
     if work == staging:
         ensure_audio(work)
+        pack['audio_file'] = 'lectura.mp3'
+        temporary = work / '.ejercicio.json.tmp'
+        temporary.write_text(json.dumps(pack, ensure_ascii=False, indent=2), encoding='utf-8')
+        temporary.replace(cache)
         for name, content in render(pack).items():
             (work / name).write_text(content, encoding='utf-8')
         make_pdf(work.resolve(), None)
@@ -205,7 +227,11 @@ def scan(db, root, output, now=None, stable_seconds=120):
                 sub = sidecar(video, root)
                 if signature(video, sub) != row['signature']:
                     continue
-                publish(row['id'], video, sub, root, output)
+                completed = {r[0] for r in db.execute('SELECT level FROM completed_levels WHERE video_id=?', (row['id'],))}
+                def on_complete(level):
+                    db.execute('INSERT OR IGNORE INTO completed_levels VALUES (?,?)', (row['id'], level))
+                    db.commit()
+                publish(row['id'], video, sub, root, output, completed=completed, on_complete=on_complete)
             db.execute("UPDATE videos SET status='done', error=NULL WHERE id=?", (row['id'],))
             db.commit()
         except BlockingIOError:

@@ -6,6 +6,7 @@ running API, checks saved answers, and removes only its own test rows afterwards
 No existing learner data is used. Needs the API's JWT configuration in the env.
 """
 import json
+import argparse
 import sys
 import time
 from pathlib import Path
@@ -19,6 +20,9 @@ from backend.app.services.security import create_token
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--level', choices=['A1', 'A2', 'B1', 'B2'], default='A2')
+    args = parser.parse_args()
     with SessionLocal() as db:
         user = User(email=f'reading-smoke-{uuid4().hex}@example.invalid', password_hash='disabled',
                     display_name='Reading smoke test', placement_completed=True)
@@ -33,7 +37,7 @@ def main():
         with urlopen(req, timeout=30) as response:
             return json.load(response)
     try:
-        job = request(body={'source': 'news', 'level': 'A2'})
+        job = request(body={'source': 'news', 'level': args.level})
         last = None
         for _ in range(480):
             job = request('/' + job['id'])
@@ -48,12 +52,13 @@ def main():
         if job['status'] != 'ready':
             raise RuntimeError(job.get('error') or 'Generation still running')
         pack = job['pack']
+        assert pack['level'] == args.level
         assert len(pack['questions']) == 5 and len(pack['vocabulary']) == 8
         assert pack['translation'] and pack['review_status'] == 'draft'
         result = request('/' + job['id'] + '/answers', {'answers': {'0': 'Respuesta de prueba'}}, 'PUT')
         assert result['answers']['0'] == 'Respuesta de prueba'
         assert request('/' + job['id'])['answers'] == result['answers']
-        print('PASS: live news → local model → reading, translation, 5 open questions, 8 bilingual definitions; answers persisted.', flush=True)
+        print(f'PASS: live {args.level} news → local model → {len(pack["reading"].split())}-word reading, translation, 5 open questions, 8 bilingual definitions; answers persisted.', flush=True)
     finally:
         if terminal:
             with SessionLocal() as db:

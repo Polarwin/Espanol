@@ -20,6 +20,12 @@ from urllib.parse import unquote, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 TIMING = re.compile(r'(?P<start>(?:\d+:)?\d{2}:\d{2}[.,]\d{3})\s*-->\s*(?P<end>(?:\d+:)?\d{2}:\d{2}[.,]\d{3})')
+LEVEL_GUIDES = {
+    'A1': '100–140 palabras. Frases muy cortas, vocabulario frecuente, presente y una idea por frase. Explica términos inevitables. Preguntas literales muy sencillas: quién, qué, dónde.',
+    'A2': '180–220 palabras. Frases sencillas, conectores básicos y vocabulario cotidiano. Preguntas sobre hechos explícitos y secuencias claras.',
+    'B1': '220–280 palabras. Conecta causas, consecuencias y opiniones atribuidas con claridad. Preguntas sobre la idea principal, detalles y motivos explicados.',
+    'B2': '260–330 palabras. Incluye matices, contraste y subordinación natural sin añadir hechos. Preguntas sobre argumentos, perspectiva y deducciones apoyadas por el texto.',
+}
 
 
 def seconds(value):
@@ -294,11 +300,17 @@ def validate_translation(value, reading):
     if len(value['translation'].split()) < 50:
         raise ValueError('Translate the complete reading, not a short summary.')
     numbers = lambda text: set(re.findall(r'\d+(?:[.,]\d+)?',text))
-    if numbers(value['translation']) != numbers(reading):
-        missing = sorted(numbers(reading) - numbers(value['translation']))
-        extra = sorted(numbers(value['translation']) - numbers(reading))
+    # Spanish decimal commas may become English decimal points. Only accept
+    # unambiguous 1–2 decimal places; don't conflate thousands separators.
+    normalize = lambda number: number.replace(',', '.') if re.fullmatch(r'\d+[.,]\d{1,2}', number) else number
+    source_numbers, translated_numbers = numbers(reading), numbers(value['translation'])
+    source_values = {normalize(n) for n in source_numbers}
+    translated_values = {normalize(n) for n in translated_numbers}
+    if translated_values != source_values:
+        missing = sorted(n for n in source_numbers if normalize(n) not in translated_values)
+        extra = sorted(n for n in translated_numbers if normalize(n) not in source_values)
         raise ValueError(f'Preserve all numeric figures exactly in the translation. Missing: {missing}; unexpected: {extra}. '
-                         'Copy digits and decimal separators unchanged; do not spell numbers out.')
+                         'Preserve numerical values; do not spell numbers out. Decimal comma/point changes are allowed.')
 
 
 def render(pack):
@@ -323,12 +335,23 @@ def render(pack):
     style = '''body{font:17px/1.6 system-ui,sans-serif;color:#183d37;max-width:900px;margin:40px auto;padding:0 24px}h1{line-height:1.2}h2{margin-top:30px}li{margin:12px 0}li li{margin:3px 0}table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid #b9c9c2;padding:9px;text-align:left}th{background:#e6efe8}blockquote{border-left:3px solid #b9c9c2;padding-left:14px}.note{font-size:12px;color:#64746d;overflow-wrap:anywhere}nav{margin:30px 0}a{color:#185d50}.supplement{break-before:page;page-break-before:always}.writing-lines{height:44px;border-bottom:1px solid #b9c9c2;margin-bottom:16px}@page{size:A4;margin:18mm}@media print{body{font-size:11pt;margin:0;padding:0;max-width:none}nav{display:none}li,tr{break-inside:avoid}h1,h2{break-after:avoid}table{font-size:9pt}}'''
     def page(body):
         return '<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(pack['title'])+'</title><style>'+style+'</style><body>'+body+'</body></html>'
-    return {
+    pages = {
         'ejercicio.html': page(exercise+'<nav><a href="traduccion.html">Siguiente página: English translation →</a> · <a href="respuestas.html">Respuestas orientativas</a> · <a href="imprimir.html">Imprimir / PDF</a></nav>'),
         'traduccion.html': page(translation+'<nav><a href="ejercicio.html">← Ejercicio</a> · <a href="respuestas.html">Respuestas orientativas →</a></nav>'),
         'respuestas.html': page(answers+'<nav><a href="ejercicio.html">← Volver al ejercicio</a> · <a href="traduccion.html">English translation</a></nav>'),
         'imprimir.html': page(exercise+'<section class="supplement translation">'+translation+'</section><section class="supplement answers">'+answers+'</section>'),
     }
+    if pack.get('audio_file') == 'lectura.mp3':
+        prompts = ''.join('<li><label>'+esc(q['question'])+'<br><textarea rows="3" maxlength="4000" style="width:100%;box-sizing:border-box;font:inherit" aria-label="'+esc(q['question'], quote=True)+'"></textarea></label></li>' for q in pack['questions'])
+        pages['escuchar.html'] = page('<h1>Escuchar primero</h1>'+notice+
+            '<h2>1. Escucha</h2><p>Escucha sin mirar el texto. Puedes repetir y mover el control al principio. Voz sintética, no el audio original del vídeo.</p>'+
+            '<audio controls preload="metadata" style="width:100%" src="lectura.mp3">'+
+            '<a href="lectura.mp3">Abrir el audio</a></audio>'+
+            '<h2>2. ¿Qué has entendido?</h2><p>Responde con tus propias palabras. Estas respuestas no se guardan al cerrar la página; usa la app para guardarlas.</p><ol>'+prompts+'</ol>'+
+            '<h2>3. Comprueba</h2><details><summary>Mostrar transcripción y ayudas</summary><h2>Transcripción</h2>'+reading+vocab+
+            '<nav><a href="traduccion.html">English translation</a> · <a href="respuestas.html">Respuestas orientativas</a></nav></details>')
+        pages['ejercicio.html'] = pages['ejercicio.html'].replace('<body>', '<body><nav><a href="escuchar.html">Escuchar primero →</a></nav>', 1)
+    return pages
 
 
 def make_pdf(directory, browser):
@@ -351,21 +374,23 @@ def generate_pack(transcript, args, progress=lambda stage: None):
     progress('Preparando el texto')
     context_text, summary_audit = prepare_context(transcript, args)
     progress('Creando la lectura')
-    reading = chat(args, f'Crea una lectura de nivel {args.level}, de 180–250 palabras, en 3–4 párrafos. '
+    guide = LEVEL_GUIDES.get(args.level, '180–250 palabras. Adapta la complejidad al nivel indicado.')
+    reading = chat(args, f'Crea una lectura de nivel {args.level}. {guide} Organiza el texto en 3–4 párrafos. '
                    'Usa palabras propias, sin añadir hechos. Atribuye noticias a la fuente, no supongas que son actuales. '
                    'Omite detalles dudosos e incompletos. Devuelve title y reading.', context_text,
                    lambda v: validate_reading(v, transcript),
                    object_schema({'title': {'type': 'string', 'minLength': 1, 'maxLength': 120},
-                                  'reading': {'type': 'string', 'minLength': 650, 'maxLength': 1800}}))
+                                  'reading': {'type': 'string', 'minLength': 350 if args.level == 'A1' else 650, 'maxLength': 2700 if args.level in {'B1', 'B2'} else 1800}}))
     progress('Traduciendo al inglés')
     figures = sorted(set(re.findall(r'\d+(?:[.,]\d+)?', reading['reading'])))
     translation = chat(args, 'Traduce toda la lectura al inglés fiel. Conserva párrafos, nombres, cifras y atribuciones. '
-                       'No resumas ni añadas información. Copia las cifras EXACTAMENTE como aparecen, incluidos los separadores decimales. '
+                       'No resumas ni añadas información. Conserva los valores numéricos: puedes cambiar coma decimal por punto inglés, sin cambiar el valor. '
                        'No escribas las cifras con letras. Deben aparecer estas cifras: ' + json.dumps(figures) + '. Devuelve translation.', reading['reading'],
                        lambda v: validate_translation(v, reading['reading']),
                        object_schema({'translation': {'type': 'string', 'minLength': 300, 'maxLength': 3500}}))
     progress('Preparando preguntas y vocabulario')
-    tasks = chat(args, f'Crea {args.questions} preguntas ABIERTAS con respuestas orientativas y '
+    question_guide = guide.split('Preguntas', 1)[-1]
+    tasks = chat(args, f'Nivel {args.level}. Preguntas {question_guide} Crea {args.questions} preguntas ABIERTAS con respuestas orientativas y '
                  f'{args.vocabulary} palabras o expresiones de la lectura. Sin opciones ni notas. '
                  'Cada question y suggested_answer se basa solo en la lectura. Cada term aparece literalmente en ella. '
                  'spanish y english son definiciones sencillas de 8–18 palabras, NO repeticiones ni meras traducciones. '
@@ -412,6 +437,8 @@ def main():
         validate_tasks(pack, pack['reading'], len(pack['questions']), len(pack['vocabulary']))
         output = (args.output or args.render_json.parent).resolve()
         output.mkdir(parents=True, exist_ok=True)
+        if (output / 'lectura.mp3').is_file():
+            pack['audio_file'] = 'lectura.mp3'
         for name, content in render(pack).items():
             (output/name).write_text(content, encoding='utf-8')
         if args.pdf:

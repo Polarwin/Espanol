@@ -20,6 +20,21 @@ with Spanish/English explanations, and separate translation and suggested-answer
 views. Save written responses before leaving. This is ungraded practice: the
 local model's draft may contain errors and is not a fact-check of the news.
 
+Exercises now open in **Escuchar primero** mode: load the Spanish narration,
+listen/replay at 0.75×, 1× or 1.25×, and answer with the transcript, vocabulary,
+translation and suggested answers hidden. **Mostrar transcripción y ayudas**
+reveals them without clearing answers. **Leer** retains the original reading
+mode. Save answers explicitly; this is ungraded comprehension practice.
+
+Audio is fetched through an authenticated endpoint (including in the Android
+app). Watched-video packs reuse their static `lectura.mp3`; deleted watched audio
+is reported unavailable, never regenerated. Other saved readings can request
+CPU-only narration on demand, cached under `static/SpanishReading/app-audio-*`.
+Those caches contain generated reading text/audio only, never learner responses.
+The static exports also include an offline **escuchar.html** page with an audio
+player, writable questions, and a collapsed transcript/help section. Offline
+typed answers are not persisted; use the app to save them to your account.
+
 Generation uses the shared `tools/subtitle_reading.py` pipeline with UTF-8-aware
 context budgeting and hierarchical summaries, never silent source truncation.
 It always calls the loopback gateway `http://127.0.0.1:8349/v1`; no cloud fallback.
@@ -48,11 +63,15 @@ The **daily 06:00 cron is retired**. The user service
 `vamos-news-reading-watcher.service` scans `/srv/files/ytwatcher/NoticiasEspanol/`
 every 60 seconds. New finalized videos need a matching Spanish VTT/SRT file and
 two minutes without file changes; partial downloads and missing subtitles wait.
-It adapts the first five minutes (or the whole video if shorter) into one A2 pack,
-using the local model and context-aware chunking. Generation takes several minutes.
+It adapts the first five minutes (or the whole video if shorter) into four separate
+packs: **A1, A2, B1 and B2**, using the local model and context-aware chunking.
+A1 uses shorter, simple text and literal questions; B1/B2 add richer language,
+causes, contrasts and supported inferences. Each has its own narration, questions,
+vocabulary and English translation. Levels remain AI estimates, not certified
+CEFR assessments. Four packs take longer than a single pack and run sequentially.
 
 All generated files live in
-`/srv/files/static/SpanishReading/news-<video-id>-a2/`: `ejercicio.html`,
+`/srv/files/static/SpanishReading/news-<video-id>-<a1|a2|b1|b2>/`: `ejercicio.html`,
 `traduccion.html`, `respuestas.html`, `imprimir.html`, `ejercicio.pdf`,
 `ejercicio.json`, `subtitulos.txt`, and `resumenes.json`. A hidden `.pending` folder
 in the same static directory stages the pack until the PDF is ready. Vocabulary
@@ -72,6 +91,9 @@ The shared generation lock prevents concurrent reading model jobs. Busy work is
 retried on the next scan; failures retry after 10 and 20 minutes, then remain
 failed after three attempts. Changed input subtitles can requeue a failed video.
 Successful staged generation is reused if PDF creation or delivery needs retrying.
+Per-level completion records preserve successful packs even if another level
+fails; cleaning a completed level's files does not cause regeneration on retry.
+Previously completed/baselined videos are not automatically backfilled.
 
 Install with one command: `./bin/python tools/install_news_reading_watcher.py`.
 It backs up the crontab, removes only the old reading entry, preserves unrelated

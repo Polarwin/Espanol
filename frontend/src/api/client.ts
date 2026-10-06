@@ -141,6 +141,14 @@ async function withMock<T>(call: () => Promise<T>, fallback: () => Promise<T>): 
 }
 
 export const api = {
+  readingAudio: async (id: string, signal?: AbortSignal): Promise<Blob> => {
+    const response = await fetch(`${API_ORIGIN}/api/reading/${id}/audio`, {
+      method: 'POST', headers: { Authorization: `Bearer ${getToken()}` }, signal,
+    })
+    handleUnauthorized('/api/reading/audio', response.status)
+    if (!response.ok) throw new ApiError(response.status, 'Audio no disponible')
+    return response.blob()
+  },
   readingHistory: () => request<ReadingJob[]>('/api/reading'),
   readingGet: (id: string) => request<ReadingJob>(`/api/reading/${id}`),
   readingCreate: (source: string, level: string) => request<ReadingJob>('/api/reading', { method: 'POST', body: JSON.stringify({ source, level }) }),

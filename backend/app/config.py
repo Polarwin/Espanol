@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     watch_dir: Path = Path("/srv/files/ytwatcher/Espanol")
     vitamina_dir: Path = PROJECT_ROOT / "Vitamina"
     reading_news_dir: Path = Path('/srv/files/ytwatcher/NoticiasEspanol')
+    reading_static_dir: Path = Path('/srv/files/static/SpanishReading')
     reading_model: str = 'Qwen3.5-2B-Q4_K_M.gguf'
     reading_context_size: int = 8192
 

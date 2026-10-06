@@ -13,6 +13,7 @@ from tools import watch_news_readings as watcher
 def setup(tmp_path, monkeypatch):
     root, output = tmp_path / 'news', tmp_path / 'static'
     root.mkdir()
+    monkeypatch.setattr(watcher, 'LEVELS', ('A2',))
     monkeypatch.setattr(watcher.reading.settings, 'backup_dir', tmp_path / 'private')
     db = watcher.connect(tmp_path / 'private' / 'watcher.sqlite3')
     watcher.initialize(db, root, 0)
@@ -77,7 +78,7 @@ def test_partial_and_changing_downloads(setup, monkeypatch):
 
 def test_static_cleanup_restart_and_rename_do_not_regenerate(setup, monkeypatch):
     root, output, db = setup
-    calls = Mock(side_effect=lambda *args: output.mkdir(exist_ok=True))
+    calls = Mock(side_effect=lambda *args, **kwargs: output.mkdir(exist_ok=True))
     monkeypatch.setattr(watcher, 'publish', calls)
     video = add_video(root)
     watcher.scan(db, root, output, now=10)
@@ -146,3 +147,40 @@ def test_reject_outside_symlinks(setup):
     outside.write_bytes(b'outside')
     (root / 'escape.mp4').symlink_to(outside)
     assert watcher.videos(root) == {}
+
+
+def test_four_levels_resume_only_unfinished_level(setup, monkeypatch):
+    root, output, db = setup
+    monkeypatch.setattr(watcher, 'LEVELS', ('A1', 'A2', 'B1', 'B2'))
+    add_video(root)
+    seen = []
+    def export(key, video, subtitle, root, output, level):
+        seen.append(level)
+        if level == 'A2' and seen.count('A2') == 1:
+            raise ValueError('Retry this level')
+    monkeypatch.setattr(watcher, 'publish_level', export)
+    watcher.scan(db, root, output, now=10)
+    watcher.scan(db, root, output, now=140)
+    assert seen == ['A1', 'A2', 'B1', 'B2']
+    assert {r[0] for r in db.execute('SELECT level FROM completed_levels')} == {'A1', 'B1', 'B2'}
+    # No completed output exists on disk: cleanup must still not regenerate it.
+    watcher.scan(db, root, output, now=800)
+    assert seen == ['A1', 'A2', 'B1', 'B2', 'A2']
+    assert db.execute('SELECT status FROM videos').fetchone()[0] == 'done'
+
+
+def test_level_specific_private_delivery(db_session, client, auth_headers, monkeypatch):
+    class BorrowSession:
+        def __enter__(self): return db_session
+        def __exit__(self, *args): pass
+    monkeypatch.setattr(watcher, 'SessionLocal', BorrowSession)
+    for level in ('A1', 'A2', 'B1', 'B2'):
+        assert watcher.deliver('abcdefghijk', 'News', {'level': level}) == 1
+    rows = db_session.scalars(select(ReadingPractice)).all()
+    assert {r.level for r in rows} == {'A1', 'A2', 'B1', 'B2'}
+    assert len({r.id for r in rows}) == 4
+    rows[0].answers = {'0': 'Private answer'}
+    db_session.commit()
+    for level in ('A1', 'A2', 'B1', 'B2'):
+        assert watcher.deliver('abcdefghijk', 'News', {'level': level}) == 0
+    assert rows[0].answers == {'0': 'Private answer'}

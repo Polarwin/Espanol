@@ -8,8 +8,9 @@ select_source = reading.select_source
 
 
 @pytest.fixture(autouse=True)
-def isolated_worker(monkeypatch):
+def isolated_worker(monkeypatch, tmp_path):
     reading.active.clear()
+    monkeypatch.setattr(reading.settings, 'backup_dir', tmp_path / 'backups')
     monkeypatch.setattr(reading.executor, 'submit', Mock())
     monkeypatch.setattr(reading, 'select_source', lambda *a: (
         dict(source='library', source_key='test', source_title='Biblioteca'), 'Texto de prueba', {'start': 0, 'duration': 0}))
@@ -63,6 +64,44 @@ def test_busy_and_missing(client, auth_headers, monkeypatch):
         raise ValueError('missing')
     monkeypatch.setattr(reading, 'select_source', missing)
     assert client.post('/api/reading', headers=auth_headers, json={}).status_code == 422
+
+
+def test_private_audio_cache_and_removed_watched_audio(client, auth_headers, db_session, tmp_path, monkeypatch):
+    from backend.app.routers import reading as router
+    monkeypatch.setattr(router.settings, 'reading_static_dir', tmp_path)
+    first = client.post('/api/reading', headers=auth_headers, json={}).json()
+    path = '/api/reading/' + first['id'] + '/audio'
+    assert client.post(path).status_code == 401
+    assert client.post(path, headers=auth_headers).status_code == 409
+    job = db_session.get(ReadingPractice, first['id'])
+    job.status, job.pack = 'ready', {'reading': 'Una lectura para escuchar.'}
+    job.answers = {'0': 'Private answer'}
+    db_session.commit()
+    mock = Mock(side_effect=lambda directory: (directory / 'lectura.mp3').write_bytes(b'MP3 fixture'))
+    monkeypatch.setattr(router, 'ensure_audio', mock)
+    response = client.post(path, headers=auth_headers)
+    assert response.status_code == 200 and response.headers['content-type'] == 'audio/mpeg'
+    assert response.content == b'MP3 fixture'
+    assert client.post(path, headers=auth_headers).status_code == 200
+    assert mock.call_count == 1
+    cache = next(tmp_path.glob('app-audio-*/ejercicio.json')).read_text()
+    assert 'Private answer' not in cache and 'answers' not in cache
+    other = client.post('/api/auth/register', json={'email': 'audio@example.com', 'password': 'secret123', 'display_name': 'Audio'}).json()
+    assert client.post(path, headers={'Authorization': 'Bearer ' + other['token']}).status_code == 404
+    job.pack = {'reading': 'Texto', 'video_key': 'abcdefghijk'}
+    db_session.commit()
+    assert client.post(path, headers=auth_headers).status_code == 404
+    assert mock.call_count == 1  # Cleanup must not regenerate watched output.
+    for level in ('A1', 'A2', 'B1', 'B2'):
+        directory = tmp_path / f'news-abcdefghijk-{level.lower()}'
+        directory.mkdir()
+        (directory / 'lectura.mp3').write_bytes(level.encode())
+        job.level = level
+        db_session.commit()
+        assert client.post(path, headers=auth_headers).content == level.encode()
+    job.pack = {'reading': 'Texto', 'video_key': '../../escape'}
+    db_session.commit()
+    assert client.post(path, headers=auth_headers).status_code == 404
 
 
 def test_subtitle_dedup_and_symlink_escape(tmp_path):
