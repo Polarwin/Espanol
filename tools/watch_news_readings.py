@@ -24,6 +24,7 @@ from backend.app.models import ReadingPractice, User
 from backend.app.services import reading
 from tools.subtitle_reading import clean_subtitles, render, make_pdf, TIMING, seconds
 from tools.reading_audio import ensure_audio
+from tools.subtitle_listening import select_clip, extract_audio, NoSuitableClip
 
 log = logging.getLogger('news-reading-watcher')
 VIDEO_EXTENSIONS = {'.mp4', '.mkv', '.webm', '.m4v', '.mov'}
@@ -78,6 +79,7 @@ def connect(path):
         signature TEXT, changed REAL NOT NULL, attempts INTEGER NOT NULL DEFAULT 0,
         retry_at REAL NOT NULL DEFAULT 0, error TEXT)''')
     db.execute('CREATE TABLE IF NOT EXISTS completed_levels (video_id TEXT, level TEXT, PRIMARY KEY(video_id, level))')
+    db.execute('CREATE TABLE IF NOT EXISTS skipped_levels (video_id TEXT, level TEXT, reason TEXT, PRIMARY KEY(video_id, level))')
     db.commit()
     return db
 
@@ -148,7 +150,7 @@ def deliver(key, title, pack):
     return count
 
 
-def publish(key, video, subtitle, root, output, completed=(), on_complete=lambda level: None):
+def publish(key, video, subtitle, root, output, completed=(), on_complete=lambda level: None, on_skip=lambda level, reason: None):
     failure = None
     for level in LEVELS:
         if level in completed:
@@ -156,6 +158,9 @@ def publish(key, video, subtitle, root, output, completed=(), on_complete=lambda
         try:
             publish_level(key, video, subtitle, root, output, level)
             on_complete(level)
+        except NoSuitableClip as error:
+            log.info('%s %s: skipped — no suitable complete excerpt', key, level)
+            on_skip(level, str(error))
         except Exception as error:
             log.error('%s %s: export failed (%s)', key, level, type(error).__name__)
             failure = error
@@ -178,17 +183,25 @@ def publish_level(key, video, subtitle, root, output, level):
         pack = json.loads(cache.read_text(encoding='utf-8'))
         if pack.get('video_key') != key or pack.get('level') != level:
             raise ValueError('Output belongs to a different source')
-    else:
-        if destination.exists() or any(p.name != '.ejercicio.json.tmp' for p in work.iterdir()):
+    if not cache.exists() or (work == staging and pack.get('listening_version') != 2):
+        if not cache.exists() and (destination.exists() or any(p.name != '.ejercicio.json.tmp' for p in work.iterdir())):
             raise ValueError('Refusing to overwrite existing output')
         raw = subtitle.read_text(encoding='utf-8-sig')
-        # Use this newly detected video, never a random older news source.
-        duration = min(300, max((seconds(m['end']) for m in TIMING.finditer(raw)), default=0))
-        transcript = clean_subtitles(raw, 0, duration)
-        pack, audit = reading.generate_pack(transcript, reading.model_args(level),
-                                            lambda stage: log.info('%s %s: %s', key, level, stage))
+        # A1 adapts the source; higher levels retain the exact selected words.
+        progress = lambda stage: log.info('%s %s: %s', key, level, stage)
+        args = reading.model_args(level)
+        if level == 'A1':
+            duration = min(300, max((seconds(m['end']) for m in TIMING.finditer(raw)), default=0))
+            transcript = clean_subtitles(raw, 0, duration)
+            pack, audit = reading.generate_pack(transcript, args, progress)
+            pack.update(start=0, duration=duration, audio_kind='synthetic')
+        else:
+            clip = select_clip(raw, args, progress)
+            transcript = clip['reading']
+            pack, audit = reading.generate_pack(transcript, args, progress, original=clip)
+            pack.update(clip)
         pack.update(source=video.stem, subtitle_source=str(subtitle.relative_to(root)),
-                    video_key=key, start=0, duration=duration)
+                    video_key=key, listening_version=2)
         # Cache the successful LLM result before optional PDF/export steps.
         temporary = work / '.ejercicio.json.tmp'
         temporary.write_text(json.dumps(pack, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -196,7 +209,10 @@ def publish_level(key, video, subtitle, root, output, level):
         (work / 'subtitulos.txt').write_text(transcript, encoding='utf-8')
         (work / 'resumenes.json').write_text(json.dumps(audit, ensure_ascii=False, indent=2), encoding='utf-8')
     if work == staging:
-        ensure_audio(work)
+        if pack.get('audio_kind') == 'original':
+            extract_audio(video, work, pack)
+        else:
+            ensure_audio(work)
         pack['audio_file'] = 'lectura.mp3'
         temporary = work / '.ejercicio.json.tmp'
         temporary.write_text(json.dumps(pack, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -231,7 +247,11 @@ def scan(db, root, output, now=None, stable_seconds=120):
                 def on_complete(level):
                     db.execute('INSERT OR IGNORE INTO completed_levels VALUES (?,?)', (row['id'], level))
                     db.commit()
-                publish(row['id'], video, sub, root, output, completed=completed, on_complete=on_complete)
+                def on_skip(level, reason):
+                    db.execute('INSERT OR REPLACE INTO skipped_levels VALUES (?,?,?)', (row['id'], level, reason))
+                    on_complete(level)
+                publish(row['id'], video, sub, root, output, completed=completed,
+                        on_complete=on_complete, on_skip=on_skip)
             db.execute("UPDATE videos SET status='done', error=NULL WHERE id=?", (row['id'],))
             db.commit()
         except BlockingIOError:

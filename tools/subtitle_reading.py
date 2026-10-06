@@ -21,7 +21,7 @@ from urllib.request import Request, urlopen
 
 TIMING = re.compile(r'(?P<start>(?:\d+:)?\d{2}:\d{2}[.,]\d{3})\s*-->\s*(?P<end>(?:\d+:)?\d{2}:\d{2}[.,]\d{3})')
 LEVEL_GUIDES = {
-    'A1': '100–140 palabras. Frases muy cortas, vocabulario frecuente, presente y una idea por frase. Explica términos inevitables. Preguntas literales muy sencillas: quién, qué, dónde.',
+    'A1': '100–140 palabras. Frases muy cortas, vocabulario frecuente y una idea por frase. Usa SOLO presente de indicativo para verbos conjugados; sin pasado, futuro, condicional, subjuntivo ni imperativo. Puedes usar infinitivos. No cambies hechos pasados a presentes: describe el tema y atribuye la información a la fuente en presente. Explica términos inevitables. Preguntas literales muy sencillas: quién, qué, dónde.',
     'A2': '180–220 palabras. Frases sencillas, conectores básicos y vocabulario cotidiano. Preguntas sobre hechos explícitos y secuencias claras.',
     'B1': '220–280 palabras. Conecta causas, consecuencias y opiniones atribuidas con claridad. Preguntas sobre la idea principal, detalles y motivos explicados.',
     'B2': '260–330 palabras. Incluye matices, contraste y subordinación natural sin añadir hechos. Preguntas sobre argumentos, perspectiva y deducciones apoyadas por el texto.',
@@ -263,7 +263,7 @@ def required_text(obj, key):
 def validate_reading(value, transcript=None):
     required_text(value, 'title')
     required_text(value, 'reading')
-    if not 100 <= len(value['reading'].split()) <= 500:
+    if not (50 if value.get('audio_kind') == 'original' else 100) <= len(value['reading'].split()) <= 500:
         raise ValueError('reading must contain 100–500 words.')
     if transcript:
         extra = set(re.findall(r'\d+(?:[.,]\d+)?',value['reading'])) - set(re.findall(r'\d+(?:[.,]\d+)?',transcript))
@@ -297,7 +297,7 @@ def validate_tasks(value, reading, count, vocabulary):
 
 def validate_translation(value, reading):
     required_text(value, 'translation')
-    if len(value['translation'].split()) < 50:
+    if len(value['translation'].split()) < min(50, max(20, len(reading.split()) // 2)):
         raise ValueError('Translate the complete reading, not a short summary.')
     numbers = lambda text: set(re.findall(r'\d+(?:[.,]\d+)?',text))
     # Spanish decimal commas may become English decimal points. Only accept
@@ -329,7 +329,10 @@ def render(pack):
     answers += '</ol>'
     translation = '<h1>English translation</h1><div lang="en">'+''.join('<p>'+esc(p)+'</p>' for p in pack['translation'].split('\n') if p.strip())+'</div>'
     status = 'Adaptación revisada para esta muestra.' if pack.get('review_status') == 'reviewed' else 'Borrador generado por un modelo local: revisa la lectura, traducción, preguntas y definiciones antes de usarlo.'
-    notice = '<p class="note">'+status+' No es una verificación de las noticias ni una transcripción literal. Nivel orientativo: '+esc(pack['level'])+'.</p>'
+    original_audio = pack.get('audio_kind') == 'original'
+    description = ('Transcripción de los subtítulos del audio original; puede contener errores.' if original_audio
+                   else 'Texto adaptado; no es una transcripción literal.')
+    notice = '<p class="note">'+status+' '+description+' No es una verificación de las noticias. Nivel orientativo: '+esc(pack['level'])+'.</p>'
     source = '<p class="note">Fuente: '+esc(pack['source'])+'<br>Fragmento: '+str(pack['start'])+'–'+str(pack['start']+pack['duration'])+' segundos.</p>'
     exercise = '<h1>'+esc(pack['title'])+'</h1>'+notice+'<h2>Lectura</h2>'+reading+questions+vocab+source
     style = '''body{font:17px/1.6 system-ui,sans-serif;color:#183d37;max-width:900px;margin:40px auto;padding:0 24px}h1{line-height:1.2}h2{margin-top:30px}li{margin:12px 0}li li{margin:3px 0}table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid #b9c9c2;padding:9px;text-align:left}th{background:#e6efe8}blockquote{border-left:3px solid #b9c9c2;padding-left:14px}.note{font-size:12px;color:#64746d;overflow-wrap:anywhere}nav{margin:30px 0}a{color:#185d50}.supplement{break-before:page;page-break-before:always}.writing-lines{height:44px;border-bottom:1px solid #b9c9c2;margin-bottom:16px}@page{size:A4;margin:18mm}@media print{body{font-size:11pt;margin:0;padding:0;max-width:none}nav{display:none}li,tr{break-inside:avoid}h1,h2{break-after:avoid}table{font-size:9pt}}'''
@@ -344,7 +347,8 @@ def render(pack):
     if pack.get('audio_file') == 'lectura.mp3':
         prompts = ''.join('<li><label>'+esc(q['question'])+'<br><textarea rows="3" maxlength="4000" style="width:100%;box-sizing:border-box;font:inherit" aria-label="'+esc(q['question'], quote=True)+'"></textarea></label></li>' for q in pack['questions'])
         pages['escuchar.html'] = page('<h1>Escuchar primero</h1>'+notice+
-            '<h2>1. Escucha</h2><p>Escucha sin mirar el texto. Puedes repetir y mover el control al principio. Voz sintética, no el audio original del vídeo.</p>'+
+            '<h2>1. Escucha</h2><p>Escucha sin mirar el texto. Puedes repetir y mover el control al principio. '+
+            ('Audio original del vídeo.' if original_audio else 'Voz sintética, no el audio original del vídeo.')+'</p>'+
             '<audio controls preload="metadata" style="width:100%" src="lectura.mp3">'+
             '<a href="lectura.mp3">Abrir el audio</a></audio>'+
             '<h2>2. ¿Qué has entendido?</h2><p>Responde con tus propias palabras. Estas respuestas no se guardan al cerrar la página; usa la app para guardarlas.</p><ol>'+prompts+'</ol>'+
@@ -369,25 +373,48 @@ def make_pdf(directory, browser):
                         (directory/'imprimir.html').as_uri()], check=True, timeout=60, capture_output=True)
 
 
-def generate_pack(transcript, args, progress=lambda stage: None):
+def validate_generated_reading(value, transcript, args):
+    validate_reading(value, transcript)
+    if args.level != 'A1':
+        return
+    def validate_review(review):
+        if type(review.get('present_only')) is not bool:
+            raise ValueError('present_only must be boolean')
+        required_text(review, 'reason')
+    review = chat(args, 'Comprueba TODOS los verbos conjugados de la lectura. Solo se admite presente de indicativo '
+                  '(también infinitivos). No se admiten pasado, futuro, condicional, subjuntivo ni imperativo. '
+                  'Devuelve present_only=true solo si TODOS cumplen, y reason con los verbos comprobados.',
+                  value['reading'], validate_review,
+                  object_schema({'present_only': {'type': 'boolean'}, 'reason': TEXT}), max_tokens=500)
+    if not review['present_only']:
+        # Propagates into the reading-generation retry, so the text is rewritten
+        # instead of repeatedly asking the reviewer to approve the same text.
+        raise ValueError('A1 requires present indicative only: ' + review['reason'][:180])
+
+
+def generate_pack(transcript, args, progress=lambda stage: None, original=None):
     """Shared CLI/app pipeline. Source text is data, never instructions."""
     progress('Preparando el texto')
-    context_text, summary_audit = prepare_context(transcript, args)
-    progress('Creando la lectura')
     guide = LEVEL_GUIDES.get(args.level, '180–250 palabras. Adapta la complejidad al nivel indicado.')
-    reading = chat(args, f'Crea una lectura de nivel {args.level}. {guide} Organiza el texto en 3–4 párrafos. '
-                   'Usa palabras propias, sin añadir hechos. Atribuye noticias a la fuente, no supongas que son actuales. '
-                   'Omite detalles dudosos e incompletos. Devuelve title y reading.', context_text,
-                   lambda v: validate_reading(v, transcript),
-                   object_schema({'title': {'type': 'string', 'minLength': 1, 'maxLength': 120},
-                                  'reading': {'type': 'string', 'minLength': 350 if args.level == 'A1' else 650, 'maxLength': 2700 if args.level in {'B1', 'B2'} else 1800}}))
+    if original is not None:
+        reading = {'title': f'Escucha {args.level}', 'reading': original['reading']}
+        summary_audit = []
+    else:
+        context_text, summary_audit = prepare_context(transcript, args)
+        progress('Creando la lectura')
+        reading = chat(args, f'Crea una lectura de nivel {args.level}. {guide} Organiza el texto en 3–4 párrafos. '
+                       'Usa palabras propias, sin añadir hechos. Atribuye noticias a la fuente, no supongas que son actuales. '
+                       'Omite detalles dudosos e incompletos. Devuelve title y reading.', context_text,
+                       lambda v: validate_generated_reading(v, transcript, args),
+                       object_schema({'title': {'type': 'string', 'minLength': 1, 'maxLength': 120},
+                                      'reading': {'type': 'string', 'minLength': 350 if args.level == 'A1' else 650, 'maxLength': 2700 if args.level in {'B1', 'B2'} else 1800}}))
     progress('Traduciendo al inglés')
     figures = sorted(set(re.findall(r'\d+(?:[.,]\d+)?', reading['reading'])))
     translation = chat(args, 'Traduce toda la lectura al inglés fiel. Conserva párrafos, nombres, cifras y atribuciones. '
                        'No resumas ni añadas información. Conserva los valores numéricos: puedes cambiar coma decimal por punto inglés, sin cambiar el valor. '
                        'No escribas las cifras con letras. Deben aparecer estas cifras: ' + json.dumps(figures) + '. Devuelve translation.', reading['reading'],
                        lambda v: validate_translation(v, reading['reading']),
-                       object_schema({'translation': {'type': 'string', 'minLength': 300, 'maxLength': 3500}}))
+                       object_schema({'translation': {'type': 'string', 'minLength': 100 if original is not None else 300, 'maxLength': 3500}}))
     progress('Preparando preguntas y vocabulario')
     question_guide = guide.split('Preguntas', 1)[-1]
     tasks = chat(args, f'Nivel {args.level}. Preguntas {question_guide} Crea {args.questions} preguntas ABIERTAS con respuestas orientativas y '
@@ -399,7 +426,9 @@ def generate_pack(transcript, args, progress=lambda stage: None):
                  'Devuelve questions [{question,suggested_answer}] y vocabulary [{term,spanish,english}].',
                  reading['reading'], lambda v: validate_tasks(v, reading['reading'], args.questions, args.vocabulary),
                  tasks_schema(reading['reading'], args.questions, args.vocabulary))
-    return ({**reading, **translation, **tasks, 'review_status': 'draft', 'level': args.level,
+    return ({**reading, **translation, **tasks, **(original or {}),
+             'audio_kind': 'original' if original is not None else 'synthetic',
+             'review_status': 'draft', 'level': args.level,
              'model': args.model, 'context_size': args.context_size, 'summary_chunks': len(summary_audit)}, summary_audit)
 
 

@@ -11,7 +11,7 @@ const assert = require('node:assert/strict');
     let saved = {};
     let job = null;
     let audioFailure = false;
-    const pack = { title: 'Una visita al mercado', reading: 'María visita el mercado de su barrio. Compra fruta y habla con los vendedores.', translation: 'Mary visits the market in her neighbourhood.', review_status: 'draft', start: 0, duration: 180,
+    const pack = { audio_kind: 'original', title: 'Una visita al mercado', reading: 'María visita el mercado de su barrio. Compra fruta y habla con los vendedores.', translation: 'Mary visits the market in her neighbourhood.', review_status: 'draft', start: 0, duration: 180,
       questions: Array.from({ length: 5 }, (_, i) => ({ question: `¿Qué hace María? ${i + 1}`, suggested_answer: 'María compra fruta.' })),
       vocabulary: Array.from({ length: 8 }, (_, i) => ({ term: `palabra ${i}`, spanish: 'Una explicación sencilla en español.', english: 'A simple explanation in English.' })) };
     await page.addInitScript(() => { localStorage.setItem('vamos.token', 'ui-test'); localStorage.setItem('vamos.placement-completed', 'true'); });
@@ -42,6 +42,8 @@ const assert = require('node:assert/strict');
     await page.goto('http://127.0.0.1:5173/practica/lectura');
     await page.getByRole('button', { name: 'Crear una lectura sorpresa' }).click();
     await page.getByRole('heading', { name: pack.title }).waitFor();
+    assert.equal(await page.getByText('Audio original del vídeo. Transcripción basada en sus subtítulos.', { exact: false }).count(), 1);
+    assert.equal(await page.getByText('Voz sintética en español.', { exact: false }).count(), 0);
     assert.equal(await page.locator('textarea').count(), 5);
     assert.equal(await page.getByText(pack.reading, { exact: true }).count(), 0);
     assert.equal(await page.getByRole('heading', { name: 'Palabras para llevarte' }).count(), 0);

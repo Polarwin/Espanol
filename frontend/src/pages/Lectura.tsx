@@ -152,7 +152,7 @@ export function Lectura() {
       </div>
       <section className="space-y-3 rounded-2xl bg-cream p-4" aria-label="Audio de la lectura">
         <h3 className="font-bold">{listening ? '1. Escucha sin mirar el texto' : 'Escucha la lectura'}</h3>
-        <p className="text-sm">Voz sintética en español. Repite las veces que necesites; después responde a las preguntas. Sin nota automática.</p>
+        <p className="text-sm">{job.pack?.audio_kind === 'original' ? 'Audio original del vídeo. Transcripción basada en sus subtítulos.' : 'Voz sintética en español.'} Repite las veces que necesites; después responde a las preguntas. Sin nota automática.</p>
         {!audioUrl && <button className={button} disabled={audioBusy} onClick={() => void loadAudio()}>{audioBusy ? 'Preparando audio…' : 'Cargar audio'}</button>}
         {audioBusy && <p role="status" className="text-sm">Preparando la narración local. Puede tardar unos segundos.</p>}
         {audioError && <p role="alert">{audioError}</p>}

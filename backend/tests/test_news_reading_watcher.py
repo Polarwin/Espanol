@@ -120,8 +120,11 @@ def test_publish_pdf_resume_and_private_answers(setup, monkeypatch, db_session, 
                                     'vocabulary': [{'term': 'texto', 'spanish': 'Una explicación.', 'english': 'An explanation.'}],
                                     'review_status': 'draft'}, []))
     monkeypatch.setattr(watcher.reading, 'generate_pack', generator)
+    monkeypatch.setattr(watcher, 'select_clip', Mock(return_value={
+        'reading': 'Un texto.', 'start': 2, 'duration': 60, 'audio_kind': 'original'}))
     audio = Mock(side_effect=lambda directory: (directory / 'lectura.mp3').write_bytes(b'test MP3'))
-    monkeypatch.setattr(watcher, 'ensure_audio', audio)
+    monkeypatch.setattr(watcher, 'ensure_audio', Mock(side_effect=AssertionError('Original clip must not use TTS')))
+    monkeypatch.setattr(watcher, 'extract_audio', lambda video, directory, pack: audio(directory))
     pdf = Mock(side_effect=OSError('PDF unavailable'))
     monkeypatch.setattr(watcher, 'make_pdf', pdf)
     watcher.scan(ledger, root, output, now=10)
@@ -184,3 +187,16 @@ def test_level_specific_private_delivery(db_session, client, auth_headers, monke
     for level in ('A1', 'A2', 'B1', 'B2'):
         assert watcher.deliver('abcdefghijk', 'News', {'level': level}) == 0
     assert rows[0].answers == {'0': 'Private answer'}
+
+
+def test_unsuitable_level_is_recorded_and_not_retried(setup, monkeypatch):
+    root, output, db = setup
+    add_video(root)
+    exporter = Mock(side_effect=watcher.NoSuitableClip('No complete A2 excerpt'))
+    monkeypatch.setattr(watcher, 'publish_level', exporter)
+    watcher.scan(db, root, output, now=10)
+    watcher.scan(db, root, output, now=140)
+    assert db.execute('SELECT level FROM skipped_levels').fetchone()[0] == 'A2'
+    assert db.execute('SELECT status FROM videos').fetchone()[0] == 'done'
+    watcher.scan(db, root, output, now=900)
+    exporter.assert_called_once()

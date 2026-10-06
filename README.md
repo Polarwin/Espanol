@@ -101,6 +101,34 @@ jobs, and enables the user service. Logs:
 `journalctl --user -u vamos-news-reading-watcher.service`.
 The machine, local LLM service, and source/output storage must be available.
 
+### Listening packs from news videos
+
+New news-watcher packs use a different audio policy by level:
+
+- **A1:** adapted, frequent vocabulary and short sentences, with present-indicative
+  verbs only. A separate model check rejects other tenses before Piper narration.
+  Source facts are preserved through attribution, not by changing past events
+  into current events.
+- **A2, B1, B2:** select a contiguous, self-contained excerpt from the original
+  subtitles. Assess vocabulary, grammar, complete meaning and pace for that
+  level, then check the isolated excerpt again. ffmpeg extracts original audio;
+  its unrewritten subtitle text supplies the transcript, translation and questions.
+
+Clips contain 50–300 words and last 15–180 seconds, with conservative pace caps
+of 170/195/230 words per minute for A2/B1/B2. These are project selection rules,
+not official CEFR cutoffs. Word timestamps are preserved for rolling VTT captions;
+coarse SRT captions are cut only at cue boundaries. Unterminated final sentences
+are excluded. Audio duration is checked before publication.
+
+A level with no accepted complete excerpt is skipped, with its reason recorded
+in the watcher's private `skipped_levels` ledger table. It does not silently
+receive simplified audio or retry indefinitely. Existing published packs and
+learner answers remain intact. This policy applies to new news-watcher packs;
+interactive surprise readings and daily reading texts still use adapted prose.
+Levels and completeness are assessed by the local model, so packs remain drafts
+for review; automatic subtitles can contain errors. The app and exported listening
+page identify original versus synthetic audio.
+
 ### Local Spanish narration (CPU only)
 
 New watcher packs also include `lectura.mp3`, `audio.json`, and

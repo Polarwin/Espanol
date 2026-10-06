@@ -77,6 +77,7 @@ export interface ReadingJob {
     questions: { question: string; suggested_answer: string }[]
     vocabulary: { term: string; spanish: string; english: string }[]
     start: number; duration: number
+    audio_kind?: 'original' | 'synthetic'
   } | null
 }
 
