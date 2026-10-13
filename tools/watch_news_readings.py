@@ -227,6 +227,7 @@ def publish_level(key, video, subtitle, root, output, level):
         pack['export_path'] = str(destination.relative_to(output.resolve()))
         pack['published_date'] = destination.parent.name
         pack['audio_file'] = 'lectura.mp3'
+        pack['pdf_file'] = 'ejercicio.pdf'
         temporary = work / '.ejercicio.json.tmp'
         temporary.write_text(json.dumps(pack, ensure_ascii=False, indent=2), encoding='utf-8')
         temporary.replace(cache)

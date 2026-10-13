@@ -25,6 +25,17 @@ class ReadingTests(unittest.TestCase):
         self.assertNotIn('<secret transcript>', page)
         self.assertIn('&lt;secret transcript&gt;', page)
 
+    def test_flashcards_escape_embedded_data_and_cache_audio_pdf(self):
+        pack = self.pack()
+        pack.update(audio_file='lectura.mp3', pdf_file='ejercicio.pdf')
+        pack['vocabulary'][0]['term'] = '</script><script>alert(1)</script>'
+        pages = app.render(pack)
+        self.assertNotIn('</script><script>alert(1)</script>', pages['tarjetas.html'])
+        self.assertIn('\\u003c/script\\u003e', pages['tarjetas.html'])
+        self.assertIn('lectura.mp3', pages['offline-sw.js'])
+        self.assertIn('ejercicio.pdf', pages['offline-sw.js'])
+        self.assertIn('Content-Range', pages['offline-sw.js'])
+
     def test_translation_number_feedback(self):
         with self.assertRaisesRegex(ValueError, r"Missing: \['48,43'\]; unexpected: \['49'\]"):
             app.validate_translation({'translation': 'word ' * 60 + '49'}, 'palabra ' * 60 + '48,43')
@@ -85,7 +96,8 @@ class ReadingTests(unittest.TestCase):
         self.assertIn('Ana vive en Brasil, según el texto.', pages['respuestas.html'])
         self.assertIn('class="supplement answers"', pages['imprimir.html'])
         self.assertIn('break-before:page', pages['imprimir.html'])
-        self.assertNotIn('<script>', pages['ejercicio.html'])
+        self.assertEqual(pages['ejercicio.html'].count('<script>'), 1)  # Bundled offline bootstrap only.
+        self.assertIn('tarjetas.html', pages['ejercicio.html'])
         self.assertIn('Lives; has a home', pages['ejercicio.html'])
 
     def test_invalid_answer_evidence_vocabulary(self):

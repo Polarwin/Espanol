@@ -101,6 +101,24 @@ jobs, and enables the user service. Logs:
 `journalctl --user -u vamos-news-reading-watcher.service`.
 The machine, local LLM service, and source/output storage must be available.
 
+### Offline flashcards, PDF and listening audio
+
+Each exported learning pack includes `tarjetas.html`, a self-contained vocabulary
+flashcard deck with Spanish and English definitions, flip/next/previous controls,
+shuffle, and progress saved in the browser. Links appear in every HTML page.
+The deck can also be downloaded as one HTML file with all vocabulary embedded.
+
+Opening a pack page on trusted HTTPS automatically preloads that pack's pages,
+flashcards, PDF and MP3 using its own service worker. Wait for **Listo sin conexión**
+before disconnecting, then reopen the saved page URL in the same browser.
+Audio seeking works from the offline cache. PDF and audio download links provide
+an alternative when browser caching is unavailable. A browser may evict cached
+files when storage is low; untrusted HTTPS and `file://` cannot use service workers.
+
+To update existing exports without regenerating audio, PDFs or exercises, stop the
+news watcher, run `./bin/python tools/refresh_reading_exports.py`, then restart it.
+Original HTML files are backed up under `backups/reading-html-*`.
+
 ### Reading folder organization and daily limit
 
 Exports are grouped by level, then Madrid generation date (`A1/2026-10-13/…`).

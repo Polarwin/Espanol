@@ -356,7 +356,12 @@ def render(pack):
             '<h2>3. Comprueba</h2><details><summary>Mostrar transcripción y ayudas</summary><h2>Transcripción</h2>'+reading+vocab+
             '<nav><a href="traduccion.html">English translation</a> · <a href="respuestas.html">Respuestas orientativas</a></nav></details>')
         pages['ejercicio.html'] = pages['ejercicio.html'].replace('<body>', '<body><nav><a href="escuchar.html">Escuchar primero →</a></nav>', 1)
-    return pages
+    try:
+        from tools.reading_flashcards import flashcards_page, add_offline
+    except ModuleNotFoundError:
+        from reading_flashcards import flashcards_page, add_offline
+    pages['tarjetas.html'] = flashcards_page(pack)
+    return add_offline(pages, pack)
 
 
 def make_pdf(directory, browser):
@@ -368,7 +373,7 @@ def make_pdf(directory, browser):
         raise ValueError('No Chromium found. HTML is ready; print imprimir.html to PDF, or set --browser.')
     with tempfile.TemporaryDirectory(prefix='spanish-reading-browser-') as profile:
         # The bundled headless shell lacks a usable OS sandbox on this host.
-        # Input here is our escaped, script-free local HTML, never a remote URL.
+        # Input here is our escaped local HTML with bundled scripts, never a remote URL.
         subprocess.run([executable, '--headless', '--no-sandbox', '--disable-gpu', '--no-pdf-header-footer',
                         '--user-data-dir='+profile, '--print-to-pdf='+str(directory/'ejercicio.pdf'),
                         (directory/'imprimir.html').as_uri()], check=True, timeout=60, capture_output=True)
@@ -454,6 +459,8 @@ def main():
         validate_tasks(pack, pack['reading'], len(pack['questions']), len(pack['vocabulary']))
         output = (args.output or args.render_json.parent).resolve()
         output.mkdir(parents=True, exist_ok=True)
+        if args.pdf or (output / 'ejercicio.pdf').is_file():
+            pack['pdf_file'] = 'ejercicio.pdf'
         if (output / 'lectura.mp3').is_file():
             pack['audio_file'] = 'lectura.mp3'
         for name, content in render(pack).items():
@@ -476,6 +483,8 @@ def main():
     pack, summary_audit = generate_pack(transcript, args)
     pack.update(source=source, subtitle_source=subtitle_source, start=args.start, duration=args.duration)
     output.mkdir(parents=True, exist_ok=False)
+    if args.pdf:
+        pack['pdf_file'] = 'ejercicio.pdf'
     for name, content in render(pack).items():
         (output/name).write_text(content, encoding='utf-8')
     (output/'ejercicio.json').write_text(json.dumps(pack, ensure_ascii=False, indent=2), encoding='utf-8')
