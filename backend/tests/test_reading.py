@@ -99,6 +99,10 @@ def test_private_audio_cache_and_removed_watched_audio(client, auth_headers, db_
         job.level = level
         db_session.commit()
         assert client.post(path, headers=auth_headers).content == level.encode()
+        dated = tmp_path / level / '2026-10-13' / directory.name
+        dated.parent.mkdir(parents=True)
+        directory.rename(dated)
+        assert client.post(path, headers=auth_headers).content == level.encode()
     job.pack = {'reading': 'Texto', 'video_key': '../../escape'}
     db_session.commit()
     assert client.post(path, headers=auth_headers).status_code == 404

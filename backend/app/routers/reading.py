@@ -17,6 +17,7 @@ from ..services.ratelimit import rate_limit
 from ..services import reading
 from ..config import settings
 from tools.reading_audio import ensure_audio
+from tools.reading_layout import find_export
 
 router = APIRouter(prefix='/api/reading', tags=['reading'])
 
@@ -116,7 +117,7 @@ def audio(job_id: str, db: Session = Depends(get_db), user: User = Depends(get_c
             raise HTTPException(404, 'Audio no disponible')
         if job.level not in {'A1', 'A2', 'B1', 'B2', 'C1', 'C2'}:
             raise HTTPException(404, 'Audio no disponible')
-        directory = root / f'news-{key}-{job.level.lower()}'
+        directory = find_export(root, key, job.level) or root / f'news-{key}-{job.level.lower()}'
     else:
         # Export only generated text, never learner answers or identity.
         key = sha256(job.pack['reading'].encode()).hexdigest()

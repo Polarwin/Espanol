@@ -134,7 +134,7 @@ def test_publish_pdf_resume_and_private_answers(setup, monkeypatch, db_session, 
     pdf.side_effect = lambda directory, browser: (directory / 'ejercicio.pdf').write_bytes(b'test PDF')
     watcher.scan(ledger, root, output, now=800)
     generator.assert_called_once()
-    destination = output / 'news-abcdefghijk-a2'
+    destination = watcher.find_export(output, 'abcdefghijk', 'A2')
     assert all((destination / name).is_file() for name in ['lectura.mp3', 'ejercicio.pdf', 'ejercicio.html', 'traduccion.html', 'respuestas.html', 'ejercicio.json', 'subtitulos.txt'])
     job = db_session.scalar(select(ReadingPractice))
     job.answers = {'0': 'Mi respuesta'}
@@ -200,3 +200,67 @@ def test_unsuitable_level_is_recorded_and_not_retried(setup, monkeypatch):
     assert db.execute('SELECT status FROM videos').fetchone()[0] == 'done'
     watcher.scan(db, root, output, now=900)
     exporter.assert_called_once()
+
+
+def test_daily_limit_survives_cleanup_and_resumes_next_day(setup, monkeypatch):
+    root, output, db = setup
+    monkeypatch.setattr(watcher, 'LEVELS', ('A1', 'A2'))
+    day = ['2026-10-13']
+    monkeypatch.setattr(watcher, 'local_day', lambda timestamp=None: day[0])
+    seen = []
+    def export(key, video, subtitle, root, output, level):
+        seen.append((key, level, day[0]))
+        target = output / level / day[0] / f'news-{key}-{level.lower()}'
+        target.mkdir(parents=True)
+        (target / 'ejercicio.json').write_text(json.dumps({
+            'level': level, 'video_key': key, 'published_date': day[0]}))
+    monkeypatch.setattr(watcher, 'publish_level', export)
+    for n in range(5):
+        add_video(root, key=f'video{n:06d}')
+    watcher.scan(db, root, output, now=10)
+    for n in range(7):
+        watcher.scan(db, root, output, now=140 + n)
+    assert len(seen) == 6
+    assert db.execute("SELECT COUNT(*) FROM videos WHERE status='pending'").fetchone()[0] == 2
+    assert db.execute('SELECT SUM(attempts) FROM videos').fetchone()[0] == 0
+    shutil.rmtree(output)
+    with watcher.connect(root.parent / 'private/watcher.sqlite3') as reopened:
+        watcher.scan(reopened, root, output, now=300)
+        assert len(seen) == 6  # Removing files must not reset quota.
+        day[0] = '2026-10-14'
+        watcher.scan(reopened, root, output, now=90000)
+        watcher.scan(reopened, root, output, now=90100)
+        assert len(seen) == 10
+        assert reopened.execute("SELECT COUNT(*) FROM videos WHERE status='pending'").fetchone()[0] == 0
+
+
+def test_reconcile_recovers_publication_before_delivery_crash(setup):
+    root, output, db = setup
+    target = output / 'A2/2026-10-13/news-abcdefghijk-a2'
+    target.mkdir(parents=True)
+    (target / 'ejercicio.json').write_text(json.dumps({
+        'level': 'A2', 'video_key': 'abcdefghijk', 'published_date': '2026-10-13'}))
+    watcher.reconcile_publications(db, output)
+    watcher.reconcile_publications(db, output)
+    assert db.execute('SELECT COUNT(*) FROM publications').fetchone()[0] == 1
+    assert watcher.find_export(output, 'abcdefghijk', 'A2') == target
+
+
+def test_organize_preserves_audio_and_saves_original_metadata(tmp_path):
+    from tools.organize_readings import organize
+    root, backup = tmp_path / 'static', tmp_path / 'backup'
+    old = root / 'news-abcdefghijk-a1'
+    old.mkdir(parents=True)
+    original = json.dumps({'level': 'A1', 'video_key': 'abcdefghijk',
+                           'published_date': '2026-10-06', 'reading': 'Texto original.'})
+    (old / 'ejercicio.json').write_text(original)
+    (old / 'lectura.mp3').write_bytes(b'original MP3')
+    assert len(organize(root, backup)) == 1
+    assert old.exists() and not backup.exists()
+    organize(root, backup, apply=True)
+    new = root / 'A1/2026-10-06/news-abcdefghijk-a1'
+    assert not old.exists()
+    assert (new / 'lectura.mp3').read_bytes() == b'original MP3'
+    assert (backup / 'news-abcdefghijk-a1.json').read_text() == original
+    assert json.loads((new / 'ejercicio.json').read_text())['reading'] == 'Texto original.'
+    assert organize(root, tmp_path / 'another-backup') == []

@@ -71,7 +71,7 @@ vocabulary and English translation. Levels remain AI estimates, not certified
 CEFR assessments. Four packs take longer than a single pack and run sequentially.
 
 All generated files live in
-`/srv/files/static/SpanishReading/news-<video-id>-<a1|a2|b1|b2>/`: `ejercicio.html`,
+`/srv/files/static/SpanishReading/<A1|A2|B1|B2>/<YYYY-MM-DD>/news-<video-id>-<level>/`: `ejercicio.html`,
 `traduccion.html`, `respuestas.html`, `imprimir.html`, `ejercicio.pdf`,
 `ejercicio.json`, `subtitulos.txt`, and `resumenes.json`. A hidden `.pending` folder
 in the same static directory stages the pack until the PDF is ready. Vocabulary
@@ -100,6 +100,20 @@ It backs up the crontab, removes only the old reading entry, preserves unrelated
 jobs, and enables the user service. Logs:
 `journalctl --user -u vamos-news-reading-watcher.service`.
 The machine, local LLM service, and source/output storage must be available.
+
+### Reading folder organization and daily limit
+
+Exports are grouped by level, then Madrid generation date (`A1/2026-10-13/…`).
+The watcher publishes at most **three new video packs per level per day**.
+Extra work remains pending for later days; reaching the quota is not a failure.
+Skipped/failed selections do not consume a published slot. The private SQLite
+`publications` ledger retains counts after output cleanup or service restart.
+Existing historical packs are preserved even when older dates exceed the new cap.
+
+`./bin/python tools/organize_readings.py` previews moves for existing flat packs;
+add `--apply` with the watcher stopped to perform them. Metadata backups and a
+move manifest go into `backups/reading-layout-*`. The app resolves both old flat
+exports and the new folders, so saved exercises retain access to their audio.
 
 ### Listening packs from news videos
 

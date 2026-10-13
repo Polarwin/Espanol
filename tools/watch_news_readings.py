@@ -24,11 +24,13 @@ from backend.app.models import ReadingPractice, User
 from backend.app.services import reading
 from tools.subtitle_reading import clean_subtitles, render, make_pdf, TIMING, seconds
 from tools.reading_audio import ensure_audio
+from tools.reading_layout import local_day, find_export, export_directory
 from tools.subtitle_listening import select_clip, extract_audio, NoSuitableClip
 
 log = logging.getLogger('news-reading-watcher')
 VIDEO_EXTENSIONS = {'.mp4', '.mkv', '.webm', '.m4v', '.mov'}
 LEVELS = ('A1', 'A2', 'B1', 'B2')
+DAILY_LIMIT = 3
 
 
 def video_key(path, root):
@@ -80,6 +82,7 @@ def connect(path):
         retry_at REAL NOT NULL DEFAULT 0, error TEXT)''')
     db.execute('CREATE TABLE IF NOT EXISTS completed_levels (video_id TEXT, level TEXT, PRIMARY KEY(video_id, level))')
     db.execute('CREATE TABLE IF NOT EXISTS skipped_levels (video_id TEXT, level TEXT, reason TEXT, PRIMARY KEY(video_id, level))')
+    db.execute('CREATE TABLE IF NOT EXISTS publications (video_id TEXT, level TEXT, day TEXT NOT NULL, path TEXT NOT NULL, PRIMARY KEY(video_id, level))')
     db.commit()
     return db
 
@@ -150,10 +153,14 @@ def deliver(key, title, pack):
     return count
 
 
-def publish(key, video, subtitle, root, output, completed=(), on_complete=lambda level: None, on_skip=lambda level, reason: None):
+def publish(key, video, subtitle, root, output, completed=(), on_complete=lambda level: None, on_skip=lambda level, reason: None, allow_level=lambda level: True):
     failure = None
+    deferred = False
     for level in LEVELS:
         if level in completed:
+            continue
+        if not allow_level(level):
+            deferred = True
             continue
         try:
             publish_level(key, video, subtitle, root, output, level)
@@ -166,11 +173,12 @@ def publish(key, video, subtitle, root, output, completed=(), on_complete=lambda
             failure = error
     if failure:
         raise failure
+    return not deferred
 
 
 def publish_level(key, video, subtitle, root, output, level):
     output.mkdir(parents=True, exist_ok=True)
-    destination = output / f'news-{key}-{level.lower()}'
+    destination = export_directory(output, key, level)
     staging = output / f'.news-{key}-{level.lower()}.pending'
     # Never follow a pre-existing output symlink or overwrite unrelated folders.
     for directory in (destination, staging):
@@ -213,6 +221,11 @@ def publish_level(key, video, subtitle, root, output, level):
             extract_audio(video, work, pack)
         else:
             ensure_audio(work)
+        # Date the publication when generation finishes, including midnight.
+        destination = export_directory(output, key, level)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        pack['export_path'] = str(destination.relative_to(output.resolve()))
+        pack['published_date'] = destination.parent.name
         pack['audio_file'] = 'lectura.mp3'
         temporary = work / '.ejercicio.json.tmp'
         temporary.write_text(json.dumps(pack, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -225,13 +238,35 @@ def publish_level(key, video, subtitle, root, output, level):
     log.info('%s: ready in %s; delivered to %s accounts', key, destination, count)
 
 
+def record_publication(db, key, level, directory, output):
+    cache = directory / 'ejercicio.json'
+    pack = json.loads(cache.read_text(encoding='utf-8'))
+    day = pack.get('published_date') or local_day(cache.stat().st_mtime)
+    db.execute('INSERT OR IGNORE INTO publications VALUES (?,?,?,?)',
+               (key, level, day, str(directory.relative_to(output.resolve()))))
+
+
+def reconcile_publications(db, output):
+    """Recover a rename-before-ledger crash; quota survives output cleanup."""
+    for level in LEVELS:
+        for cache in (output / level).glob('????-??-??/*/ejercicio.json'):
+            if not cache.resolve().is_relative_to(output.resolve()):
+                continue
+            pack = json.loads(cache.read_text(encoding='utf-8'))
+            if pack.get('level') == level:
+                record_publication(db, pack.get('video_key') or cache.parent.name, level, cache.parent, output)
+    db.commit()
+
+
 def scan(db, root, output, now=None, stable_seconds=120):
+    now_supplied = now is not None
     now = time.time() if now is None else now
     initialize(db, root, now)
     if not root.is_dir():
         log.warning('News folder unavailable; keeping tracking records unchanged')
         return
     found = discover(db, root, now)
+    reconcile_publications(db, output)
     rows = db.execute("SELECT * FROM videos WHERE status='pending' AND signature IS NOT NULL AND changed<=? AND retry_at<=? ORDER BY changed",
                       (now - stable_seconds, now)).fetchall()
     for row in rows:
@@ -245,14 +280,26 @@ def scan(db, root, output, now=None, stable_seconds=120):
                     continue
                 completed = {r[0] for r in db.execute('SELECT level FROM completed_levels WHERE video_id=?', (row['id'],))}
                 def on_complete(level):
+                    directory = find_export(output, row['id'], level)
+                    if directory:
+                        record_publication(db, row['id'], level, directory, output)
                     db.execute('INSERT OR IGNORE INTO completed_levels VALUES (?,?)', (row['id'], level))
                     db.commit()
                 def on_skip(level, reason):
                     db.execute('INSERT OR REPLACE INTO skipped_levels VALUES (?,?,?)', (row['id'], level, reason))
                     on_complete(level)
-                publish(row['id'], video, sub, root, output, completed=completed,
-                        on_complete=on_complete, on_skip=on_skip)
-            db.execute("UPDATE videos SET status='done', error=NULL WHERE id=?", (row['id'],))
+                def allow_level(level):
+                    if find_export(output, row['id'], level):
+                        return True  # Resume delivery after a crash; no new pack.
+                    day = local_day(now if now_supplied else None)
+                    count = db.execute('SELECT COUNT(*) FROM publications WHERE level=? AND day=?', (level, day)).fetchone()[0]
+                    return count < DAILY_LIMIT
+                if all(level in completed or not allow_level(level) for level in LEVELS) and any(level not in completed for level in LEVELS):
+                    continue
+                finished = publish(row['id'], video, sub, root, output, completed=completed,
+                                   on_complete=on_complete, on_skip=on_skip, allow_level=allow_level)
+            db.execute("UPDATE videos SET status=?, error=NULL WHERE id=?",
+                       ('pending' if finished is False else 'done', row['id']))
             db.commit()
         except BlockingIOError:
             log.info('Local reading generator busy; will retry on next scan')

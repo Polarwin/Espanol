@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
   try {
     const context = await browser.newContext({ viewport: { width: 390, height: 844 }, offline: true });
     const page = await context.newPage();
-    await page.goto('file:///srv/files/static/SpanishReading/dw-brasil-20261005/escuchar.html');
+    await page.goto('file:///srv/files/static/SpanishReading/A2/2026-10-06/dw-brasil-20261005/escuchar.html');
     assert.equal(await page.getByRole('heading', { name: 'Transcripción', exact: true }).isVisible(), false);
     assert.equal(await page.getByRole('link', { name: 'Respuestas orientativas', exact: true }).isVisible(), false);
     assert.equal(await page.locator('textarea').count(), 5);
