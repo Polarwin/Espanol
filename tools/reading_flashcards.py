@@ -54,7 +54,7 @@ def add_offline(pages, pack):
     for field, allowed in [('audio_file', 'lectura.mp3'), ('pdf_file', 'ejercicio.pdf')]:
         if pack.get(field) == allowed:
             files.append(allowed)
-    version = sha256((json.dumps(pack, sort_keys=True, ensure_ascii=False) + ''.join(pages.values())).encode()).hexdigest()[:20]
+    version = sha256(('offline-ui-v2' + json.dumps(pack, sort_keys=True, ensure_ascii=False) + ''.join(pages.values())).encode()).hexdigest()[:20]
     files_json = json.dumps(files)
     worker = '''const FILES=__FILES__,VERSION='__VERSION__';
 const PREFIX='vamos-pack:'+self.registration.scope+':',CACHE=PREFIX+VERSION;
@@ -90,30 +90,52 @@ self.addEventListener('fetch',event=>{
         navigation += ' · <a href="ejercicio.pdf" download>Descargar PDF</a>'
     if 'lectura.mp3' in files:
         navigation += ' · <a href="lectura.mp3" download>Descargar audio</a>'
-    navigation += '</nav><p id="offline-status" role="status" style="font:14px system-ui">Preparando este paquete sin conexión…</p><button id="offline-retry" type="button" hidden>Reintentar descarga sin conexión</button>'
-    navigation += '<style>@media print{#offline-status,#offline-retry{display:none}}</style>'
+    navigation += '</nav><section id="offline-panel" aria-label="Disponibilidad sin conexión"><button id="offline-check" type="button" aria-controls="offline-files" aria-expanded="false">Guardar y comprobar archivos sin conexión</button><p id="offline-status" role="status" style="font:14px system-ui">Preparando este paquete sin conexión…</p><ul id="offline-files" hidden></ul></section>'
+    navigation += '<style>#offline-check{font:inherit;padding:10px 16px;border:1px solid #185d50;border-radius:8px;background:#185d50;color:white;cursor:pointer}#offline-check:disabled{opacity:.6}#offline-files{font:14px/1.8 system-ui;overflow-wrap:anywhere}@media print{#offline-panel{display:none}}</style>'
     script = '''<script>(()=>{
-const status=document.getElementById('offline-status'),retry=document.getElementById('offline-retry');
-async function prepare(){
- retry.hidden=true;
- if(!('serviceWorker' in navigator)||!isSecureContext||location.protocol==='file:'){status.textContent='Para usar sin conexión, descarga el PDF, el audio y las tarjetas HTML. La precarga requiere HTTPS de confianza.';return}
- status.textContent='Descargando páginas, PDF y audio de este paquete…';
+const status=document.getElementById('offline-status'),button=document.getElementById('offline-check'),list=document.getElementById('offline-files');
+const files=__FILES__,name='vamos-pack:'+new URL('./',location.href).href+':__VERSION__';
+let running=false;
+async function inspect(){
+ const cache=(await caches.keys()).includes(name)?await caches.open(name):null;
+ const saved=await Promise.all(files.map(async file=>!!(cache&&await cache.match(new URL(file,location.href).href))));
+ list.replaceChildren(...files.map((file,i)=>{
+  const row=document.createElement('li'),link=document.createElement('a');
+  link.href=file;link.textContent=file;row.dataset.cached=String(saved[i]);
+  row.append(link,document.createTextNode(saved[i]?' — En caché ✓':' — Pendiente de guardar'));
+  return row;
+ }));
+ return saved;
+}
+async function prepare(manual=false){
+ if(manual){list.hidden=false;button.setAttribute('aria-expanded','true')}
+ if(running)return;
+ running=true;button.disabled=true;
  try{
+  if(!('serviceWorker' in navigator)||!isSecureContext||location.protocol==='file:')throw new Error('La precarga requiere HTTPS de confianza.');
+  status.textContent='Comprobando y guardando los archivos de este paquete…';
+  await inspect();
   await navigator.serviceWorker.register('./offline-sw.js',{scope:'./',updateViaCache:'none'});
-  const name='vamos-pack:'+new URL('./',location.href).href+':__VERSION__';
   for(let i=0;i<240;i++){
-   if((await caches.keys()).includes(name)){
-    const cache=await caches.open(name),files=__FILES__;
-    if((await Promise.all(files.map(file=>cache.match(new URL(file,location.href).href)))).every(Boolean)){
-     status.textContent='Listo sin conexión: páginas, tarjetas'+(files.includes('ejercicio.pdf')?', PDF':'')+(files.includes('lectura.mp3')?' y audio':'')+'. Guarda esta dirección; el navegador puede borrar descargas si falta espacio.';return;
-    }
+   let saved=await inspect();
+   // A manual check repairs evicted entries even if the worker is already installed.
+   if(manual&&navigator.serviceWorker.controller&&!saved.every(Boolean)){
+    const cache=await caches.open(name);
+    await cache.addAll(files.filter((file,index)=>!saved[index]).map(file=>new Request(new URL(file,location.href),{cache:'reload'})));
+    saved=await inspect();
+   }
+   if(saved.every(Boolean)&&navigator.serviceWorker.controller){
+    status.textContent=`Listo sin conexión: ${files.length}/${files.length} archivos en caché (páginas, tarjetas`+(files.includes('ejercicio.pdf')?', PDF':'')+(files.includes('lectura.mp3')?' y audio':'')+'). Guarda esta dirección. El navegador puede borrar la caché si falta espacio.';return;
    }
    await new Promise(resolve=>setTimeout(resolve,500));
   }
-  throw new Error('Download incomplete');
- }catch{status.textContent='Descarga sin conexión incompleta. Mantén la conexión y reintenta, o descarga los archivos con los enlaces.';retry.hidden=false}
+  throw new Error('No se han guardado todos los archivos.');
+ }catch(error){
+  status.textContent='Precarga incompleta. Mantén la conexión y pulsa el botón para reintentar. '+error.message;
+  try{await inspect()}catch{list.replaceChildren();const row=document.createElement('li');row.textContent='No se puede acceder a la caché de este navegador.';list.append(row)}
+ }finally{running=false;button.disabled=false}
 }
-retry.onclick=prepare;prepare();
+button.onclick=()=>prepare(true);prepare();
 })();</script>'''.replace('__FILES__', files_json).replace('__VERSION__', version)
     for name in list(pages):
         pages[name] = pages[name].replace('<body>', '<body>'+navigation, 1).replace('</body>', script+'</body>')

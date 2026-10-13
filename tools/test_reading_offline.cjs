@@ -39,7 +39,20 @@ for name in ('one','two'):
    await page.locator('#offline-status').filter({hasText:'Listo sin conexión'}).waitFor({timeout:120000});
    await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
   }
+  await page.locator('#offline-check').click();
+  await page.waitForFunction(()=>!document.querySelector('#offline-check').disabled);
+  assert.equal(await page.locator('#offline-files').isVisible(),true);
+  assert.equal(await page.locator('#offline-files li[data-cached="false"]').count(),0);
+  assert.ok(await page.locator('#offline-files').innerText().then(text=>text.includes('ejercicio.pdf')&&text.includes('lectura.mp3')));
+  await page.evaluate(async()=>{for(const name of await caches.keys())if(name.includes('/two/:'))await (await caches.open(name)).delete(new URL('lectura.mp3',location.href).href)});
+  await page.locator('#offline-check').click();
+  await page.waitForFunction(()=>!document.querySelector('#offline-check').disabled);
+  assert.match(await page.locator('#offline-status').innerText(),/Listo sin conexión/);
+  assert.equal(await page.locator('#offline-files li[data-cached="false"]').count(),0);
   await context.setOffline(true);
+  await page.locator('#offline-check').click();
+  await page.waitForFunction(()=>!document.querySelector('#offline-check').disabled);
+  assert.match(await page.locator('#offline-status').innerText(),/Listo sin conexión/);
   await page.goto(`${origin}/one/tarjetas.html`);
   assert.equal(await page.locator('#card').innerText(),'pan');
   await page.locator('#card').click();assert.match(await page.locator('#card').innerText(),/flour/);
