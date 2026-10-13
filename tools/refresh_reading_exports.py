@@ -8,6 +8,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from backend.app.config import settings
 from tools.subtitle_reading import render
+from tools.reading_folder_cache import publish_folder_worker
 from tools.watch_news_readings import watcher_slot
 
 
@@ -16,6 +17,7 @@ def main():
     backup = settings.backup_dir / ('reading-html-' + datetime.now().strftime('%Y%m%d-%H%M%S'))
     count = 0
     with watcher_slot(settings.backup_dir / 'news-reading-watcher.sqlite3'):
+        publish_folder_worker(root)
         for cache in sorted(root.glob('*/*/*/ejercicio.json')):
             if not cache.resolve().is_relative_to(root):
                 continue

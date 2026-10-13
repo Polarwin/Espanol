@@ -12,7 +12,11 @@ const { execFileSync } = require('node:child_process');
 import json,sys,shutil
 from pathlib import Path
 from tools.subtitle_reading import render
-root=Path(sys.argv[1])
+from tools.reading_folder_cache import publish_folder_worker
+root=Path(sys.argv[1])/'SpanishReading'
+publish_folder_worker(root)
+root=root/'A2'/'2026-10-13'
+root.mkdir(parents=True)
 source=next(p.parent for p in Path('/srv/files/static/SpanishReading').glob('*/*/*/ejercicio.json') if (p.parent/'ejercicio.pdf').is_file() and (p.parent/'lectura.mp3').is_file())
 for name in ('one','two'):
  d=root/name;d.mkdir()
@@ -25,11 +29,13 @@ for name in ('one','two'):
  const server = http.createServer((req,res) => {
   const file = path.join(root, decodeURIComponent(new URL(req.url,'http://localhost').pathname));
   if (!file.startsWith(root+path.sep) || !fs.existsSync(file)) { res.writeHead(404);res.end();return; }
+  if(fs.statSync(file).isDirectory()){res.setHeader('Content-Type','text/html');res.end(fs.readdirSync(file).map(name=>`<a href="${name}${fs.statSync(path.join(file,name)).isDirectory()?'/':''}">${name}</a>`).join('<br>'));return;}
   res.setHeader('Content-Type', file.endsWith('.js')?'application/javascript':file.endsWith('.html')?'text/html; charset=utf-8':file.endsWith('.pdf')?'application/pdf':'audio/mpeg');
   res.end(fs.readFileSync(file));
  });
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
- const origin=`http://127.0.0.1:${server.address().port}`;
+ const host=`http://127.0.0.1:${server.address().port}`;
+ const origin=host+'/SpanishReading/A2/2026-10-13';
  const browser=await chromium.launch({headless:true,executablePath:'/home/justin/.cache/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-linux64/chrome-headless-shell',args:['--autoplay-policy=no-user-gesture-required']});
  try {
   const context=await browser.newContext();const page=await context.newPage();const errors=[];
@@ -42,6 +48,7 @@ for name in ('one','two'):
   await page.locator('#offline-check').click();
   await page.waitForFunction(()=>!document.querySelector('#offline-check').disabled);
   assert.equal(await page.locator('#offline-files').isVisible(),true);
+  assert.equal(await page.locator('#offline-files li').count(),12);
   assert.equal(await page.locator('#offline-files li[data-cached="false"]').count(),0);
   assert.ok(await page.locator('#offline-files').innerText().then(text=>text.includes('ejercicio.pdf')&&text.includes('lectura.mp3')));
   await page.evaluate(async()=>{for(const name of await caches.keys())if(name.includes('/two/:'))await (await caches.open(name)).delete(new URL('lectura.mp3',location.href).href)});
@@ -53,6 +60,12 @@ for name in ('one','two'):
   await page.locator('#offline-check').click();
   await page.waitForFunction(()=>!document.querySelector('#offline-check').disabled);
   assert.match(await page.locator('#offline-status').innerText(),/Listo sin conexión/);
+  await page.goto(host+'/SpanishReading/');
+  await page.getByRole('link',{name:'A2',exact:true}).click();
+  await page.getByRole('link',{name:'2026-10-13',exact:true}).click();
+  await page.getByRole('link',{name:'two',exact:true}).click();
+  await page.getByRole('link',{name:'ejercicio.html',exact:true}).click();
+  assert.match(await page.locator('#offline-status').innerText(),/Preparando|Comprobando|Listo/);
   await page.goto(`${origin}/one/tarjetas.html`);
   assert.equal(await page.locator('#card').innerText(),'pan');
   await page.locator('#card').click();assert.match(await page.locator('#card').innerText(),/flour/);
@@ -69,6 +82,6 @@ for name in ('one','two'):
   await page.locator('audio').evaluate(async a=>{a.currentTime=1;await a.play()});
   await page.waitForFunction(()=>document.querySelector('audio').currentTime>1.1);
   assert.deepEqual(errors,[]);
-  console.log('PASS: automatic whole-pack preload; offline cards, saved progress, PDF, audio playback/seeking, and independent pack caches.');
+  console.log('PASS: offline root/level/date/pack navigation; automatic whole-pack preload; offline cards, saved progress, PDF, audio playback/seeking, and independent pack caches.');
  } finally {await browser.close();await new Promise(resolve=>server.close(resolve));fs.rmSync(root,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exitCode=1});

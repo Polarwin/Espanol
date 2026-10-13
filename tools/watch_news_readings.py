@@ -24,6 +24,7 @@ from backend.app.models import ReadingPractice, User
 from backend.app.services import reading
 from tools.subtitle_reading import clean_subtitles, render, make_pdf, TIMING, seconds
 from tools.reading_audio import ensure_audio
+from tools.reading_folder_cache import publish_folder_worker
 from tools.reading_layout import local_day, find_export, export_directory
 from tools.subtitle_listening import select_clip, extract_audio, NoSuitableClip
 
@@ -234,6 +235,7 @@ def publish_level(key, video, subtitle, root, output, level):
         for name, content in render(pack).items():
             (work / name).write_text(content, encoding='utf-8')
         make_pdf(work.resolve(), None)
+        publish_folder_worker(output)
         work.rename(destination)
     count = deliver(key, video.stem, pack)
     log.info('%s: ready in %s; delivered to %s accounts', key, destination, count)

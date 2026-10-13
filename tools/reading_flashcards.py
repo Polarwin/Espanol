@@ -54,7 +54,7 @@ def add_offline(pages, pack):
     for field, allowed in [('audio_file', 'lectura.mp3'), ('pdf_file', 'ejercicio.pdf')]:
         if pack.get(field) == allowed:
             files.append(allowed)
-    version = sha256(('offline-ui-v2' + json.dumps(pack, sort_keys=True, ensure_ascii=False) + ''.join(pages.values())).encode()).hexdigest()[:20]
+    version = sha256(('offline-ui-v3' + json.dumps(pack, sort_keys=True, ensure_ascii=False) + ''.join(pages.values())).encode()).hexdigest()[:20]
     files_json = json.dumps(files)
     worker = '''const FILES=__FILES__,VERSION='__VERSION__';
 const PREFIX='vamos-pack:'+self.registration.scope+':',CACHE=PREFIX+VERSION;
@@ -70,6 +70,7 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
 self.addEventListener('message',event=>{if(event.data==='STATUS'&&event.ports[0])event.ports[0].postMessage({version:VERSION})});
 self.addEventListener('fetch',event=>{
  const url=new URL(event.request.url);
+ if(event.request.method==='GET'&&url.href===self.registration.scope){event.respondWith((async()=>await caches.match(url.href)||fetch(event.request))());return}
  if(event.request.method!=='GET'||!FILES.some(file=>new URL(file,self.registration.scope).href===url.href))return;
  event.respondWith((async()=>{
  const cached=await (await caches.open(CACHE)).match(url.href);
@@ -92,20 +93,38 @@ self.addEventListener('fetch',event=>{
         navigation += ' · <a href="lectura.mp3" download>Descargar audio</a>'
     navigation += '</nav><section id="offline-panel" aria-label="Disponibilidad sin conexión"><button id="offline-check" type="button" aria-controls="offline-files" aria-expanded="false">Guardar y comprobar archivos sin conexión</button><p id="offline-status" role="status" style="font:14px system-ui">Preparando este paquete sin conexión…</p><ul id="offline-files" hidden></ul></section>'
     navigation += '<style>#offline-check{font:inherit;padding:10px 16px;border:1px solid #185d50;border-radius:8px;background:#185d50;color:white;cursor:pointer}#offline-check:disabled{opacity:.6}#offline-files{font:14px/1.8 system-ui;overflow-wrap:anywhere}@media print{#offline-panel{display:none}}</style>'
-    script = '''<script>(()=>{
+    script = r'''<script>(()=>{
 const status=document.getElementById('offline-status'),button=document.getElementById('offline-check'),list=document.getElementById('offline-files');
 const files=__FILES__,name='vamos-pack:'+new URL('./',location.href).href+':__VERSION__';
+const match=location.pathname.match(/^(.*\/SpanishReading\/)(A[12]|B[12])\/(\d{4}-\d{2}-\d{2})\/[^/]+\//);
+const root=match?new URL(match[1],location.origin):null;
+const folders=root?[root.href,new URL(match[2]+'/',root).href,new URL(match[2]+'/'+match[3]+'/',root).href,new URL('./',location.href).href]:[];
+const folderCache=root?'vamos-reading-folders:'+root.href:null;
+if(root){const nav=document.createElement('nav');nav.setAttribute('aria-label','Carpetas');
+ folders.forEach((url,i)=>{if(i)nav.append(' / ');const a=document.createElement('a');a.href=url;a.textContent=['SpanishReading',match[2],match[3],'Este paquete'][i];nav.append(a)});
+ document.getElementById('offline-panel').before(nav)}
 let running=false;
+async function prepareFolders(){
+ if(!root)return;
+ const registration=await navigator.serviceWorker.register(new URL('reading-folders-sw.js',root),{scope:root.href,updateViaCache:'none'});
+ for(let i=0;!registration.active&&i<120;i++)await new Promise(resolve=>setTimeout(resolve,500));
+ if(!registration.active)throw new Error('No se ha activado la navegación sin conexión.');
+ const cache=await caches.open(folderCache);
+ for(const url of folders){try{const response=await fetch(url,{cache:'reload'});if(!response.ok)throw new Error('Carpeta no disponible');await cache.put(url,response)}catch(error){if(!await cache.match(url))throw error}}
+} 
 async function inspect(){
  const cache=(await caches.keys()).includes(name)?await caches.open(name):null;
  const saved=await Promise.all(files.map(async file=>!!(cache&&await cache.match(new URL(file,location.href).href))));
- list.replaceChildren(...files.map((file,i)=>{
+ const directoryCache=folderCache&&(await caches.keys()).includes(folderCache)?await caches.open(folderCache):null;
+ const folderSaved=await Promise.all(folders.map(async url=>!!(directoryCache&&await directoryCache.match(url))));
+ const entries=[...files,...folders],states=[...saved,...folderSaved];
+ list.replaceChildren(...entries.map((file,i)=>{
   const row=document.createElement('li'),link=document.createElement('a');
-  link.href=file;link.textContent=file;row.dataset.cached=String(saved[i]);
-  row.append(link,document.createTextNode(saved[i]?' — En caché ✓':' — Pendiente de guardar'));
+  link.href=file;link.textContent=i<files.length?file:new URL(file).pathname;row.dataset.cached=String(states[i]);
+  row.append(link,document.createTextNode(states[i]?' — En caché ✓':' — Pendiente de guardar'));
   return row;
  }));
- return saved;
+ return states;
 }
 async function prepare(manual=false){
  if(manual){list.hidden=false;button.setAttribute('aria-expanded','true')}
@@ -116,6 +135,7 @@ async function prepare(manual=false){
   status.textContent='Comprobando y guardando los archivos de este paquete…';
   await inspect();
   await navigator.serviceWorker.register('./offline-sw.js',{scope:'./',updateViaCache:'none'});
+  await prepareFolders();
   for(let i=0;i<240;i++){
    let saved=await inspect();
    // A manual check repairs evicted entries even if the worker is already installed.
@@ -125,7 +145,7 @@ async function prepare(manual=false){
     saved=await inspect();
    }
    if(saved.every(Boolean)&&navigator.serviceWorker.controller){
-    status.textContent=`Listo sin conexión: ${files.length}/${files.length} archivos en caché (páginas, tarjetas`+(files.includes('ejercicio.pdf')?', PDF':'')+(files.includes('lectura.mp3')?' y audio':'')+'). Guarda esta dirección. El navegador puede borrar la caché si falta espacio.';return;
+    status.textContent=`Listo sin conexión: ${files.length+folders.length}/${files.length+folders.length} archivos y carpetas en caché (páginas, tarjetas`+(files.includes('ejercicio.pdf')?', PDF':'')+(files.includes('lectura.mp3')?' y audio':'')+'). Guarda esta dirección. El navegador puede borrar la caché si falta espacio.';return;
    }
    await new Promise(resolve=>setTimeout(resolve,500));
   }
