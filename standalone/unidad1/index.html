@@ -34,7 +34,7 @@ function save(){try{localStorage.setItem(key,JSON.stringify([...learned]));get('
 get('card').onclick=flip;get('flip').onclick=flip;get('next').onclick=()=>move(1);get('previous').onclick=()=>move(-1);
 get('topic').onchange=filter;get('review').onchange=filter;get('search').oninput=filter;get('language').onchange=render;get('direction').onchange=()=>{back=false;render()};
 get('shuffle').onclick=()=>{for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}position=0;back=false;render()};
-get('known').onclick=()=>{const c=deck[order[position]];if(!c)return;learned.has(c.es)?learned.delete(c.es):learned.add(c.es);save();if(get('review').checked){const old=position;filter();position=Math.min(old,Math.max(0,order.length-1))}render()};
+get('known').onclick=()=>{const c=deck[order[position]];if(!c)return;const wasLearned=learned.has(c.es);wasLearned?learned.delete(c.es):learned.add(c.es);save();if(!wasLearned){if(get('review').checked){order.splice(position,1);position=order.length?position%order.length:0;back=false;render()}else move(1)}else render()};
 get('reset').onclick=()=>{if(confirm('Reset all learned words in this deck?')){learned.clear();save();filter()}};
 document.addEventListener('keydown',e=>{if(e.target.closest('input,select,textarea')||e.altKey||e.ctrlKey||e.metaKey)return;if(e.key==='ArrowLeft'){e.preventDefault();move(-1)}else if(e.key==='ArrowRight'){e.preventDefault();move(1)}else if(e.code==='Space'&&!e.target.closest('button')){e.preventDefault();flip()}});
 get('export').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify({deck:'unidad1-v1',learned:[...learned]},null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='unidad1-progress.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
@@ -42,7 +42,7 @@ get('import').onchange=async e=>{const file=e.target.files[0];if(!file)return;tr
 filter();
 </script><script>(()=>{
 const button=document.getElementById('offline-save'),status=document.getElementById('offline-status');
-const scope=new URL('./',location.href).href,cacheName='unidad1-offline:'+scope+':fa1615d8db4da09f';
+const scope=new URL('./',location.href).href,cacheName='unidad1-offline:'+scope+':c2e6629b87adb324';
 async function prepare(){
  if(location.protocol==='file:'){status.textContent='This downloaded file works offline. All 171 cards and explanations are included.';button.hidden=true;return}
  button.disabled=true;

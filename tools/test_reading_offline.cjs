@@ -69,7 +69,7 @@ for name in ('one','two'):
   await page.goto(`${origin}/one/tarjetas.html`);
   assert.equal(await page.locator('#card').innerText(),'pan');
   await page.locator('#card').click();assert.match(await page.locator('#card').innerText(),/flour/);
-  await page.locator('#known').click();await page.reload();assert.match(await page.locator('#progress').innerText(),/1 aprendidas/);
+  await page.locator('#known').click();assert.equal(await page.locator('#card').innerText(),'casa');await page.locator('#known').click();assert.equal(await page.locator('#card').innerText(),'pan');await page.locator('#known').click();assert.equal(await page.locator('#card').innerText(),'pan');await page.reload();assert.match(await page.locator('#progress').innerText(),/1 aprendidas/);
   await page.locator('#next').click();assert.equal(await page.locator('#card').innerText(),'casa');
   const results=await page.evaluate(async()=>{
    const pdf=await fetch('ejercicio.pdf');const bytes=await pdf.arrayBuffer();

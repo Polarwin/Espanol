@@ -36,7 +36,7 @@ function flip(){back=!back;render()}
 function move(step){if(!cards.length)return;position=(position+step+cards.length)%cards.length;back=false;render()}
 function save(){try{localStorage.setItem(storageKey,JSON.stringify([...learned]));get('saved').textContent='Progreso guardado en este navegador.'}catch{get('saved').textContent='Progreso disponible solo durante esta sesión.'}}
 get('card').onclick=flip;get('flip').onclick=flip;get('previous').onclick=()=>move(-1);get('next').onclick=()=>move(1);
-get('known').onclick=()=>{const i=order[position];learned.has(i)?learned.delete(i):learned.add(i);save();render()};
+get('known').onclick=()=>{const i=order[position];if(i===undefined)return;const wasLearned=learned.has(i);wasLearned?learned.delete(i):learned.add(i);save();if(!wasLearned)move(1);else render()};
 get('shuffle').onclick=()=>{for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}position=0;back=false;render()};
 get('reset').onclick=()=>{learned.clear();save();render()};
 document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){e.preventDefault();move(-1)}if(e.key==='ArrowRight'){e.preventDefault();move(1)}});
